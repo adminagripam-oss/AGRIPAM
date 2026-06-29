@@ -1,0 +1,13 @@
+{
+  "name": "agripam",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agrinas Panen Monitoring App",
+  "scripts": {
+    "dev": "serve",
+    "start": "serve"
+  },
+  "devDependencies": {
+    "serve": "^14.2.3"
+  }
+}
