@@ -257,7 +257,7 @@
                 </div>
             </div>
 
-            <!-- 2. Detailed Analysis Section Grid -->
+             <!-- 2. Detailed Analysis Section Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 flex-1 min-h-0" style="grid-template-rows: 1fr auto;">
                 <!-- Kontributor Utama Estimasi Panen -->
                 <div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
@@ -266,27 +266,16 @@
                         <span class="material-symbols-outlined text-white text-xl">bar_chart</span>
                         <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Kontributor Utama Estimasi Panen</h3>
                     </div>
-                    <div class="p-4 flex-1 flex flex-col gap-3 overflow-hidden min-h-0">
-                        <div id="contributorContainer" class="space-y-4 overflow-y-auto scrollbar-hide flex-1 min-h-0">
+                    <div class="p-4 flex-1 overflow-hidden min-h-0">
+                        <div id="contributorContainer" class="space-y-2 overflow-y-auto scrollbar-hide h-full">
                             <!-- Populated dynamically -->
-                        </div>
-                        <div class="mt-auto pt-3 border-t border-outline-variant dark:border-slate-700 shrink-0">
-                            <div class="flex justify-between text-[10px] text-on-surface-variant font-label-caps dark:text-slate-400">
-                                <span>0</span>
-                                <span>500.000</span>
-                                <span>1.000.000</span>
-                                <span>1.500.000</span>
-                                <span>2.000.000</span>
-                                <span>2.500.000</span>
-                            </div>
-                            <p class="text-center text-[10px] text-on-surface-variant mt-1 dark:text-slate-400">Estimasi Panen (Kg)</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Restan Awal Tertinggi -->
                 <div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
-                    <div class="bg-primary px-5 py-2.5 flex items-center gap-3 shrink-0">
+                    <div class="bg-red-600 px-5 py-2.5 flex items-center gap-3 shrink-0">
                         <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">2</span>
                         <span class="material-symbols-outlined text-white text-xl">list_alt</span>
                         <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Restan Awal Tertinggi</h3>
@@ -298,37 +287,34 @@
                     </div>
                 </div>
 
-                <!-- Sorotan Utama -->
+                <!-- Output Panen Menonjol -->
                 <div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
                     <div class="bg-primary px-5 py-2.5 flex items-center gap-3 shrink-0">
                         <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">3</span>
+                        <span class="material-symbols-outlined text-white text-xl">emoji_events</span>
+                        <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Output Panen Tertinggi</h3>
+                    </div>
+                    <div class="p-4 flex-1 overflow-hidden min-h-0">
+                        <div id="outputContainer" class="space-y-2 overflow-y-auto scrollbar-hide h-full">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sorotan Utama (Full Width) -->
+                <div class="lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
+                    <div class="bg-primary px-5 py-2.5 flex items-center gap-3 shrink-0">
+                        <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">4</span>
                         <span class="material-symbols-outlined text-white text-xl">stars</span>
                         <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Sorotan Utama</h3>
                     </div>
-                    <div class="p-4 flex-1 relative overflow-hidden min-h-0">
-                        <div id="highlightContainer" class="space-y-4 relative z-10 overflow-y-auto scrollbar-hide h-full">
+                    <div class="p-5 flex-1 relative overflow-hidden min-h-0">
+                        <div id="highlightContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10 overflow-y-auto scrollbar-hide h-full">
                             <!-- Populated dynamically -->
                         </div>
                         <!-- Subtle Leaf Decoration Pattern -->
                         <div class="absolute bottom-[-20px] right-[-20px] opacity-10 pointer-events-none dark:opacity-5">
                             <span class="material-symbols-outlined text-[180px] text-primary dark:text-emerald-500">potted_plant</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Output Panen Menonjol (Full Width) -->
-                <div class="lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
-                    <div class="bg-primary px-5 py-2.5 flex items-center gap-3 shrink-0">
-                        <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">4</span>
-                        <span class="material-symbols-outlined text-white text-xl">emoji_events</span>
-                        <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Output Panen Menonjol (Kg/HK)</h3>
-                    </div>
-                    <div class="px-4 py-3 flex-1 flex flex-col justify-center overflow-hidden min-h-0">
-                        <div id="outputChartPlaceholder" class="hidden text-center text-gray-400 dark:text-slate-500 text-xs py-4">
-                            Tidak ada data output panen.
-                        </div>
-                        <div id="chartContainer" class="h-36 w-full relative overflow-x-auto scrollbar-hide">
-                            <canvas id="outputChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -339,9 +325,6 @@
 
     <!-- Dynamic Loader/Binding Javascript -->
     <script>
-        // Dark Mode sync
-        let outputChartInstance = null;
-
         // Dark Mode sync
         function syncTheme() {
             let currentTheme = "light";
@@ -355,22 +338,6 @@
             } else {
                 document.documentElement.classList.remove("dark");
                 document.documentElement.setAttribute("data-theme", "light");
-            }
-            
-            // Update chart colors dynamically on theme change
-            if (outputChartInstance) {
-                const isDark = currentTheme === "dark";
-                const gridColor = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)";
-                const textColor = isDark ? "#cbd5e1" : "#41493e";
-                const barBgColor = isDark ? "rgba(52, 211, 153, 0.85)" : "rgba(27, 94, 32, 0.85)";
-                const barBorderColor = isDark ? "#34d399" : "#1b5e20";
-                
-                outputChartInstance.options.scales.y.grid.color = gridColor;
-                outputChartInstance.options.scales.y.ticks.color = textColor;
-                outputChartInstance.options.scales.x.ticks.color = textColor;
-                outputChartInstance.data.datasets[0].backgroundColor = barBgColor;
-                outputChartInstance.data.datasets[0].borderColor = barBorderColor;
-                outputChartInstance.update();
             }
         }
         
@@ -550,18 +517,11 @@
             contributorContainer.innerHTML = "";
             
             if (contributors.length > 0) {
-                const maxVal = contributors[0].estPanen;
-                contributors.forEach(c => {
-                    const pct = maxVal > 0 ? (c.estPanen / maxVal) * 80 : 0; // limit to max 80% width
+                contributors.forEach((c, idx) => {
                     contributorContainer.innerHTML += `
-                        <div class="flex flex-col gap-1">
-                            <div class="flex justify-between text-xs font-bold mb-1">
-                                <span>${c.name}</span>
-                                <span>${formatNumber(c.estPanen)} Kg</span>
-                            </div>
-                            <div class="w-full bg-surface-container-high dark:bg-slate-700 h-4 rounded-full overflow-hidden">
-                                <div class="bg-primary dark:bg-emerald-600 h-full rounded-full" style="width: ${pct}%;"></div>
-                            </div>
+                        <div class="flex items-center justify-between py-1 border-b border-outline-variant text-xs">
+                            <span class="font-bold text-gray-700 dark:text-slate-300">${idx + 1}. ${c.name}</span>
+                            <span class="font-semibold text-primary dark:text-emerald-400">${formatDecimal(c.estPanen / 1000)} Ton</span>
                         </div>
                     `;
                 });
@@ -569,35 +529,21 @@
                 contributorContainer.innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-4 font-sans">Belum ada kontribusi data estimasi.</p>';
             }
             
-            // Restan Awal list (up to 6 items)
+            // Restan Awal list (up to 5 items)
             const restanAwals = [...regionsData]
                 .filter(r => r.restanLalu > 0)
                 .sort((a, b) => b.restanLalu - a.restanLalu)
-                .slice(0, 6);
+                .slice(0, 5);
                 
             const restanAwalContainer = document.getElementById("restanAwalContainer");
             restanAwalContainer.innerHTML = "";
             
             if (restanAwals.length > 0) {
                 restanAwals.forEach((r, idx) => {
-                    let bgClass = "bg-outline-variant text-on-surface-variant";
-                    let rowBgClass = "hover:bg-surface-container-low";
-                    
-                    if (idx === 0) {
-                        bgClass = "bg-tertiary text-on-tertiary";
-                        rowBgClass = "bg-tertiary-container/10";
-                    } else if (idx === 1 || idx === 2) {
-                        bgClass = "bg-outline text-white";
-                    }
-                    
                     restanAwalContainer.innerHTML += `
-                        <div class="flex items-center justify-between p-2 rounded-lg ${rowBgClass} transition-colors">
-                            <div class="flex items-center gap-3">
-                                <span class="w-6 h-6 flex items-center justify-center ${bgClass} text-xs font-bold rounded-full">${idx + 1}</span>
-                                <span class="material-symbols-outlined text-primary dark:text-emerald-400 text-sm">filter_vintage</span>
-                                <span class="text-sm font-medium text-gray-700 dark:text-slate-300">${r.name}</span>
-                            </div>
-                            <span class="text-sm font-bold text-gray-750 dark:text-white">${formatNumber(r.restanLalu)} Kg</span>
+                        <div class="flex items-center justify-between py-1 border-b border-outline-variant text-xs">
+                            <span class="font-bold text-gray-700 dark:text-slate-300">${idx + 1}. ${r.name}</span>
+                            <span class="font-semibold text-red-600 dark:text-red-400">${formatDecimal(r.restanLalu / 1000)} Ton</span>
                         </div>
                     `;
                 });
@@ -605,101 +551,26 @@
                 restanAwalContainer.innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-4">Tidak ada restan awal.</p>';
             }
 
-            
-            // Output Panen Chart.js Column Chart
+            // Output Panen list (up to 5 items)
             const outputs = [...regionsData]
                 .filter(r => r.outPanen > 0)
-                .sort((a, b) => b.outPanen - a.outPanen);
+                .sort((a, b) => b.outPanen - a.outPanen)
+                .slice(0, 5);
                 
-            const chartContainer = document.getElementById("chartContainer");
-            const outputChartPlaceholder = document.getElementById("outputChartPlaceholder");
+            const outputContainer = document.getElementById("outputContainer");
+            outputContainer.innerHTML = "";
             
             if (outputs.length > 0) {
-                chartContainer.classList.remove("hidden");
-                outputChartPlaceholder.classList.add("hidden");
-                
-                const ctx = document.getElementById('outputChart').getContext('2d');
-                const labels = outputs.map(r => r.name);
-                const dataValues = outputs.map(r => r.outPanen);
-                
-                const isDark = document.documentElement.classList.contains("dark");
-                const gridColor = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)";
-                const textColor = isDark ? "#cbd5e1" : "#41493e";
-                const barBgColor = isDark ? "rgba(52, 211, 153, 0.85)" : "rgba(27, 94, 32, 0.85)";
-                const barBorderColor = isDark ? "#34d399" : "#1b5e20";
-                
-                if (outputChartInstance) {
-                    outputChartInstance.destroy();
-                }
-                
-                outputChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Output Panen (Kg/HK)',
-                            data: dataValues,
-                            backgroundColor: barBgColor,
-                            borderColor: barBorderColor,
-                            borderWidth: 1.5,
-                            borderRadius: 6,
-                            borderSkipped: false
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return context.raw.toLocaleString('id-ID') + ' Kg/HK';
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: gridColor
-                                },
-                                ticks: {
-                                    color: textColor,
-                                    font: {
-                                        family: 'Manrope',
-                                        weight: '600'
-                                    },
-                                    callback: function(value) {
-                                        return value.toLocaleString('id-ID') + ' Kg/HK';
-                                    }
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    color: textColor,
-                                    font: {
-                                        family: 'Manrope',
-                                        weight: '600'
-                                    }
-                                }
-                            }
-                        }
-                    }
+                outputs.forEach((r, idx) => {
+                    outputContainer.innerHTML += `
+                        <div class="flex items-center justify-between py-1 border-b border-outline-variant text-xs">
+                            <span class="font-bold text-gray-700 dark:text-slate-300">${idx + 1}. ${r.name}</span>
+                            <span class="font-semibold text-primary dark:text-emerald-400">${formatDecimal(r.outPanen / 1000)} Ton</span>
+                        </div>
+                    `;
                 });
             } else {
-                chartContainer.classList.add("hidden");
-                outputChartPlaceholder.classList.remove("hidden");
-                if (outputChartInstance) {
-                    outputChartInstance.destroy();
-                    outputChartInstance = null;
-                }
+                outputContainer.innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-4">Tidak ada data output panen.</p>';
             }
             
             // Highlights list
@@ -766,13 +637,8 @@
             
             document.getElementById("contributorContainer").innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-4 font-sans">Tidak ada data estimasi.</p>';
             document.getElementById("restanAwalContainer").innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-4">Tidak ada data restan awal.</p>';
-
-            document.getElementById("chartContainer").classList.add("hidden");
-            document.getElementById("outputChartPlaceholder").classList.remove("hidden");
-            if (outputChartInstance) {
-                outputChartInstance.destroy();
-                outputChartInstance = null;
-            }
+            document.getElementById("outputContainer").innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-4">Tidak ada data output panen.</p>';
+            
             document.getElementById("highlightContainer").innerHTML = `
                 <div class="flex gap-4">
                     <div class="flex-shrink-0 w-8 h-8 rounded-full bg-red-650 flex items-center justify-center text-white">
