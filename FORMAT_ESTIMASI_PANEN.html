@@ -378,10 +378,13 @@
     </main>
 
     <!-- Modal Table Rencana & Estimasi -->
-    <div id="tableModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant dark:border-slate-800 max-w-7xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+    <div id="tableModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div
+            class="bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant dark:border-slate-800 max-w-7xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             <!-- Modal Header -->
-            <div class="px-6 py-4 border-b border-outline-variant dark:border-slate-800 flex items-center justify-between bg-primary text-white">
+            <div
+                class="px-6 py-4 border-b border-outline-variant dark:border-slate-800 flex items-center justify-between bg-primary text-white">
                 <h3 class="font-bold text-lg">Tabel Rencana &amp; Estimasi Panen</h3>
                 <button onclick="closeTableModal()" class="text-white/80 hover:text-white transition-colors">
                     <span class="material-symbols-outlined text-2xl">close</span>
@@ -391,15 +394,19 @@
             <div class="p-4 overflow-auto flex-1 bg-surface-container-lowest dark:bg-slate-900">
                 <!-- Filter Bar: Tanggal & Region -->
                 <div class="flex flex-wrap items-center gap-3 mb-3 px-1">
-                    <div class="flex items-center gap-2 bg-primary/10 dark:bg-slate-800 border border-primary/20 dark:border-slate-700 rounded-lg px-3 py-1.5">
-                        <span class="material-symbols-outlined text-primary dark:text-emerald-400 text-base">calendar_today</span>
+                    <div
+                        class="flex items-center gap-2 bg-primary/10 dark:bg-slate-800 border border-primary/20 dark:border-slate-700 rounded-lg px-3 py-1.5">
+                        <span
+                            class="material-symbols-outlined text-primary dark:text-emerald-400 text-base">calendar_today</span>
                         <label class="text-xs font-bold text-on-surface dark:text-slate-300">Tanggal:</label>
                         <input type="date" id="modalDatePicker"
                             class="bg-transparent border-none text-xs font-bold text-primary dark:text-emerald-400 outline-none cursor-pointer"
                             style="color-scheme: light dark;" />
                     </div>
-                    <div class="flex items-center gap-2 bg-primary/10 dark:bg-slate-800 border border-primary/20 dark:border-slate-700 rounded-lg px-3 py-1.5">
-                        <span class="material-symbols-outlined text-primary dark:text-emerald-400 text-base">location_on</span>
+                    <div
+                        class="flex items-center gap-2 bg-primary/10 dark:bg-slate-800 border border-primary/20 dark:border-slate-700 rounded-lg px-3 py-1.5">
+                        <span
+                            class="material-symbols-outlined text-primary dark:text-emerald-400 text-base">location_on</span>
                         <label class="text-xs font-bold text-on-surface dark:text-slate-300">Regional:</label>
                         <select id="modalRegionSelect"
                             class="bg-transparent border-none text-xs font-bold text-primary dark:text-emerald-400 outline-none cursor-pointer">
@@ -435,26 +442,41 @@
                         <!-- Table Header -->
                         <thead>
                             <tr class="bg-sky-600 text-white font-bold text-center">
-                                <th rowspan="2" class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-xs">NO.</th>
-                                <th rowspan="2" class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-xs min-w-[180px] text-left">NAMA REGIONAL</th>
-                                <th colspan="8" class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-xs">RENCANA PANEN DAN ESTIMASI PANEN</th>
+                                <th rowspan="2"
+                                    class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-xs">NO.
+                                </th>
+                                <th rowspan="2"
+                                    class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-xs min-w-[180px] text-left">
+                                    NAMA REGIONAL</th>
+                                <th colspan="8"
+                                    class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-xs">
+                                    RENCANA PANEN DAN ESTIMASI PANEN</th>
                             </tr>
                             <tr class="bg-sky-500 text-white font-semibold text-center text-xs">
-                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Luas Lahan Planted (Ha)</th>
-                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Estimasi Restan Lalu</th>
-                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Luas Panen (Ha)</th>
-                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">TK Panen (Hk)</th>
-                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Estimasi Panen (Kg)</th>
-                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Output Panen (Kg/Hk)</th>
-                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Estimasi Kirim (Kg)</th>
-                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Estimasi Restan (Kg)</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Luas Lahan
+                                    Planted (Ha)</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Estimasi
+                                    Restan Lalu</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Luas Panen
+                                    (Ha)</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">TK Panen (Hk)
+                                </th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Estimasi Panen
+                                    (Kg)</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Output Panen
+                                    (Kg/Hk)</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Estimasi Kirim
+                                    (Kg)</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Estimasi
+                                    Restan (Kg)</th>
                             </tr>
                         </thead>
                         <tbody id="modalTableBody" class="text-on-surface dark:text-slate-200">
                             <!-- Populated dynamically -->
                         </tbody>
                         <tfoot>
-                            <tr class="bg-amber-100 dark:bg-amber-950/60 font-bold text-right text-on-surface dark:text-white">
+                            <tr
+                                class="bg-amber-100 dark:bg-amber-950/60 font-bold text-right text-on-surface dark:text-white">
                                 <!-- Totals populated dynamically -->
                             </tr>
                         </tfoot>
@@ -621,7 +643,7 @@
             // On modal date picker change listener
             const modalDatePicker = document.getElementById("modalDatePicker");
             if (modalDatePicker) {
-                modalDatePicker.addEventListener("change", function() {
+                modalDatePicker.addEventListener("change", function () {
                     const newDate = this.value;
                     if (newDate) {
                         // Sync back to main infografis date display
@@ -652,7 +674,7 @@
             // On modal region select change listener — re-render without new fetch
             const modalRegionSelect = document.getElementById("modalRegionSelect");
             if (modalRegionSelect) {
-                modalRegionSelect.addEventListener("change", function() {
+                modalRegionSelect.addEventListener("change", function () {
                     const modal = document.getElementById("tableModal");
                     if (modal && !modal.classList.contains("hidden")) {
                         openTableModal();
@@ -705,8 +727,9 @@
                 return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
             };
 
+            const avgLuasPanen = totalTkPanen > 0 ? (totalLuasPanen / totalTkPanen) : 0;
             document.getElementById("statRestanLalu").textContent = formatNumber(totalRestanLalu);
-            document.getElementById("statLuasPanen").textContent = formatNumber(totalLuasPanen);
+            document.getElementById("statLuasPanen").textContent = formatDecimal(avgLuasPanen);
             document.getElementById("statTkPanen").textContent = formatNumber(totalTkPanen);
             document.getElementById("statEstimasiPanen").textContent = formatNumber(totalEstimasiPanen);
             document.getElementById("statOutputPanen").textContent = formatDecimal(avgOutputPanen);
@@ -834,9 +857,9 @@
 
         function showNoData() {
             globalAllEstimasi = {}; // Clear cached data so modal table resets
-            
+
             document.getElementById("statRestanLalu").textContent = "0";
-            document.getElementById("statLuasPanen").textContent = "0";
+            document.getElementById("statLuasPanen").textContent = "0.00";
             document.getElementById("statTkPanen").textContent = "0";
             document.getElementById("statEstimasiPanen").textContent = "0";
             document.getElementById("statOutputPanen").textContent = "0.00";
@@ -871,7 +894,7 @@
                     const s = JSON.parse(raw);
                     if (s && s.region) sessionRegion = s.region;
                 }
-            } catch(e) {}
+            } catch (e) { }
 
             const isRegionalUser = (sessionRegion !== "ADMIN" && sessionRegion !== "ALL");
 
