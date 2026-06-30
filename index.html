@@ -97,12 +97,13 @@
         input,
         select {
             width: 100%;
-            padding: 10px;
+            padding: 6px 12px;
             margin-top: 5px;
             border: 1px solid var(--input-border);
             border-radius: 4px;
             box-sizing: border-box;
             font-size: 15px;
+            font-weight: bold;
             background-color: var(--input-bg);
             color: var(--input-text);
             transition: all 0.3s ease;
@@ -410,20 +411,81 @@
             body.dashboard-active .layout-wrapper {
                 height: calc(100vh - 70px);
                 box-sizing: border-box;
+                position: relative;
             }
 
             body.dashboard-active .column-left {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                 width: 370px;
+                max-width: 370px;
                 height: 100%;
                 max-height: 100%;
                 box-sizing: border-box;
                 overflow-y: auto;
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE/Edge */
+                z-index: 10;
+                margin: 0 !important;
+                border-radius: 12px 0 0 12px;
+                box-shadow: 2px 0 10px var(--shadow-color);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease !important;
+            }
+
+            body.dashboard-active .column-left::-webkit-scrollbar {
+                display: none; /* Chrome, Safari, Opera */
             }
 
             body.dashboard-active .column-right {
+                width: 100% !important;
+                max-width: 100% !important;
                 height: 100%;
                 max-height: 100%;
                 box-sizing: border-box;
                 overflow: hidden;
+                padding-left: 400px !important;
+                border-radius: 12px;
+                transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                position: relative;
+            }
+
+            /* Collapsed Sidebar Styles */
+            body.dashboard-active .sidebar-collapsed .column-left {
+                transform: translateX(-110%);
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            body.dashboard-active .sidebar-collapsed .column-right {
+                padding-left: 25px !important;
+            }
+
+            /* Dashboard Toggle Button Styles (floating tab on sidebar edge) */
+            #sidebarToggleBtn {
+                position: absolute;
+                left: 385px;
+                top: 20px;
+                z-index: 50;
+                background: var(--card-bg-solid);
+                border: 1px solid var(--border-color);
+                color: var(--text-primary);
+                box-shadow: 0 2px 8px var(--shadow-color);
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            #sidebarToggleBtn:hover {
+                transform: scale(1.1) translateX(2px);
+                background: var(--clock-bg);
+            }
+
+            .sidebar-collapsed #sidebarToggleBtn {
+                left: 20px;
+            }
+
+            .sidebar-collapsed #sidebarToggleBtn svg {
+                transform: scaleX(-1);
             }
 
             body.dashboard-active #chartContainer {
@@ -884,6 +946,7 @@
 
     <!-- ===================== HALAMAN UTAMA ===================== -->
     <div id="mainSection" class="layout-wrapper" style="display:none;">
+        <button id="sidebarToggleBtn" onclick="toggleSidebar()" data-slot="sidebar-trigger" data-variant="ghost" data-size="icon-sm" class="focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 border border-transparent bg-clip-padding text-sm font-medium focus-visible:ring-3 aria-invalid:ring-3 [&amp;_svg:not([class*='size-'])]:size-4 inline-flex items-center justify-center whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none shrink-0 [&amp;_svg]:shrink-0 outline-none group/button select-none hover:bg-muted hover:text-foreground dark:hover:bg-muted/50 aria-expanded:bg-muted aria-expanded:text-foreground size-8 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-md -ml-1" data-sidebar="trigger"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-left" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg></button>
         <!-- Floating Navigation Arrow to open Infografis -->
         <button id="btnOpenInfografis" class="floating-nav-btn" onclick="bukaInfografis()" title="Buka Infografis Rencana & Estimasi Panen">
             <svg class="nav-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -1003,7 +1066,6 @@
             </form>
         </div>
 
-        <!-- KOLOM KANAN: Grafik Realisasi Tiap Jam -->
         <div class="column-right">
             <h3 id="chartTitle"
                 style="text-align: center; color: var(--text-primary); margin-top: 0; font-size: 30px; font-weight: bold;">
@@ -3076,6 +3138,25 @@
         // =========================================================================
         updateRunningText();
         setInterval(updateRunningText, 30000);
+
+        // Sidebar Toggle function and state restoration
+        function toggleSidebar() {
+            var mainSec = document.getElementById("mainSection");
+            mainSec.classList.toggle("sidebar-collapsed");
+            var isCollapsed = mainSec.classList.contains("sidebar-collapsed");
+            localStorage.setItem("agripam_sidebar_collapsed", isCollapsed ? "true" : "false");
+        }
+
+        // Restore sidebar state immediately
+        (function() {
+            var sidebarCollapsed = localStorage.getItem("agripam_sidebar_collapsed") === "true";
+            if (sidebarCollapsed) {
+                var mainSec = document.getElementById("mainSection");
+                if (mainSec) {
+                    mainSec.classList.add("sidebar-collapsed");
+                }
+            }
+        })();
     </script>
 
 
