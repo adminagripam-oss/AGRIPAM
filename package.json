@@ -1,0 +1,18 @@
+{
+  "name": "agripam",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agrinas Panen Monitoring App",
+  "scripts": {
+    "dev": "node --env-file=.env dev-server.js",
+    "start": "node --env-file=.env dev-server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "express": "^5.2.1",
+    "vercel": "^37.0.0"
+  }
+}

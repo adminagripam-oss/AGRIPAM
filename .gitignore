@@ -1,0 +1,14 @@
+# Vercel deployment files
+.vercel
+
+# Dependency directories
+node_modules/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Environment variables — JANGAN commit ke GitHub!
+.env
+.env.local
+.env.production
