@@ -47,11 +47,37 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-image: url('BACKGROUNDHARVESTING.jpeg');
+            background-color: var(--card-bg-solid);
+            transition: background-color 0.3s ease;
+        }
+
+        /* Background Slider Container */
+        .bg-slider {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-size: cover;
-            background-position: center;
+            background-position: center center;
             background-repeat: no-repeat;
-            background-attachment: fixed;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        .bg-slide.active {
+            opacity: 1;
         }
 
         /* Overlay to keep the page content readable */
@@ -858,6 +884,12 @@
 </head>
 
 <body>
+
+    <div class="bg-slider">
+        <div class="bg-slide active" style="background-image: url('PAGE%201.jpg');"></div>
+        <div class="bg-slide" style="background-image: url('PAGE%202.jpg');"></div>
+        <div class="bg-slide" style="background-image: url('BACKGROUNDHARVESTING.jpeg');"></div>
+    </div>
 
     <div class="bg-overlay"></div>
 
@@ -3138,6 +3170,18 @@
         // =========================================================================
         // BACKGROUND SLIDESHOW LOOP
         // =========================================================================
+        function initBgSlideshow() {
+            var slides = document.querySelectorAll('.bg-slide');
+            if (slides.length === 0) return;
+            var currentSlide = 0;
+            setInterval(function () {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }, 15000); // 15 seconds
+        }
+        initBgSlideshow();
+
         updateRunningText();
         setInterval(updateRunningText, 30000);
 
