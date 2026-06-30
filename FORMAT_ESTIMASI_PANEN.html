@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html class="light" lang="id">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>TANAMAN | PT AGRINAS PALMA NUSANTARA</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@600&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -86,12 +91,12 @@
                         "headline-md": ["Manrope"]
                     },
                     "fontSize": {
-                        "headline-lg": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
-                        "kpi-value": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
-                        "table-data": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
-                        "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
-                        "body-base": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
-                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                        "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "kpi-value": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "table-data": ["13px", { "lineHeight": "18px", "fontWeight": "500" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-base": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
                     }
                 },
             },
@@ -103,12 +108,15 @@
             background: linear-gradient(135deg, #f8fafc, #f1f5f9);
             transition: background-color 0.3s ease, color 0.3s ease;
         }
+
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
+
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
+
         .sidebar-item-active {
             background-color: #1b5e20;
             color: #90d689;
@@ -121,22 +129,28 @@
             background: linear-gradient(135deg, #0f172a, #1e293b) !important;
             color: #cbd5e1 !important;
         }
+
         .dark .bg-surface-container-lowest {
             background-color: #1e293b !important;
             border-color: #334155 !important;
         }
+
         .dark .text-on-surface {
             color: #f8fafc !important;
         }
+
         .dark .text-on-surface-variant {
             color: #cbd5e1 !important;
         }
+
         .dark .bg-surface-container-high {
             background-color: #334155 !important;
         }
+
         .dark .border-outline-variant {
             border-color: #334155 !important;
         }
+
         .dark .hover\:bg-surface-container-low:hover {
             background-color: #334155/40 !important;
         }
@@ -147,16 +161,21 @@
                 size: A4 landscape;
                 margin: 5mm;
             }
-            html, body {
+
+            html,
+            body {
                 height: 100% !important;
                 overflow: hidden !important;
                 background-color: #ffffff !important;
                 color: #000000 !important;
                 width: 100% !important;
             }
-            aside, header {
+
+            aside,
+            header {
                 display: none !important;
             }
+
             main {
                 margin-left: 0 !important;
                 padding-bottom: 0 !important;
@@ -164,8 +183,9 @@
                 overflow: hidden !important;
                 width: 100% !important;
             }
+
             /* Scale content to fit perfectly on A4 landscape */
-            main > div.flex-1 {
+            main>div.flex-1 {
                 transform: scale(0.94);
                 transform-origin: top center;
                 width: 106% !important;
@@ -173,27 +193,36 @@
                 overflow: hidden !important;
                 padding: 0 !important;
             }
+
             .print-header {
                 display: block !important;
             }
         }
     </style>
 </head>
+
 <body class="h-screen overflow-hidden flex text-on-surface dark:bg-slate-900 transition-colors duration-300">
     <!-- Main Content -->
     <main class="flex-1 flex flex-col overflow-hidden">
         <!-- Top Navbar -->
-        <header class="shrink-0 bg-surface/90 dark:bg-slate-900/90 backdrop-blur-md z-40 border-b border-surface-variant dark:border-slate-800 flex items-center justify-between px-6 py-2.5 print:hidden">
-            <div class="flex items-center"><img src="data:image/png;base64,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" alt="Logo APN" class="h-9 w-auto" /></div>
+        <header
+            class="shrink-0 bg-surface/90 dark:bg-slate-900/90 backdrop-blur-md z-40 border-b border-surface-variant dark:border-slate-800 flex items-center justify-between px-6 py-2.5 print:hidden">
+            <div class="flex items-center"><img
+                    src="data:image/png;base64,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"
+                    alt="Logo APN" class="h-9 w-auto" /></div>
             <h3 id="chartTitle" class="text-[20px] font-bold text-on-surface dark:text-white text-center flex-1"></h3>
             <div class="flex items-center gap-6 mr-16">
                 <!-- Back Button -->
-                <button onclick="window.parent.bukaRealisasi()" class="flex items-center gap-1.5 bg-primary/10 dark:bg-emerald-950/40 text-primary dark:text-emerald-400 px-3.5 py-1.5 rounded-full font-bold text-xs hover:bg-primary hover:text-white transition-all pointer-events-auto" title="Kembali ke Realisasi">
+                <button onclick="window.parent.bukaRealisasi()"
+                    class="flex items-center gap-1.5 bg-primary/10 dark:bg-emerald-950/40 text-primary dark:text-emerald-400 px-3.5 py-1.5 rounded-full font-bold text-xs hover:bg-primary hover:text-white transition-all pointer-events-auto"
+                    title="Kembali ke Realisasi">
                     <span class="material-symbols-outlined text-xs">arrow_back</span> Kembali
                 </button>
-                <!-- Print Button -->
-                <button onclick="window.print()" class="flex items-center gap-1.5 bg-primary-container text-white px-3.5 py-1.5 rounded-full font-bold text-xs hover:bg-primary transition-all pointer-events-auto" title="Cetak Halaman (Print / PDF)">
-                    <span class="material-symbols-outlined text-xs">print</span> Cetak
+                <!-- Table View Button -->
+                <button onclick="openTableModal()"
+                    class="flex items-center gap-1.5 bg-primary-container text-white px-3.5 py-1.5 rounded-full font-bold text-xs hover:bg-primary transition-all pointer-events-auto"
+                    title="Tampilkan Tabel Estimasi">
+                    <span class="material-symbols-outlined text-xs">table_chart</span> Tabel Rencana &amp; Estimasi
                 </button>
             </div>
         </header>
@@ -201,70 +230,87 @@
         <!-- Infografis Container -->
         <div class="flex-1 overflow-y-auto scrollbar-hide px-5 py-3 flex flex-col gap-3">
             <div class="flex flex-col gap-0.5">
-                <h2 class="font-headline-lg text-[18px] font-bold text-on-surface dark:text-white leading-tight">INFOGRAFIS RENCANA PANEN &amp; ESTIMASI PANEN</h2>
+                <h2 class="font-headline-lg text-[18px] font-bold text-on-surface dark:text-white leading-tight">
+                    INFOGRAFIS RENCANA PANEN &amp; ESTIMASI PANEN</h2>
                 <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-2 bg-primary-container/10 dark:bg-emerald-950/40 px-3.5 py-1.5 rounded-full text-primary dark:text-emerald-400">
+                    <div
+                        class="flex items-center gap-2 bg-primary-container/10 dark:bg-emerald-950/40 px-3.5 py-1.5 rounded-full text-primary dark:text-emerald-400">
                         <span class="material-symbols-outlined text-sm">calendar_today</span>
-                        <input type="date" id="dateDisplay" class="bg-transparent border-none text-sm font-bold text-primary dark:text-emerald-400 p-0 focus:ring-0 outline-none cursor-pointer" style="color-scheme: light dark; width: 130px; font-family: inherit;" />
+                        <input type="date" id="dateDisplay"
+                            class="bg-transparent border-none text-sm font-bold text-primary dark:text-emerald-400 p-0 focus:ring-0 outline-none cursor-pointer"
+                            style="color-scheme: light dark; width: 130px; font-family: inherit;" />
                     </div>
-                    <p class="text-sm text-on-surface-variant italic dark:text-slate-400">Sumber: Monitoring Rencana Panen</p>
+                    <p class="text-sm text-on-surface-variant italic dark:text-slate-400">Sumber: Monitoring Rencana
+                        Panen</p>
                 </div>
             </div>
 
             <!-- 1. Metric Summary Row -->
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-                <div class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
+                <div
+                    class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
                     <span class="material-symbols-outlined text-primary dark:text-emerald-400 mb-1">sync</span>
-                    <p class="text-[10px] font-label-caps text-on-surface-variant uppercase mb-1">Estimasi Restan Lalu</p>
+                    <p class="text-[10px] font-label-caps text-on-surface-variant uppercase mb-1">Estimasi Restan Lalu
+                    </p>
                     <p id="statRestanLalu" class="text-lg font-bold text-on-surface dark:text-white">-</p>
                     <p class="text-[11px] text-on-surface-variant">Kg</p>
                 </div>
-                <div class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
+                <div
+                    class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
                     <span class="material-symbols-outlined text-primary dark:text-emerald-400 mb-1">potted_plant</span>
                     <p class="text-[10px] font-label-caps text-on-surface-variant uppercase mb-1">Luas Panen</p>
                     <p id="statLuasPanen" class="text-lg font-bold text-on-surface dark:text-white">-</p>
                     <p class="text-[11px] text-on-surface-variant">Ha</p>
                 </div>
-                <div class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
+                <div
+                    class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
                     <span class="material-symbols-outlined text-primary dark:text-emerald-400 mb-1">groups</span>
                     <p class="text-[10px] font-label-caps text-on-surface-variant uppercase mb-1">TK Panen</p>
                     <p id="statTkPanen" class="text-lg font-bold text-on-surface dark:text-white">-</p>
                     <p class="text-[11px] text-on-surface-variant">HK</p>
                 </div>
-                <div class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
+                <div
+                    class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
                     <span class="material-symbols-outlined text-primary dark:text-emerald-400 mb-1">agriculture</span>
                     <p class="text-[10px] font-label-caps text-on-surface-variant uppercase mb-1">Estimasi Panen</p>
                     <p id="statEstimasiPanen" class="text-lg font-bold text-on-surface dark:text-white">-</p>
                     <p class="text-[11px] text-on-surface-variant">Kg</p>
                 </div>
-                <div class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
+                <div
+                    class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
                     <span class="material-symbols-outlined text-primary dark:text-emerald-400 mb-1">speed</span>
                     <p class="text-[10px] font-label-caps text-on-surface-variant uppercase mb-1">Output Rata-rata</p>
                     <p id="statOutputPanen" class="text-lg font-bold text-on-surface dark:text-white">-</p>
                     <p class="text-[11px] text-on-surface-variant">Kg/HK</p>
                 </div>
-                <div class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
-                    <span class="material-symbols-outlined text-primary dark:text-emerald-400 mb-1">local_shipping</span>
+                <div
+                    class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
+                    <span
+                        class="material-symbols-outlined text-primary dark:text-emerald-400 mb-1">local_shipping</span>
                     <p class="text-[10px] font-label-caps text-on-surface-variant uppercase mb-1">Estimasi Kirim</p>
                     <p id="statEstimasiKirim" class="text-lg font-bold text-on-surface dark:text-white">-</p>
                     <p class="text-[11px] text-on-surface-variant">Kg</p>
                 </div>
-                <div class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
+                <div
+                    class="bg-surface-container-lowest py-2.5 px-3 rounded-xl border border-outline-variant flex flex-col items-center text-center">
                     <span class="material-symbols-outlined text-primary dark:text-emerald-400 mb-1">inventory_2</span>
-                    <p class="text-[10px] font-label-caps text-on-surface-variant uppercase mb-1">Estimasi Sisa Restan</p>
+                    <p class="text-[10px] font-label-caps text-on-surface-variant uppercase mb-1">Estimasi Sisa Restan
+                    </p>
                     <p id="statEstimasiRestan" class="text-lg font-bold text-on-surface dark:text-white">-</p>
                     <p class="text-[11px] text-on-surface-variant">Kg</p>
                 </div>
             </div>
 
-             <!-- 2. Detailed Analysis Section Grid -->
+            <!-- 2. Detailed Analysis Section Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 flex-1 min-h-0" style="grid-template-rows: 1fr auto;">
                 <!-- Kontributor Utama Estimasi Panen -->
-                <div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
+                <div
+                    class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
                     <div class="bg-primary px-5 py-2.5 flex items-center gap-3 shrink-0">
                         <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">1</span>
                         <span class="material-symbols-outlined text-white text-xl">bar_chart</span>
-                        <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Kontributor Utama Estimasi Panen</h3>
+                        <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Kontributor Utama
+                            Estimasi Panen</h3>
                     </div>
                     <div class="p-4 flex-1 overflow-hidden min-h-0">
                         <div id="contributorContainer" class="space-y-2 overflow-y-auto scrollbar-hide h-full">
@@ -274,11 +320,13 @@
                 </div>
 
                 <!-- Restan Awal Tertinggi -->
-                <div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
+                <div
+                    class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
                     <div class="bg-red-600 px-5 py-2.5 flex items-center gap-3 shrink-0">
                         <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">2</span>
                         <span class="material-symbols-outlined text-white text-xl">list_alt</span>
-                        <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Restan Awal Tertinggi</h3>
+                        <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Restan Awal
+                            Tertinggi</h3>
                     </div>
                     <div class="p-4 flex-1 overflow-hidden min-h-0">
                         <div id="restanAwalContainer" class="space-y-2 overflow-y-auto scrollbar-hide h-full">
@@ -288,11 +336,13 @@
                 </div>
 
                 <!-- Output Panen Menonjol -->
-                <div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
+                <div
+                    class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
                     <div class="bg-primary px-5 py-2.5 flex items-center gap-3 shrink-0">
                         <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">3</span>
                         <span class="material-symbols-outlined text-white text-xl">emoji_events</span>
-                        <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Output Panen Tertinggi</h3>
+                        <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Output Panen
+                            Tertinggi</h3>
                     </div>
                     <div class="p-4 flex-1 overflow-hidden min-h-0">
                         <div id="outputContainer" class="space-y-2 overflow-y-auto scrollbar-hide h-full">
@@ -302,19 +352,23 @@
                 </div>
 
                 <!-- Sorotan Utama (Full Width) -->
-                <div class="lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
+                <div
+                    class="lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
                     <div class="bg-primary px-5 py-2.5 flex items-center gap-3 shrink-0">
                         <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">4</span>
                         <span class="material-symbols-outlined text-white text-xl">stars</span>
                         <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Sorotan Utama</h3>
                     </div>
                     <div class="p-5 flex-1 relative overflow-hidden min-h-0">
-                        <div id="highlightContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10 overflow-y-auto scrollbar-hide h-full">
+                        <div id="highlightContainer"
+                            class="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10 overflow-y-auto scrollbar-hide h-full">
                             <!-- Populated dynamically -->
                         </div>
                         <!-- Subtle Leaf Decoration Pattern -->
-                        <div class="absolute bottom-[-20px] right-[-20px] opacity-10 pointer-events-none dark:opacity-5">
-                            <span class="material-symbols-outlined text-[180px] text-primary dark:text-emerald-500">potted_plant</span>
+                        <div
+                            class="absolute bottom-[-20px] right-[-20px] opacity-10 pointer-events-none dark:opacity-5">
+                            <span
+                                class="material-symbols-outlined text-[180px] text-primary dark:text-emerald-500">potted_plant</span>
                         </div>
                     </div>
                 </div>
@@ -323,15 +377,106 @@
         </div>
     </main>
 
-    <!-- Dynamic Loader/Binding Javascript -->
+    <!-- Modal Table Rencana & Estimasi -->
+    <div id="tableModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant dark:border-slate-800 max-w-7xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-outline-variant dark:border-slate-800 flex items-center justify-between bg-primary text-white">
+                <h3 class="font-bold text-lg">Tabel Rencana &amp; Estimasi Panen</h3>
+                <button onclick="closeTableModal()" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+            </div>
+            <!-- Modal Body -->
+            <div class="p-4 overflow-auto flex-1 bg-surface-container-lowest dark:bg-slate-900">
+                <!-- Filter Bar: Tanggal & Region -->
+                <div class="flex flex-wrap items-center gap-3 mb-3 px-1">
+                    <div class="flex items-center gap-2 bg-primary/10 dark:bg-slate-800 border border-primary/20 dark:border-slate-700 rounded-lg px-3 py-1.5">
+                        <span class="material-symbols-outlined text-primary dark:text-emerald-400 text-base">calendar_today</span>
+                        <label class="text-xs font-bold text-on-surface dark:text-slate-300">Tanggal:</label>
+                        <input type="date" id="modalDatePicker"
+                            class="bg-transparent border-none text-xs font-bold text-primary dark:text-emerald-400 outline-none cursor-pointer"
+                            style="color-scheme: light dark;" />
+                    </div>
+                    <div class="flex items-center gap-2 bg-primary/10 dark:bg-slate-800 border border-primary/20 dark:border-slate-700 rounded-lg px-3 py-1.5">
+                        <span class="material-symbols-outlined text-primary dark:text-emerald-400 text-base">location_on</span>
+                        <label class="text-xs font-bold text-on-surface dark:text-slate-300">Regional:</label>
+                        <select id="modalRegionSelect"
+                            class="bg-transparent border-none text-xs font-bold text-primary dark:text-emerald-400 outline-none cursor-pointer">
+                            <option value="ALL">-- Semua Regional --</option>
+                            <option value="Aceh">Aceh</option>
+                            <option value="Sumatera Utara 1">Sumatera Utara 1</option>
+                            <option value="Sumatera Utara 2 Ex Torganda">Sumatera Utara 2 Ex Torganda</option>
+                            <option value="Riau 1">Riau 1</option>
+                            <option value="Riau 2">Riau 2</option>
+                            <option value="Riau 3">Riau 3</option>
+                            <option value="Riau 4">Riau 4</option>
+                            <option value="Bangka Belitung">Bangka Belitung</option>
+                            <option value="Jambi">Jambi</option>
+                            <option value="Sumatera Barat">Sumatera Barat</option>
+                            <option value="Sumatera Selatan">Sumatera Selatan</option>
+                            <option value="Kalimantan Barat 1">Kalimantan Barat 1</option>
+                            <option value="Kalimantan Barat 2">Kalimantan Barat 2</option>
+                            <option value="Kalimantan Selatan 1">Kalimantan Selatan 1</option>
+                            <option value="Kalimantan Selatan 2">Kalimantan Selatan 2</option>
+                            <option value="Kalimantan Timur">Kalimantan Timur</option>
+                            <option value="Kalimantan Utara">Kalimantan Utara</option>
+                            <option value="Kalimantan Tengah 1">Kalimantan Tengah 1</option>
+                            <option value="Kalimantan Tengah 2">Kalimantan Tengah 2</option>
+                            <option value="Kalimantan Tengah 3">Kalimantan Tengah 3</option>
+                            <option value="Sulawesi Tenggara">Sulawesi Tenggara</option>
+                            <option value="Sulawesi Tengah">Sulawesi Tengah</option>
+                        </select>
+                    </div>
+                    <span id="modalRowCount" class="text-xs text-on-surface-variant dark:text-slate-400 ml-auto"></span>
+                </div>
+                <div class="overflow-x-auto border border-outline-variant dark:border-slate-800 rounded-lg">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <!-- Table Header -->
+                        <thead>
+                            <tr class="bg-sky-600 text-white font-bold text-center">
+                                <th rowspan="2" class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-xs">NO.</th>
+                                <th rowspan="2" class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-xs min-w-[180px] text-left">NAMA REGIONAL</th>
+                                <th colspan="8" class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-xs">RENCANA PANEN DAN ESTIMASI PANEN</th>
+                            </tr>
+                            <tr class="bg-sky-500 text-white font-semibold text-center text-xs">
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Luas Lahan Planted (Ha)</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Estimasi Restan Lalu</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Luas Panen (Ha)</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">TK Panen (Hk)</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Estimasi Panen (Kg)</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Output Panen (Kg/Hk)</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Estimasi Kirim (Kg)</th>
+                                <th class="border border-outline-variant dark:border-slate-700 px-3 py-2">Estimasi Restan (Kg)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalTableBody" class="text-on-surface dark:text-slate-200">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-amber-100 dark:bg-amber-950/60 font-bold text-right text-on-surface dark:text-white">
+                                <!-- Totals populated dynamically -->
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Global data cache for table modal
+        let globalAllEstimasi = {};
+        let globalSelectedDate = "";
+        let globalFetchId = 0;
+
         // Dark Mode sync
         function syncTheme() {
             let currentTheme = "light";
             try {
                 currentTheme = window.parent.document.documentElement.getAttribute("data-theme") || "light";
-            } catch(e) {}
-            
+            } catch (e) { }
+
             if (currentTheme === "dark") {
                 document.documentElement.classList.add("dark");
                 document.documentElement.setAttribute("data-theme", "dark");
@@ -340,14 +485,17 @@
                 document.documentElement.setAttribute("data-theme", "light");
             }
         }
-        
+
         // Execute immediately
         syncTheme();
         document.addEventListener("DOMContentLoaded", syncTheme);
 
         function loadDataForDate(tanggal) {
             if (!tanggal) return;
-            
+
+            globalSelectedDate = tanggal;
+            const currentFetchId = ++globalFetchId;
+
             let region = "ALL";
             try {
                 const raw = sessionStorage.getItem("agripam_session");
@@ -360,7 +508,7 @@
             } catch (e) {
                 console.log("Could not read session:", e);
             }
-            
+
             // Update header title
             const titleEl = document.getElementById("chartTitle");
             if (titleEl) {
@@ -370,16 +518,18 @@
                     titleEl.textContent = region;
                 }
             }
-            
+
             let fetchRegion = region;
             if (region === "ADMIN" || region === "ALL") {
                 fetchRegion = "ALL";
             }
-            
+
             const url = `/api/getEstimasi?tanggal=${tanggal}&region=${fetchRegion}`;
             fetch(url)
                 .then(res => res.json())
                 .then(res => {
+                    if (currentFetchId !== globalFetchId) return; // ignore stale fetch responses
+
                     if (res.success && res.exists) {
                         if (fetchRegion !== "ALL") {
                             // For a specific regional user, wrap the response data in allEstimasi structure
@@ -400,14 +550,21 @@
                     } else {
                         showNoData();
                     }
+
+                    // If the modal is currently open, we should re-render the modal table
+                    const modal = document.getElementById("tableModal");
+                    if (modal && !modal.classList.contains("hidden")) {
+                        openTableModal();
+                    }
                 })
                 .catch(err => {
+                    if (currentFetchId !== globalFetchId) return; // ignore stale fetch responses
                     console.error("Error loading estimasi data:", err);
                     showNoData();
                 });
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             // Get date from parent page (prefer tanggalEstimasi, fallback to tanggal)
             let tanggal = "";
             try {
@@ -418,7 +575,7 @@
             } catch (e) {
                 console.log("Could not read date from parent, using current date");
             }
-            
+
             if (!tanggal) {
                 const now = new Date();
                 const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -428,18 +585,21 @@
                 const dd = String(wibTime.getDate()).padStart(2, '0');
                 tanggal = yyyy + "-" + MM + "-" + dd;
             }
-            
+
             const dateInput = document.getElementById("dateDisplay");
             dateInput.value = tanggal;
-            
+
             // Initial load
             loadDataForDate(tanggal);
-            
-            // On date change listener
-            dateInput.addEventListener("change", function() {
+
+            // On dateDisplay change: sync to modal date picker + parent
+            dateInput.addEventListener("change", function () {
                 const newDate = this.value;
                 if (newDate) {
                     loadDataForDate(newDate);
+                    // Sync to modal date picker
+                    const modalPicker = document.getElementById("modalDatePicker");
+                    if (modalPicker) modalPicker.value = newDate;
                     // Sync date picker value back to parent dashboard fields
                     try {
                         const parentEstInput = window.parent.document.getElementById("tanggalEstimasi");
@@ -457,18 +617,64 @@
                     }
                 }
             });
+
+            // On modal date picker change listener
+            const modalDatePicker = document.getElementById("modalDatePicker");
+            if (modalDatePicker) {
+                modalDatePicker.addEventListener("change", function() {
+                    const newDate = this.value;
+                    if (newDate) {
+                        // Sync back to main infografis date display
+                        const mainDateDisplay = document.getElementById("dateDisplay");
+                        if (mainDateDisplay) {
+                            mainDateDisplay.value = newDate;
+                        }
+                        // Sync date picker value back to parent dashboard fields
+                        try {
+                            const parentEstInput = window.parent.document.getElementById("tanggalEstimasi");
+                            if (parentEstInput) {
+                                parentEstInput.value = newDate;
+                                parentEstInput.dispatchEvent(new Event('change'));
+                            }
+                            const parentInput = window.parent.document.getElementById("tanggal");
+                            if (parentInput) {
+                                parentInput.value = newDate;
+                                parentInput.dispatchEvent(new Event('change'));
+                            }
+                        } catch (e) {
+                            console.log("Could not sync date back to parent:", e);
+                        }
+                        loadDataForDate(newDate);
+                    }
+                });
+            }
+
+            // On modal region select change listener — re-render without new fetch
+            const modalRegionSelect = document.getElementById("modalRegionSelect");
+            if (modalRegionSelect) {
+                modalRegionSelect.addEventListener("change", function() {
+                    const modal = document.getElementById("tableModal");
+                    if (modal && !modal.classList.contains("hidden")) {
+                        openTableModal();
+                    }
+                });
+            }
         });
 
         function populateData(allEstimasi) {
+            // Cache data for modal rendering
+            globalAllEstimasi = allEstimasi;
+            globalSelectedDate = document.getElementById("dateDisplay").value;
+
             let totalRestanLalu = 0;
             let totalLuasPanen = 0;
             let totalTkPanen = 0;
             let totalEstimasiPanen = 0;
             let totalEstimasiKirim = 0;
             let totalEstimasiRestan = 0;
-            
+
             const regionsData = [];
-            
+
             for (const [region, data] of Object.entries(allEstimasi)) {
                 totalRestanLalu += parseFloat(data.restanLalu) || 0;
                 totalLuasPanen += parseFloat(data.luasPanen) || 0;
@@ -476,7 +682,7 @@
                 totalEstimasiPanen += parseFloat(data.estPanen) || 0;
                 totalEstimasiKirim += parseFloat(data.estKirim) || 0;
                 totalEstimasiRestan += parseFloat(data.estRestan) || 0;
-                
+
                 regionsData.push({
                     name: region,
                     restanLalu: parseFloat(data.restanLalu) || 0,
@@ -488,9 +694,9 @@
                     estRestan: parseFloat(data.estRestan) || 0
                 });
             }
-            
+
             const avgOutputPanen = totalTkPanen > 0 ? (totalEstimasiPanen / totalTkPanen) : 0;
-            
+
             const formatNumber = (num) => {
                 return new Intl.NumberFormat('id-ID').format(Math.round(num));
             };
@@ -498,7 +704,7 @@
             const formatDecimal = (num) => {
                 return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
             };
-            
+
             document.getElementById("statRestanLalu").textContent = formatNumber(totalRestanLalu);
             document.getElementById("statLuasPanen").textContent = formatNumber(totalLuasPanen);
             document.getElementById("statTkPanen").textContent = formatNumber(totalTkPanen);
@@ -506,49 +712,49 @@
             document.getElementById("statOutputPanen").textContent = formatDecimal(avgOutputPanen);
             document.getElementById("statEstimasiKirim").textContent = formatNumber(totalEstimasiKirim);
             document.getElementById("statEstimasiRestan").textContent = formatNumber(totalEstimasiRestan);
-            
+
             // Contributors list (up to 5 items to match layout height)
             const contributors = [...regionsData]
                 .filter(r => r.estPanen > 0)
                 .sort((a, b) => b.estPanen - a.estPanen)
                 .slice(0, 5);
-                
+
             const contributorContainer = document.getElementById("contributorContainer");
             contributorContainer.innerHTML = "";
-            
+
             if (contributors.length > 0) {
                 contributors.forEach((c, idx) => {
                     contributorContainer.innerHTML += `
-                        <div class="flex items-center justify-between py-1 border-b border-outline-variant text-xs">
+                        <div class="flex items-center justify-between py-1.5 border-b border-outline-variant text-[14px]">
                             <span class="font-bold text-gray-700 dark:text-slate-300">${idx + 1}. ${c.name}</span>
-                            <span class="font-semibold text-primary dark:text-emerald-400">${formatDecimal(c.estPanen / 1000)} Ton</span>
+                            <span class="font-bold text-primary dark:text-emerald-400">${formatDecimal(c.estPanen / 1000)} Ton</span>
                         </div>
                     `;
                 });
             } else {
-                contributorContainer.innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-4 font-sans">Belum ada kontribusi data estimasi.</p>';
+                contributorContainer.innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-sm py-4 font-sans">Belum ada kontribusi data estimasi.</p>';
             }
-            
+
             // Restan Awal list (up to 5 items)
             const restanAwals = [...regionsData]
                 .filter(r => r.restanLalu > 0)
                 .sort((a, b) => b.restanLalu - a.restanLalu)
                 .slice(0, 5);
-                
+
             const restanAwalContainer = document.getElementById("restanAwalContainer");
             restanAwalContainer.innerHTML = "";
-            
+
             if (restanAwals.length > 0) {
                 restanAwals.forEach((r, idx) => {
                     restanAwalContainer.innerHTML += `
-                        <div class="flex items-center justify-between py-1 border-b border-outline-variant text-xs">
+                        <div class="flex items-center justify-between py-1.5 border-b border-outline-variant text-[14px]">
                             <span class="font-bold text-gray-700 dark:text-slate-300">${idx + 1}. ${r.name}</span>
-                            <span class="font-semibold text-red-600 dark:text-red-400">${formatDecimal(r.restanLalu / 1000)} Ton</span>
+                            <span class="font-bold text-red-600 dark:text-red-400">${formatDecimal(r.restanLalu / 1000)} Ton</span>
                         </div>
                     `;
                 });
             } else {
-                restanAwalContainer.innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-4">Tidak ada restan awal.</p>';
+                restanAwalContainer.innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-sm py-4">Tidak ada restan awal.</p>';
             }
 
             // Output Panen list (up to 5 items)
@@ -556,33 +762,33 @@
                 .filter(r => r.outPanen > 0)
                 .sort((a, b) => b.outPanen - a.outPanen)
                 .slice(0, 5);
-                
+
             const outputContainer = document.getElementById("outputContainer");
             outputContainer.innerHTML = "";
-            
+
             if (outputs.length > 0) {
                 outputs.forEach((r, idx) => {
                     outputContainer.innerHTML += `
-                        <div class="flex items-center justify-between py-1 border-b border-outline-variant text-xs">
+                        <div class="flex items-center justify-between py-1.5 border-b border-outline-variant text-[14px]">
                             <span class="font-bold text-gray-700 dark:text-slate-300">${idx + 1}. ${r.name}</span>
-                            <span class="font-semibold text-primary dark:text-emerald-400">${formatDecimal(r.outPanen / 1000)} Ton</span>
+                            <span class="font-bold text-primary dark:text-emerald-400">${formatDecimal(r.outPanen)} Kg/Hk</span>
                         </div>
                     `;
                 });
             } else {
-                outputContainer.innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-4">Tidak ada data output panen.</p>';
+                outputContainer.innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-sm py-4">Tidak ada data output panen.</p>';
             }
-            
+
             // Highlights list
             const highlightContainer = document.getElementById("highlightContainer");
             highlightContainer.innerHTML = "";
-            
+
             if (contributors.length > 0) {
                 const topContr = contributors[0].name;
                 let listContrText = topContr;
                 if (contributors.length > 1) listContrText += `, ${contributors[1].name}`;
                 if (contributors.length > 2) listContrText += `, dan ${contributors[2].name}`;
-                
+
                 highlightContainer.innerHTML += `
                     <div class="flex gap-4">
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary dark:bg-emerald-800/80 flex items-center justify-center text-white">
@@ -592,7 +798,7 @@
                     </div>
                 `;
             }
-            
+
             const totalKirimTon = totalEstimasiKirim / 1000;
             const kirimText = formatDecimal(totalKirimTon);
             highlightContainer.innerHTML += `
@@ -603,7 +809,7 @@
                     <p class="text-sm text-on-surface-variant dark:text-slate-300 leading-relaxed pt-1">Estimasi kirim total mencapai <span class="text-primary dark:text-emerald-400 font-bold">${kirimText} Ton</span>, lebih tinggi dari estimasi panen karena adanya restan awal.</p>
                 </div>
             `;
-            
+
             const inactiveRegions = regionsData.filter(r => r.estPanen === 0).map(r => r.name);
             if (inactiveRegions.length > 0) {
                 highlightContainer.innerHTML += `
@@ -627,6 +833,8 @@
         }
 
         function showNoData() {
+            globalAllEstimasi = {}; // Clear cached data so modal table resets
+            
             document.getElementById("statRestanLalu").textContent = "0";
             document.getElementById("statLuasPanen").textContent = "0";
             document.getElementById("statTkPanen").textContent = "0";
@@ -634,11 +842,11 @@
             document.getElementById("statOutputPanen").textContent = "0.00";
             document.getElementById("statEstimasiKirim").textContent = "0";
             document.getElementById("statEstimasiRestan").textContent = "0";
-            
+
             document.getElementById("contributorContainer").innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-4 font-sans">Tidak ada data estimasi.</p>';
             document.getElementById("restanAwalContainer").innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-4">Tidak ada data restan awal.</p>';
             document.getElementById("outputContainer").innerHTML = '<p class="text-center text-gray-400 dark:text-slate-500 text-xs py-4">Tidak ada data output panen.</p>';
-            
+
             document.getElementById("highlightContainer").innerHTML = `
                 <div class="flex gap-4">
                     <div class="flex-shrink-0 w-8 h-8 rounded-full bg-red-650 flex items-center justify-center text-white">
@@ -648,6 +856,206 @@
                 </div>
             `;
         }
+
+        // Table modal toggle functions
+        function openTableModal() {
+            const modal = document.getElementById("tableModal");
+            const tbody = document.getElementById("modalTableBody");
+            const tfoot = document.querySelector("#tableModal tfoot tr");
+
+            // Read session region
+            let sessionRegion = "ALL";
+            try {
+                const raw = sessionStorage.getItem("agripam_session");
+                if (raw) {
+                    const s = JSON.parse(raw);
+                    if (s && s.region) sessionRegion = s.region;
+                }
+            } catch(e) {}
+
+            const isRegionalUser = (sessionRegion !== "ADMIN" && sessionRegion !== "ALL");
+
+            // Lock or show the region dropdown
+            const filterSelect = document.getElementById("modalRegionSelect");
+            const filterSelectWrapper = filterSelect ? filterSelect.closest("div") : null;
+            if (filterSelect) {
+                if (isRegionalUser) {
+                    // Regional account: force-select only their region and hide the selector
+                    filterSelect.value = sessionRegion;
+                    if (filterSelectWrapper) filterSelectWrapper.style.display = "none";
+                } else {
+                    // Admin/ALL: show dropdown
+                    if (filterSelectWrapper) filterSelectWrapper.style.display = "";
+                }
+            }
+
+            // Sync date input value to filter bar picker
+            const dateInput = document.getElementById("modalDatePicker");
+            if (dateInput) {
+                dateInput.value = globalSelectedDate;
+            }
+
+            tbody.innerHTML = "";
+            tfoot.innerHTML = "";
+
+            // Get currently selected filter region (already locked above for regional users)
+            const filterRegion = filterSelect ? filterSelect.value : "ALL";
+
+            const allRegionsList = [
+                "Aceh",
+                "Sumatera Utara 1",
+                "Sumatera Utara 2 Ex Torganda",
+                "Riau 1",
+                "Riau 2",
+                "Riau 3",
+                "Riau 4",
+                "Bangka Belitung",
+                "Jambi",
+                "Sumatera Barat",
+                "Sumatera Selatan",
+                "Kalimantan Barat 1",
+                "Kalimantan Barat 2",
+                "Kalimantan Selatan 1",
+                "Kalimantan Selatan 2",
+                "Kalimantan Utara",
+                "Kalimantan Timur",
+                "Kalimantan Tengah 1",
+                "Kalimantan Tengah 2",
+                "Kalimantan Tengah 3",
+                "Sulawesi Tengah",
+                "Sulawesi Tenggara"
+            ];
+
+            const luasPlantedMap = {
+                "Aceh": 1257,
+                "Sumatera Utara 1": 6498,
+                "Sumatera Utara 2 Ex Torganda": 46678,
+                "Riau 1": 65723,
+                "Riau 2": 48102,
+                "Riau 3": 4703,
+                "Riau 4": 38121,
+                "Bangka Belitung": 568,
+                "Jambi": 566,
+                "Sumatera Barat": 2742,
+                "Sumatera Selatan": 8713,
+                "Kalimantan Barat 1": 77956,
+                "Kalimantan Barat 2": 12993,
+                "Kalimantan Selatan 1": 4772,
+                "Kalimantan Selatan 2": 2850,
+                "Kalimantan Utara": 3562,
+                "Kalimantan Timur": 1145,
+                "Kalimantan Tengah 1": 63248,
+                "Kalimantan Tengah 2": 31222,
+                "Kalimantan Tengah 3": 17355,
+                "Sulawesi Tengah": 3231,
+                "Sulawesi Tenggara": 2117
+            };
+
+            let sumPlanted = 0;
+            let sumRestanLalu = 0;
+            let sumLuasPanen = 0;
+            let sumTkPanen = 0;
+            let sumEstPanen = 0;
+            let sumEstKirim = 0;
+            let sumEstRestan = 0;
+
+            const formatNumber = (num) => {
+                return new Intl.NumberFormat('id-ID').format(Math.round(num));
+            };
+
+            let rowDisplayNumber = 1;
+
+            allRegionsList.forEach((regionName, idx) => {
+                // Filter: if a specific regional is selected, skip non-matching rows
+                if (filterRegion !== "ALL" && regionName !== filterRegion) return;
+
+                const data = globalAllEstimasi[regionName] || {
+                    restanLalu: 0,
+                    luasPanen: 0,
+                    tkPanen: 0,
+                    estPanen: 0,
+                    outPanen: 0,
+                    estKirim: 0,
+                    estRestan: 0
+                };
+
+                const planted = luasPlantedMap[regionName] || 0;
+                const restanLalu = parseFloat(data.restanLalu) || 0;
+                const luasPanen = parseFloat(data.luasPanen) || 0;
+                const tkPanen = parseFloat(data.tkPanen) || 0;
+                const estPanen = parseFloat(data.estPanen) || 0;
+                const outPanen = parseFloat(data.outPanen) || 0;
+                const estKirim = parseFloat(data.estKirim) || 0;
+                const estRestan = parseFloat(data.estRestan) || 0;
+
+                sumPlanted += planted;
+                sumRestanLalu += restanLalu;
+                sumLuasPanen += luasPanen;
+                sumTkPanen += tkPanen;
+                sumEstPanen += estPanen;
+                sumEstKirim += estKirim;
+                sumEstRestan += estRestan;
+
+                // Check if there is NO input at all
+                const hasNoInput = (restanLalu === 0 && luasPanen === 0 && tkPanen === 0 && estPanen === 0);
+
+                // Use inline styles to guarantee color rendering (Tailwind purge won't affect inline)
+                const regionCellStyle = hasNoInput
+                    ? 'background-color:#dc2626;color:#ffffff;font-weight:700;'
+                    : 'background-color:#16a34a;color:#ffffff;font-weight:700;';
+
+                const statusIcon = hasNoInput
+                    ? '&#9711;'   // circle = belum isi
+                    : '&#10003;'; // checkmark = sudah isi
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <td class="border border-outline-variant dark:border-slate-800 px-3 py-1 text-center font-bold">${rowDisplayNumber++}</td>
+                        <td class="border border-outline-variant px-3 py-1.5 text-left" style="${regionCellStyle}">
+                            <span style="margin-right:6px;font-size:13px;">${statusIcon}</span>${regionName}
+                        </td>
+                        <td class="border border-outline-variant dark:border-slate-800 px-3 py-1 text-right">${planted > 0 ? formatNumber(planted) : '0'}</td>
+                        <td class="border border-outline-variant dark:border-slate-800 px-3 py-1 text-right">${restanLalu > 0 ? formatNumber(restanLalu) : '0'}</td>
+                        <td class="border border-outline-variant dark:border-slate-800 px-3 py-1 text-right">${luasPanen > 0 ? formatNumber(luasPanen) : '0'}</td>
+                        <td class="border border-outline-variant dark:border-slate-800 px-3 py-1 text-right">${tkPanen > 0 ? formatNumber(tkPanen) : '0'}</td>
+                        <td class="border border-outline-variant dark:border-slate-800 px-3 py-1 text-right">${estPanen > 0 ? formatNumber(estPanen) : '0'}</td>
+                        <td class="border border-outline-variant dark:border-slate-800 px-3 py-1 text-right">${outPanen > 0 ? formatNumber(outPanen) : '0'}</td>
+                        <td class="border border-outline-variant dark:border-slate-800 px-3 py-1 text-right">${estKirim > 0 ? formatNumber(estKirim) : '0'}</td>
+                        <td class="border border-outline-variant dark:border-slate-800 px-3 py-1 text-right">${estRestan > 0 ? formatNumber(estRestan) : '0'}</td>
+                    </tr>
+                `;
+            });
+
+            // Update row count indicator
+            const rowCountEl = document.getElementById("modalRowCount");
+            if (rowCountEl) {
+                const totalRows = rowDisplayNumber - 1;
+                rowCountEl.textContent = filterRegion !== "ALL"
+                    ? `Menampilkan 1 regional`
+                    : `Menampilkan ${totalRows} dari 22 regional`;
+            }
+
+            const avgOutPanen = sumTkPanen > 0 ? (sumEstPanen / sumTkPanen) : 0;
+
+            tfoot.innerHTML = `
+                <td colspan="2" class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-center font-bold bg-amber-100 dark:bg-amber-950/60">TOTAL</td>
+                <td class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-right bg-amber-100 dark:bg-amber-950/60">${formatNumber(sumPlanted)}</td>
+                <td class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-right bg-amber-100 dark:bg-amber-950/60">${formatNumber(sumRestanLalu)}</td>
+                <td class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-right bg-amber-100 dark:bg-amber-950/60">${formatNumber(sumLuasPanen)}</td>
+                <td class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-right bg-amber-100 dark:bg-amber-950/60">${formatNumber(sumTkPanen)}</td>
+                <td class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-right bg-amber-100 dark:bg-amber-950/60">${formatNumber(sumEstPanen)}</td>
+                <td class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-right bg-amber-100 dark:bg-amber-950/60">${formatNumber(avgOutPanen)}</td>
+                <td class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-right bg-amber-100 dark:bg-amber-950/60">${formatNumber(sumEstKirim)}</td>
+                <td class="border border-outline-variant dark:border-slate-700 px-3 py-2 text-right bg-amber-100 dark:bg-amber-950/60">${formatNumber(sumEstRestan)}</td>
+            `;
+
+            modal.classList.remove("hidden");
+        }
+
+        function closeTableModal() {
+            document.getElementById("tableModal").classList.add("hidden");
+        }
     </script>
 </body>
+
 </html>
