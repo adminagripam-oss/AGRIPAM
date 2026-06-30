@@ -145,21 +145,33 @@
         @media print {
             @page {
                 size: A4 landscape;
-                margin: 6mm;
+                margin: 5mm;
             }
-            body {
+            html, body {
+                height: 100% !important;
+                overflow: hidden !important;
                 background-color: #ffffff !important;
                 color: #000000 !important;
+                width: 100% !important;
             }
-            aside {
+            aside, header {
                 display: none !important;
             }
             main {
                 margin-left: 0 !important;
                 padding-bottom: 0 !important;
+                height: 100% !important;
+                overflow: hidden !important;
+                width: 100% !important;
             }
-            header {
-                display: none !important;
+            /* Scale content to fit perfectly on A4 landscape */
+            main > div.flex-1 {
+                transform: scale(0.94);
+                transform-origin: top center;
+                width: 106% !important;
+                height: 100% !important;
+                overflow: hidden !important;
+                padding: 0 !important;
             }
             .print-header {
                 display: block !important;
@@ -250,7 +262,7 @@
                 <!-- Kontributor Utama Estimasi Panen -->
                 <div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
                     <div class="bg-primary px-5 py-2.5 flex items-center gap-3 shrink-0">
-                        <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">2</span>
+                        <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">1</span>
                         <span class="material-symbols-outlined text-white text-xl">bar_chart</span>
                         <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Kontributor Utama Estimasi Panen</h3>
                     </div>
@@ -275,7 +287,7 @@
                 <!-- Restan Awal Tertinggi -->
                 <div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
                     <div class="bg-primary px-5 py-2.5 flex items-center gap-3 shrink-0">
-                        <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">3</span>
+                        <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">2</span>
                         <span class="material-symbols-outlined text-white text-xl">list_alt</span>
                         <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Restan Awal Tertinggi</h3>
                     </div>
@@ -289,7 +301,7 @@
                 <!-- Sorotan Utama -->
                 <div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
                     <div class="bg-primary px-5 py-2.5 flex items-center gap-3 shrink-0">
-                        <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">4</span>
+                        <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">3</span>
                         <span class="material-symbols-outlined text-white text-xl">stars</span>
                         <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Sorotan Utama</h3>
                     </div>
@@ -307,7 +319,7 @@
                 <!-- Output Panen Menonjol (Full Width) -->
                 <div class="lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col min-h-0">
                     <div class="bg-primary px-5 py-2.5 flex items-center gap-3 shrink-0">
-                        <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">5</span>
+                        <span class="bg-white/20 p-1 rounded-lg text-white text-sm font-bold">4</span>
                         <span class="material-symbols-outlined text-white text-xl">emoji_events</span>
                         <h3 class="text-white font-headline-md text-[16px] uppercase tracking-wide">Output Panen Menonjol (Kg/HK)</h3>
                     </div>
@@ -510,17 +522,21 @@
                 });
             }
             
-            const avgOutputPanen = totalTkPanen > 0 ? Math.round(totalEstimasiPanen / totalTkPanen) : 0;
+            const avgOutputPanen = totalTkPanen > 0 ? (totalEstimasiPanen / totalTkPanen) : 0;
             
             const formatNumber = (num) => {
                 return new Intl.NumberFormat('id-ID').format(Math.round(num));
+            };
+
+            const formatDecimal = (num) => {
+                return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
             };
             
             document.getElementById("statRestanLalu").textContent = formatNumber(totalRestanLalu);
             document.getElementById("statLuasPanen").textContent = formatNumber(totalLuasPanen);
             document.getElementById("statTkPanen").textContent = formatNumber(totalTkPanen);
             document.getElementById("statEstimasiPanen").textContent = formatNumber(totalEstimasiPanen);
-            document.getElementById("statOutputPanen").textContent = formatNumber(avgOutputPanen);
+            document.getElementById("statOutputPanen").textContent = formatDecimal(avgOutputPanen);
             document.getElementById("statEstimasiKirim").textContent = formatNumber(totalEstimasiKirim);
             document.getElementById("statEstimasiRestan").textContent = formatNumber(totalEstimasiRestan);
             
@@ -706,13 +722,14 @@
                 `;
             }
             
-            const kirimText = (totalEstimasiKirim / 1000000).toFixed(2);
+            const totalKirimTon = totalEstimasiKirim / 1000;
+            const kirimText = formatDecimal(totalKirimTon);
             highlightContainer.innerHTML += `
                 <div class="flex gap-4">
                     <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary dark:bg-emerald-800/80 flex items-center justify-center text-white">
                         <span class="material-symbols-outlined text-sm">check</span>
                     </div>
-                    <p class="text-sm text-on-surface-variant dark:text-slate-300 leading-relaxed pt-1">Estimasi kirim total mencapai <span class="text-primary dark:text-emerald-400 font-bold">${kirimText} juta kg</span>, lebih tinggi dari estimasi panen karena adanya restan awal.</p>
+                    <p class="text-sm text-on-surface-variant dark:text-slate-300 leading-relaxed pt-1">Estimasi kirim total mencapai <span class="text-primary dark:text-emerald-400 font-bold">${kirimText} Ton</span>, lebih tinggi dari estimasi panen karena adanya restan awal.</p>
                 </div>
             `;
             
@@ -743,7 +760,7 @@
             document.getElementById("statLuasPanen").textContent = "0";
             document.getElementById("statTkPanen").textContent = "0";
             document.getElementById("statEstimasiPanen").textContent = "0";
-            document.getElementById("statOutputPanen").textContent = "0";
+            document.getElementById("statOutputPanen").textContent = "0.00";
             document.getElementById("statEstimasiKirim").textContent = "0";
             document.getElementById("statEstimasiRestan").textContent = "0";
             
