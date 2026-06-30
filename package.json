@@ -9,10 +9,10 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "express": "^5.2.1"
   },
   "devDependencies": {
-    "express": "^5.2.1",
     "vercel": "^37.0.0"
   }
 }
