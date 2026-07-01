@@ -196,7 +196,65 @@
 
             .print-header {
                 display: block !important;
+        }
+
+        /* iOS-style Modal Animation & Backdrop */
+        .ios-backdrop-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .ios-modal-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .ios-backdrop-enter {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .ios-backdrop-leave {
+            animation: fadeOut 0.4s ease forwards;
+        }
+
+        .ios-modal-enter {
+            animation: iosModalSlideIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .ios-modal-leave {
+            animation: iosModalSlideOut 0.4s ease-in forwards;
+        }
+
+        @keyframes iosModalSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-100vh);
             }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes iosModalSlideOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100vh);
+            }
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
         }
     </style>
 </head>
@@ -213,16 +271,22 @@
             <h3 id="chartTitle" class="text-[20px] font-bold text-on-surface dark:text-white text-center flex-1"></h3>
             <div class="flex items-center gap-6 mr-16">
                 <!-- Back Button -->
-                <button onclick="window.parent.bukaRealisasi()"
-                    class="flex items-center gap-1.5 bg-primary/10 dark:bg-emerald-950/40 text-primary dark:text-emerald-400 px-3.5 py-1.5 rounded-full font-bold text-xs hover:bg-primary hover:text-white transition-all pointer-events-auto"
+                <button onclick="if(window.parent && window.parent.bukaRealisasi) window.parent.bukaRealisasi();"
+                    class="flex items-center gap-1.5 bg-primary/10 dark:bg-emerald-950/40 text-primary dark:text-emerald-400 px-3.5 py-1.5 rounded-full font-bold text-xs hover:bg-primary hover:text-white hover:-translate-y-0.5 hover:scale-105 active:scale-95 hover:shadow-lg transition-all duration-300 pointer-events-auto"
                     title="Kembali ke Realisasi">
                     <span class="material-symbols-outlined text-xs">arrow_back</span> Kembali
                 </button>
                 <!-- Table View Button -->
                 <button onclick="openTableModal()"
-                    class="flex items-center gap-1.5 bg-primary-container text-white px-3.5 py-1.5 rounded-full font-bold text-xs hover:bg-primary transition-all pointer-events-auto"
+                    class="flex items-center gap-1.5 bg-primary-container text-white px-3.5 py-1.5 rounded-full font-bold text-xs hover:bg-primary hover:-translate-y-0.5 hover:scale-105 active:scale-95 hover:shadow-lg transition-all duration-300 pointer-events-auto"
                     title="Tampilkan Tabel Estimasi">
                     <span class="material-symbols-outlined text-xs">table_chart</span> Tabel Rencana &amp; Estimasi
+                </button>
+                <!-- Form Estimasi Button -->
+                <button id="formEstimasiHeaderBtn" onclick="if(window.parent && window.parent.bukaEstimasiModal) window.parent.bukaEstimasiModal();"
+                    class="flex items-center gap-1.5 bg-primary-container text-white px-3.5 py-1.5 rounded-full font-bold text-xs hover:bg-primary hover:-translate-y-0.5 hover:scale-105 active:scale-95 hover:shadow-lg transition-all duration-300 pointer-events-auto"
+                    title="Buka Form Estimasi Panen">
+                    <span class="material-symbols-outlined text-xs">edit_document</span> Form Estimasi Panen
                 </button>
             </div>
         </header>
@@ -486,6 +550,48 @@
         </div>
     </div>
 
+    <!-- Modal Admin Approval -->
+    <div id="adminApprovalModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant dark:border-slate-800 max-w-7xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-outline-variant dark:border-slate-800 flex items-center justify-between bg-primary text-white">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <span class="material-symbols-outlined">fact_check</span>
+                    Persetujuan Hapus Data
+                </h3>
+                <button onclick="closeAdminApprovalModal()" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+            </div>
+            <!-- Modal Body -->
+            <div class="p-4 overflow-auto flex-1 bg-surface-container-lowest dark:bg-slate-900">
+                <div id="adminApprovalLoading" class="hidden text-center py-4 text-on-surface dark:text-slate-300">Memuat data...</div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse hidden" id="adminApprovalTable">
+                        <thead>
+                            <tr class="bg-surface-container-low dark:bg-slate-800 border-b border-outline-variant dark:border-slate-700">
+                                <th class="p-3 text-xs font-bold text-on-surface dark:text-slate-300 uppercase">Tipe</th>
+                                <th class="p-3 text-xs font-bold text-on-surface dark:text-slate-300 uppercase">Region</th>
+                                <th class="p-3 text-xs font-bold text-on-surface dark:text-slate-300 uppercase">Tanggal</th>
+                                <th class="p-3 text-xs font-bold text-on-surface dark:text-slate-300 uppercase">Jam</th>
+                                <th class="p-3 text-xs font-bold text-on-surface dark:text-slate-300 uppercase">Waktu Request</th>
+                                <th class="p-3 text-xs font-bold text-on-surface dark:text-slate-300 uppercase text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminApprovalBody">
+                            <!-- Data rows here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="adminApprovalEmpty" class="hidden text-center py-8 text-on-surface-variant dark:text-slate-500">
+                    Tidak ada permintaan hapus data yang menunggu persetujuan.
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // Global data cache for table modal
         let globalAllEstimasi = {};
@@ -598,6 +704,22 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
+            // Override Form Estimasi button for ADMIN
+            try {
+                const raw = sessionStorage.getItem("agripam_session");
+                if (raw) {
+                    const s = JSON.parse(raw);
+                    if (s && s.region === 'ADMIN') {
+                        const btn = document.getElementById("formEstimasiHeaderBtn");
+                        if (btn) {
+                            btn.title = "Persetujuan Hapus Data";
+                            btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">fact_check</span> <span>Verifikasi Hapus</span>';
+                            btn.setAttribute("onclick", "openAdminApprovalModal();");
+                        }
+                    }
+                }
+            } catch (e) {}
+
             // Get date from parent page (prefer tanggalEstimasi, fallback to tanggal)
             let tanggal = "";
             try {
@@ -709,22 +831,34 @@
             const regionsData = [];
 
             for (const [region, data] of Object.entries(allEstimasi)) {
-                totalRestanLalu += parseFloat(data.restanLalu) || 0;
-                totalLuasPanen += parseFloat(data.luasPanen) || 0;
-                totalTkPanen += parseFloat(data.tkPanen) || 0;
-                totalEstimasiPanen += parseFloat(data.estPanen) || 0;
-                totalEstimasiKirim += parseFloat(data.estKirim) || 0;
-                totalEstimasiRestan += parseFloat(data.estRestan) || 0;
+                var rRestanLalu = parseFloat(data.restanLalu) || 0;
+                var rLuasPanen = parseFloat(data.luasPanen) || 0;
+                var rTkPanen = parseFloat(data.tkPanen) || 0;
+                var rEstPanen = parseFloat(data.estPanen) || 0;
+                var rEstKirim = parseFloat(data.estKirim) || 0;
+                var rEstRestan = parseFloat(data.estRestan) || 0;
+
+                if (rEstPanen === 0 && rEstKirim > 0) {
+                    rEstPanen = rEstKirim;
+                    data.estPanen = rEstPanen;
+                }
+
+                totalRestanLalu += rRestanLalu;
+                totalLuasPanen += rLuasPanen;
+                totalTkPanen += rTkPanen;
+                totalEstimasiPanen += rEstPanen;
+                totalEstimasiKirim += rEstKirim;
+                totalEstimasiRestan += rEstRestan;
 
                 regionsData.push({
                     name: region,
-                    restanLalu: parseFloat(data.restanLalu) || 0,
-                    luasPanen: parseFloat(data.luasPanen) || 0,
-                    tkPanen: parseFloat(data.tkPanen) || 0,
-                    estPanen: parseFloat(data.estPanen) || 0,
+                    restanLalu: rRestanLalu,
+                    luasPanen: rLuasPanen,
+                    tkPanen: rTkPanen,
+                    estPanen: rEstPanen,
                     outPanen: parseFloat(data.outPanen) || 0,
-                    estKirim: parseFloat(data.estKirim) || 0,
-                    estRestan: parseFloat(data.estRestan) || 0
+                    estKirim: rEstKirim,
+                    estRestan: rEstRestan
                 });
             }
 
@@ -964,6 +1098,9 @@
 
         // Table modal toggle functions
         function openTableModal() {
+            if (window.parent && window.parent.tutupEstimasiModal) {
+                window.parent.tutupEstimasiModal();
+            }
             const modal = document.getElementById("tableModal");
             const tbody = document.getElementById("modalTableBody");
             const tfoot = document.querySelector("#tableModal tfoot tr");
@@ -1159,6 +1296,103 @@
 
         function closeTableModal() {
             document.getElementById("tableModal").classList.add("hidden");
+        }
+
+        function openAdminApprovalModal() {
+            const raw = sessionStorage.getItem("agripam_session");
+            if (!raw) return;
+            const s = JSON.parse(raw);
+            if (s.region !== 'ADMIN') return;
+
+            document.getElementById("adminApprovalModal").classList.remove("hidden");
+            loadDeleteRequests();
+        }
+
+        function closeAdminApprovalModal() {
+            document.getElementById("adminApprovalModal").classList.add("hidden");
+        }
+
+        function loadDeleteRequests() {
+            const raw = sessionStorage.getItem("agripam_session");
+            if (!raw) return;
+            const s = JSON.parse(raw);
+            
+            document.getElementById("adminApprovalLoading").classList.remove("hidden");
+            document.getElementById("adminApprovalTable").classList.add("hidden");
+            document.getElementById("adminApprovalEmpty").classList.add("hidden");
+
+            const url = `/api/getDeleteRequests?region=${s.region}&token=${s.token}`;
+            fetch(url)
+                .then(res => res.json())
+                .then(res => {
+                    document.getElementById("adminApprovalLoading").classList.add("hidden");
+                    if (res.success) {
+                        if (res.data && res.data.length > 0) {
+                            document.getElementById("adminApprovalTable").classList.remove("hidden");
+                            const tbody = document.getElementById("adminApprovalBody");
+                            tbody.innerHTML = "";
+                            res.data.forEach(req => {
+                                const tr = document.createElement("tr");
+                                tr.className = "border-b border-outline-variant dark:border-slate-800 hover:bg-surface-container dark:hover:bg-slate-800/50 transition-colors";
+                                tr.innerHTML = `
+                                    <td class="p-3 text-sm font-bold text-primary dark:text-emerald-400">${req.type}</td>
+                                    <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.region}</td>
+                                    <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.tanggal}</td>
+                                    <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.jam || '-'}</td>
+                                    <td class="p-3 text-xs text-on-surface-variant dark:text-slate-500">${new Date(req.requested_at).toLocaleString('id-ID')}</td>
+                                    <td class="p-3 text-center space-x-2">
+                                        <button onclick="resolveDeleteRequest(${req.id}, 'APPROVE')" class="bg-primary hover:bg-primary/90 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">Terima</button>
+                                        <button onclick="resolveDeleteRequest(${req.id}, 'REJECT')" class="bg-error hover:bg-error/90 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">Tolak</button>
+                                    </td>
+                                `;
+                                tbody.appendChild(tr);
+                            });
+                        } else {
+                            document.getElementById("adminApprovalEmpty").classList.remove("hidden");
+                        }
+                    } else {
+                        document.getElementById("adminApprovalEmpty").classList.remove("hidden");
+                        document.getElementById("adminApprovalEmpty").innerText = "Error: " + res.message;
+                    }
+                })
+                .catch(err => {
+                    document.getElementById("adminApprovalLoading").classList.add("hidden");
+                    alert("Gagal memuat data: " + err);
+                });
+        }
+
+        function resolveDeleteRequest(id, actionStr) {
+            const raw = sessionStorage.getItem("agripam_session");
+            if (!raw) return;
+            const s = JSON.parse(raw);
+            
+            const confirmMsg = actionStr === 'APPROVE' ? "Apakah Anda yakin ingin MENERIMA permintaan hapus data ini?\nData akan dihapus secara permanen." : "Apakah Anda yakin ingin MENOLAK permintaan hapus data ini?";
+            if (!confirm(confirmMsg)) return;
+            
+            if(window.parent && window.parent.setLoading) {
+                window.parent.setLoading(true, "Memproses persetujuan...");
+            }
+
+            const url = `/api/resolveDeleteRequest?region=${s.region}&token=${s.token}&requestId=${id}&resolveAction=${actionStr}`;
+            fetch(url)
+                .then(res => res.json())
+                .then(res => {
+                    if(window.parent && window.parent.setLoading) {
+                        window.parent.setLoading(false);
+                    }
+                    if(res.success) {
+                        alert(res.message);
+                        loadDeleteRequests();
+                    } else {
+                        alert(res.message || "Gagal memproses.");
+                    }
+                })
+                .catch(err => {
+                    if(window.parent && window.parent.setLoading) {
+                        window.parent.setLoading(false);
+                    }
+                    alert("Error: " + err);
+                });
         }
     </script>
 </body>
