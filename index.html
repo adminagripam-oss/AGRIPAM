@@ -1680,11 +1680,11 @@
                                     estObj = estimasiRes.allEstimasi[matchKey];
                                 }
                             }
-                            var estKirimKg = 0;
-                            if (estObj && estObj.estKirim) {
-                                estKirimKg = parseFloat(estObj.estKirim) || 0;
+                            var estPanenKg = 0;
+                            if (estObj && estObj.estPanen) {
+                                estPanenKg = parseFloat(estObj.estPanen) || 0;
                             }
-                            var estPanenTon = estKirimKg / 1000;
+                            var estPanenTon = estPanenKg / 1000;
 
                             var percentageStr = "-";
                             if (estPanenTon > 0) {
@@ -2150,8 +2150,8 @@
                     { action: "getEstimasiData", tanggal: tanggal, region: reg },
                     function (estRes) {
                         if (estRes.success && estRes.exists) {
-                            var estKirimKg = parseFloat(estRes.data.estKirim) || 0;
-                            totalEstimasi += estKirimKg / 1000;
+                            var estPanenKg = parseFloat(estRes.data.estPanen) || 0;
+                            totalEstimasi += estPanenKg / 1000;
                         }
                         completedEstimasi++;
                         checkIfDone();
@@ -2262,8 +2262,8 @@
                                 setLoading(false);
                             }
                             if (estRes.success && estRes.exists) {
-                                var estKirimKg = parseFloat(estRes.data.estKirim) || 0;
-                                currentEstimasiPanen = estKirimKg / 1000; // Konversi Kg ke Ton
+                                var estPanenKg = parseFloat(estRes.data.estPanen) || 0;
+                                currentEstimasiPanen = estPanenKg / 1000; // Konversi Kg ke Ton
                             } else {
                                 currentEstimasiPanen = 0;
                             }
