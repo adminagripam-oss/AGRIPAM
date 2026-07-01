@@ -1465,17 +1465,17 @@
                     if (res.success) {
                         currentEstimasiExists = res.exists;
                         if (res.exists) {
-                            hint.textContent = "Data estimasi tanggal ini sudah terisi (" + res.data.estimasiPanen + " Kg)." +
+                            hint.textContent = "Data estimasi tanggal ini sudah terisi (" + res.data.estPanen + " Kg)." +
                                 (isLocked ? " (Pengisian Baru / Edit ditutup)" : "");
                             hint.style.color = isLocked ? "#ffa600" : "#dc3545";
 
                             document.getElementById("luasPanen").value = res.data.luasPanen;
-                            document.getElementById("estimasiRestanLalu").value = res.data.estimasiRestanLalu;
+                            document.getElementById("estimasiRestanLalu").value = res.data.restanLalu;
                             document.getElementById("tkPanen").value = res.data.tkPanen;
-                            document.getElementById("estimasiPanen").value = res.data.estimasiPanen;
-                            document.getElementById("outputPanen").value = res.data.outputPanen;
-                            document.getElementById("estimasiKirim").value = res.data.estimasiKirim;
-                            document.getElementById("estimasiRestan").value = res.data.estimasiRestan;
+                            document.getElementById("estimasiPanen").value = res.data.estPanen;
+                            document.getElementById("outputPanen").value = res.data.outPanen;
+                            document.getElementById("estimasiKirim").value = res.data.estKirim;
+                            document.getElementById("estimasiRestan").value = res.data.estRestan;
                         } else {
                             if (isLocked) {
                                 var d1 = new Date(estYear, estMonth, estDay - 1);
@@ -1680,11 +1680,11 @@
                                     estObj = estimasiRes.allEstimasi[matchKey];
                                 }
                             }
-                            var estPanenKg = 0;
-                            if (estObj && estObj.estimasiPanen) {
-                                estPanenKg = parseFloat(estObj.estimasiPanen) || 0;
+                            var estKirimKg = 0;
+                            if (estObj && estObj.estKirim) {
+                                estKirimKg = parseFloat(estObj.estKirim) || 0;
                             }
-                            var estPanenTon = estPanenKg / 1000;
+                            var estPanenTon = estKirimKg / 1000;
 
                             var percentageStr = "-";
                             if (estPanenTon > 0) {
@@ -2150,8 +2150,8 @@
                     { action: "getEstimasiData", tanggal: tanggal, region: reg },
                     function (estRes) {
                         if (estRes.success && estRes.exists) {
-                            var estPanenKg = parseFloat(estRes.data.estimasiPanen) || 0;
-                            totalEstimasi += estPanenKg / 1000;
+                            var estKirimKg = parseFloat(estRes.data.estKirim) || 0;
+                            totalEstimasi += estKirimKg / 1000;
                         }
                         completedEstimasi++;
                         checkIfDone();
@@ -2262,8 +2262,8 @@
                                 setLoading(false);
                             }
                             if (estRes.success && estRes.exists) {
-                                var estPanenKg = parseFloat(estRes.data.estimasiPanen) || 0;
-                                currentEstimasiPanen = estPanenKg / 1000; // Konversi Kg ke Ton
+                                var estKirimKg = parseFloat(estRes.data.estKirim) || 0;
+                                currentEstimasiPanen = estKirimKg / 1000; // Konversi Kg ke Ton
                             } else {
                                 currentEstimasiPanen = 0;
                             }
