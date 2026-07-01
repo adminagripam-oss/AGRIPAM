@@ -546,44 +546,55 @@
                 fetchRegion = "ALL";
             }
 
-            const url = `/api/getEstimasi?tanggal=${tanggal}&region=${fetchRegion}`;
-            fetch(url)
-                .then(res => res.json())
-                .then(res => {
-                    if (currentFetchId !== globalFetchId) return; // ignore stale fetch responses
+            const urlEstimasi = `/api/getEstimasi?tanggal=${tanggal}&region=${fetchRegion}`;
+            const urlData = `/api/getData?tanggal=${tanggal}&region=${fetchRegion}`;
 
-                    if (res.success && res.exists) {
-                        if (fetchRegion !== "ALL") {
-                            // For a specific regional user, wrap the response data in allEstimasi structure
-                            const allEstimasi = {};
-                            allEstimasi[region] = {
-                                restanLalu: res.data.restanLalu,
-                                luasPanen: res.data.luasPanen,
-                                tkPanen: res.data.tkPanen,
-                                estPanen: res.data.estPanen,
-                                outPanen: res.data.outPanen,
-                                estKirim: res.data.estKirim,
-                                estRestan: res.data.estRestan
-                            };
-                            populateData(allEstimasi);
-                        } else {
-                            populateData(res.allEstimasi);
-                        }
+            Promise.all([
+                fetch(urlEstimasi).then(res => res.json()).catch(err => ({ success: false, error: err })),
+                fetch(urlData).then(res => res.json()).catch(err => ({ success: false, error: err }))
+            ]).then(([resEstimasi, resData]) => {
+                if (currentFetchId !== globalFetchId) return; // ignore stale fetch responses
+
+                let totalRealisasi = 0;
+                if (resData.success) {
+                    if (fetchRegion !== "ALL") {
+                        totalRealisasi = resData.total || 0;
                     } else {
-                        showNoData();
+                        totalRealisasi = (resData.allRecords || []).reduce((sum, r) => sum + r.tonase, 0);
                     }
+                }
 
-                    // If the modal is currently open, we should re-render the modal table
-                    const modal = document.getElementById("tableModal");
-                    if (modal && !modal.classList.contains("hidden")) {
-                        openTableModal();
+                if (resEstimasi.success && resEstimasi.exists) {
+                    if (fetchRegion !== "ALL") {
+                        // For a specific regional user, wrap the response data in allEstimasi structure
+                        const allEstimasi = {};
+                        allEstimasi[region] = {
+                            restanLalu: resEstimasi.data.restanLalu,
+                            luasPanen: resEstimasi.data.luasPanen,
+                            tkPanen: resEstimasi.data.tkPanen,
+                            estPanen: resEstimasi.data.estPanen,
+                            outPanen: resEstimasi.data.outPanen,
+                            estKirim: resEstimasi.data.estKirim,
+                            estRestan: resEstimasi.data.estRestan
+                        };
+                        populateData(allEstimasi, totalRealisasi);
+                    } else {
+                        populateData(resEstimasi.allEstimasi, totalRealisasi);
                     }
-                })
-                .catch(err => {
-                    if (currentFetchId !== globalFetchId) return; // ignore stale fetch responses
-                    console.error("Error loading estimasi data:", err);
+                } else {
                     showNoData();
-                });
+                }
+
+                // If the modal is currently open, we should re-render the modal table
+                const modal = document.getElementById("tableModal");
+                if (modal && !modal.classList.contains("hidden")) {
+                    openTableModal();
+                }
+            }).catch(err => {
+                if (currentFetchId !== globalFetchId) return; // ignore stale fetch responses
+                console.error("Error loading data:", err);
+                showNoData();
+            });
         }
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -683,7 +694,7 @@
             }
         });
 
-        function populateData(allEstimasi) {
+        function populateData(allEstimasi, totalRealisasi = 0) {
             // Cache data for modal rendering
             globalAllEstimasi = allEstimasi;
             globalSelectedDate = document.getElementById("dateDisplay").value;
@@ -822,36 +833,107 @@
                 `;
             }
 
-            const totalKirimTon = totalEstimasiKirim / 1000;
-            const kirimText = formatDecimal(totalKirimTon);
+            const persentaseRealisasi = totalEstimasiPanen > 0 ? (totalRealisasi / totalEstimasiPanen) * 100 : 0;
+            const persentaseText = formatDecimal(persentaseRealisasi);
+            const realisasiTon = formatDecimal(totalRealisasi / 1000);
+            const estimasiTon = formatDecimal(totalEstimasiPanen / 1000);
+            
             highlightContainer.innerHTML += `
                 <div class="flex gap-4">
                     <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary dark:bg-emerald-800/80 flex items-center justify-center text-white">
                         <span class="material-symbols-outlined text-sm">check</span>
                     </div>
-                    <p class="text-sm text-on-surface-variant dark:text-slate-300 leading-relaxed pt-1">Estimasi kirim total mencapai <span class="text-primary dark:text-emerald-400 font-bold">${kirimText} Ton</span>, lebih tinggi dari estimasi panen karena adanya restan awal.</p>
+                    <p class="text-sm text-on-surface-variant dark:text-slate-300 leading-relaxed pt-1">Realisasi total mencapai <span class="text-primary dark:text-emerald-400 font-bold">${realisasiTon} Ton</span>, yaitu <span class="text-primary dark:text-emerald-400 font-bold">${persentaseText}%</span> dari estimasi panen (<span class="font-bold">${estimasiTon} Ton</span>).</p>
                 </div>
             `;
 
-            const inactiveRegions = regionsData.filter(r => r.estPanen === 0).map(r => r.name);
-            if (inactiveRegions.length > 0) {
-                highlightContainer.innerHTML += `
-                    <div class="flex gap-4">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary dark:bg-emerald-800/80 flex items-center justify-center text-white">
-                            <span class="material-symbols-outlined text-sm">check</span>
+            let sessionRegion = "ALL";
+            try {
+                const raw = sessionStorage.getItem("agripam_session");
+                if (raw) {
+                    const s = JSON.parse(raw);
+                    if (s && s.region) sessionRegion = s.region;
+                }
+            } catch (e) { }
+            const isRegionalUser = (sessionRegion !== "ADMIN" && sessionRegion !== "ALL");
+
+            if (isRegionalUser) {
+                const data = allEstimasi[sessionRegion];
+                let hasNoInput = true;
+                if (data) {
+                    const restanLalu = parseFloat(data.restanLalu) || 0;
+                    const luasPanen = parseFloat(data.luasPanen) || 0;
+                    const tkPanen = parseFloat(data.tkPanen) || 0;
+                    const estPanen = parseFloat(data.estPanen) || 0;
+                    hasNoInput = (restanLalu === 0 && luasPanen === 0 && tkPanen === 0 && estPanen === 0);
+                }
+
+                if (hasNoInput) {
+                    highlightContainer.innerHTML += `
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400">
+                                <span class="material-symbols-outlined text-sm">warning</span>
+                            </div>
+                            <p class="text-sm text-on-surface-variant dark:text-slate-300 leading-relaxed pt-1">Anda belum mengisi aktivitas/input panen pada tanggal ini.</p>
                         </div>
-                        <p class="text-sm text-on-surface-variant dark:text-slate-300 leading-relaxed pt-1">Beberapa wilayah belum memiliki aktivitas/input panen pada tanggal ini sehingga kontribusi masih 0.</p>
-                    </div>
-                `;
+                    `;
+                } else {
+                    highlightContainer.innerHTML += `
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary dark:bg-emerald-800/80 flex items-center justify-center text-white">
+                                <span class="material-symbols-outlined text-sm">check</span>
+                            </div>
+                            <p class="text-sm text-on-surface-variant dark:text-slate-300 leading-relaxed pt-1">Anda telah menginput laporan rencana estimasi panen pada tanggal ini secara lengkap.</p>
+                        </div>
+                    `;
+                }
             } else {
-                highlightContainer.innerHTML += `
-                    <div class="flex gap-4">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary dark:bg-emerald-800/80 flex items-center justify-center text-white">
-                            <span class="material-symbols-outlined text-sm">check</span>
+                const allRegionsList = [
+                    "Aceh", "Sumatera Utara 1", "Sumatera Utara 2 Ex Torganda", "Riau 1",
+                    "Riau 2", "Riau 3", "Riau 4", "Bangka Belitung", "Jambi", "Sumatera Barat",
+                    "Sumatera Selatan", "Kalimantan Barat 1", "Kalimantan Barat 2",
+                    "Kalimantan Selatan 1", "Kalimantan Selatan 2", "Kalimantan Utara",
+                    "Kalimantan Timur", "Kalimantan Tengah 1", "Kalimantan Tengah 2",
+                    "Kalimantan Tengah 3", "Sulawesi Tengah", "Sulawesi Tenggara"
+                ];
+                const inactiveRegions = [];
+                allRegionsList.forEach(regionName => {
+                    const data = allEstimasi[regionName];
+                    let hasNoInput = true;
+                    if (data) {
+                        const restanLalu = parseFloat(data.restanLalu) || 0;
+                        const luasPanen = parseFloat(data.luasPanen) || 0;
+                        const tkPanen = parseFloat(data.tkPanen) || 0;
+                        const estPanen = parseFloat(data.estPanen) || 0;
+                        hasNoInput = (restanLalu === 0 && luasPanen === 0 && tkPanen === 0 && estPanen === 0);
+                    }
+                    if (hasNoInput) {
+                        inactiveRegions.push(regionName);
+                    }
+                });
+
+                if (inactiveRegions.length > 0) {
+                    let inactiveText = `Wilayah <span class="font-bold text-red-500 dark:text-red-400">${inactiveRegions.join(', ')}</span> belum memiliki aktivitas/input panen pada tanggal ini.`;
+                    highlightContainer.innerHTML += `
+                        <div class="flex gap-4 items-start">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 mt-1">
+                                <span class="material-symbols-outlined text-sm">warning</span>
+                            </div>
+                            <div class="flex-1 min-w-0 max-h-24 overflow-y-auto pr-2">
+                                <p class="text-sm text-on-surface-variant dark:text-slate-300 leading-relaxed">${inactiveText}</p>
+                            </div>
                         </div>
-                        <p class="text-sm text-on-surface-variant dark:text-slate-300 leading-relaxed pt-1">Semua regional aktif telah menginput laporan rencana estimasi panen secara lengkap.</p>
-                    </div>
-                `;
+                    `;
+                } else {
+                    highlightContainer.innerHTML += `
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary dark:bg-emerald-800/80 flex items-center justify-center text-white">
+                                <span class="material-symbols-outlined text-sm">check</span>
+                            </div>
+                            <p class="text-sm text-on-surface-variant dark:text-slate-300 leading-relaxed pt-1">Semua regional aktif telah menginput laporan rencana estimasi panen secara lengkap.</p>
+                        </div>
+                    `;
+                }
             }
         }
 
