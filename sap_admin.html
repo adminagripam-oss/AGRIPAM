@@ -1,35 +1,31 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Regional Dashboard - SAP</title>
+    <title>Admin Dashboard - SAP</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body {
-            background-color: #f8fafc;
-        }
+        body { background-color: #f8fafc; }
+        .modal { display: none; }
+        .modal.active { display: flex; }
     </style>
 </head>
-
-<body class="text-slate-800 font-sans min-h-screen flex flex-col">
+<body class="text-slate-800 font-sans min-h-screen flex flex-col relative">
 
     <!-- Navbar -->
-    <nav class="bg-blue-800 text-white shadow-md">
+    <nav class="bg-indigo-900 text-white shadow-md z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center space-x-3">
-                    <span class="font-bold text-xl tracking-tight">SAP Regional</span>
-                    <span class="bg-blue-600 px-2 py-1 rounded text-xs font-semibold" id="regionBadge">Memuat...</span>
+                    <span class="font-bold text-xl tracking-tight">SAP Admin (HO)</span>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <span class="text-sm" id="userName">User</span>
-                    <button id="logoutBtn"
-                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-medium transition-colors shadow">
+                    <span class="text-sm font-medium" id="userName">Admin</span>
+                    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-medium transition-colors shadow">
                         Logout
                     </button>
                 </div>
@@ -39,81 +35,33 @@
 
     <!-- Main Content -->
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-
-        <!-- Form Input Surat -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
-            <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Input Surat Baru</h2>
-            <form id="suratForm" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Nomor Surat</label>
-                        <input type="text" id="nomor_surat" required
-                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Jenis Surat</label>
-                        <select id="jenis_surat" required
-                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none">
-                            <option value="masuk">Surat Masuk</option>
-                            <option value="permintaan">Surat Permintaan</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Perihal</label>
-                    <input type="text" id="perihal" required
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">File Surat (PDF)</label>
-                    <input type="file" id="file_surat" accept="application/pdf" required
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                </div>
-
-                <div id="formMsg" class="hidden text-sm p-3 rounded mt-2"></div>
-
-                <div class="flex justify-end pt-2">
-                    <button type="submit" id="submitSuratBtn"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center shadow-md">
-                        <span>Upload & Simpan</span>
-                        <svg id="submitLoading" class="hidden animate-spin ml-2 h-4 w-4 text-white"
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                            </circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Tabel Monitoring -->
+        
+        <!-- Tabel Master Surat -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-6 border-b bg-slate-50 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-slate-800">Monitoring Surat Saya</h2>
-                <button onclick="fetchSurat()" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Refresh
-                    Data</button>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Master Data Surat</h2>
+                    <p class="text-xs text-slate-500 mt-1">Mengelola semua surat yang masuk dari regional.</p>
+                </div>
+                <button onclick="fetchSurat()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-indigo-200">
+                    Refresh Data
+                </button>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-100 text-slate-600 text-sm uppercase tracking-wider">
-                            <th class="p-4 font-medium border-b">Tanggal</th>
+                            <th class="p-4 font-medium border-b">Regional</th>
                             <th class="p-4 font-medium border-b">No Surat</th>
                             <th class="p-4 font-medium border-b">Tujuan</th>
                             <th class="p-4 font-medium border-b">Perihal</th>
                             <th class="p-4 font-medium border-b">Status</th>
-                            <th class="p-4 font-medium border-b">File</th>
+                            <th class="p-4 font-medium border-b">Tanggal Masuk</th>
+                            <th class="p-4 font-medium border-b text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="text-sm divide-y divide-slate-200">
-                        <tr>
-                            <td colspan="6" class="p-8 text-center text-slate-500">Memuat data...</td>
-                        </tr>
+                        <tr><td colspan="7" class="p-8 text-center text-slate-500">Memuat data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -121,12 +69,48 @@
 
     </main>
 
-    <!-- KONFIGURASI SUPABASE (Hanya untuk upload PDF ke Storage anonim) -->
-    <script>
-        const SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co';
-        const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <!-- Modal Update Status -->
+    <div id="statusModal" class="modal fixed inset-0 z-50 items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 relative transform transition-all">
+            <button id="closeModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <h3 class="text-lg font-bold text-slate-800 mb-1">Update Status Surat</h3>
+            <p class="text-sm text-slate-500 mb-4" id="modalNoSurat">No Surat: -</p>
 
+            <form id="updateForm" class="space-y-4">
+                <input type="hidden" id="modalSuratId">
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Ubah Status</label>
+                    <select id="modalStatus" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none">
+                        <option value="menunggu">Menunggu</option>
+                        <option value="diproses">Diproses</option>
+                        <option value="selesai">Selesai</option>
+                        <option value="ditolak">Ditolak</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Catatan Disposisi (Opsional)</label>
+                    <textarea id="modalCatatan" rows="3" placeholder="Tambahkan catatan untuk regional..." class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none resize-none"></textarea>
+                </div>
+
+                <div id="modalMsg" class="hidden text-sm p-3 rounded mt-2"></div>
+
+                <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <button type="button" id="cancelModalBtn" class="px-4 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                    <button type="submit" id="submitUpdateBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center shadow-md">
+                        <span>Simpan Perubahan</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- KONFIGURASI SUPABASE (Hanya untuk keperluan masa depan jika butuh anon) -->
+    <script>
         const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? '/api'
             : 'https://api.agri-pam.id/api';
@@ -138,14 +122,13 @@
             sessionToken = localStorage.getItem('sessionToken');
             sessionRegion = localStorage.getItem('sessionRegion');
 
-            if (!sessionToken || !sessionRegion || sessionRegion === 'ADMIN') {
-                alert("Akses ditolak! Silakan login melalui Portal Utama Agripam.");
+            if (!sessionToken || !sessionRegion || sessionRegion !== 'ADMIN') {
+                alert("Akses ditolak! Anda bukan pengguna Admin HO.");
                 window.location.href = 'login.html';
                 return;
             }
 
-            document.getElementById('userName').textContent = "User Regional";
-            document.getElementById('regionBadge').textContent = sessionRegion;
+            document.getElementById('userName').textContent = "Admin HO";
 
             fetchSurat();
         }
@@ -156,73 +139,9 @@
             window.location.href = 'login.html';
         });
 
-        // Form Submit Handler
-        document.getElementById('suratForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submitSuratBtn');
-            const loading = document.getElementById('submitLoading');
-            const msg = document.getElementById('formMsg');
-
-            btn.disabled = true;
-            loading.classList.remove('hidden');
-            msg.className = "hidden text-sm p-3 rounded mt-2";
-
-            const fileInput = document.getElementById('file_surat');
-            const file = fileInput.files[0];
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-
-            try {
-                // 1. Upload File ke Storage (Anonim dibolehkan di public bucket berkas_surat)
-                const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('berkas_surat')
-                    .upload(fileName, file);
-
-                if (uploadError) throw uploadError;
-
-                // 2. Dapatkan URL Public
-                const { data: { publicUrl } } = supabase.storage
-                    .from('berkas_surat')
-                    .getPublicUrl(fileName);
-
-                // 3. Insert ke Tabel Surat (via Backend API Agripam)
-                const res = await fetch(`${API_BASE}/sap`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        token: sessionToken,
-                        region: sessionRegion,
-                        action: 'insertSurat',
-                        nomor_surat: document.getElementById('nomor_surat').value,
-                        jenis_surat: document.getElementById('jenis_surat').value,
-                        perihal: document.getElementById('perihal').value,
-                        file_url: publicUrl
-                    })
-                });
-
-                const jsonRes = await res.json();
-                if (!jsonRes.success) throw new Error(jsonRes.message);
-
-                msg.textContent = "Surat berhasil diupload dan disimpan!";
-                msg.classList.add('bg-green-50', 'text-green-700', 'border', 'border-green-200');
-                msg.classList.remove('hidden');
-                document.getElementById('suratForm').reset();
-                fetchSurat(); // Refresh table
-
-            } catch (err) {
-                msg.textContent = "Error: " + err.message;
-                msg.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
-                msg.classList.remove('hidden');
-            } finally {
-                btn.disabled = false;
-                loading.classList.add('hidden');
-            }
-        });
-
-        // Fetch Data Surat
         async function fetchSurat() {
             const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat data...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-500">Memuat data...</td></tr>';
 
             try {
                 const res = await fetch(`${API_BASE}/sap?action=getSurat&token=${encodeURIComponent(sessionToken)}&region=${encodeURIComponent(sessionRegion)}`);
@@ -233,46 +152,114 @@
                 const data = jsonRes.data;
 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-500">Belum ada surat yang diinput.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-500">Belum ada surat masuk.</td></tr>';
                     return;
                 }
 
                 tbody.innerHTML = '';
                 data.forEach(row => {
-                    const date = new Date(row.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-
+                    const date = new Date(row.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+                    
                     let statusColor = 'bg-slate-100 text-slate-700';
-                    if (row.status === 'menunggu') statusColor = 'bg-yellow-100 text-yellow-700';
-                    if (row.status === 'diproses') statusColor = 'bg-blue-100 text-blue-700';
-                    if (row.status === 'selesai') statusColor = 'bg-green-100 text-green-700';
-                    if (row.status === 'ditolak') statusColor = 'bg-red-100 text-red-700';
+                    if(row.status === 'menunggu') statusColor = 'bg-yellow-100 text-yellow-700';
+                    if(row.status === 'diproses') statusColor = 'bg-blue-100 text-blue-700';
+                    if(row.status === 'selesai') statusColor = 'bg-green-100 text-green-700';
+                    if(row.status === 'ditolak') statusColor = 'bg-red-100 text-red-700';
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td class="p-4 whitespace-nowrap text-slate-600">${date}</td>
+                        <td class="p-4 font-semibold text-indigo-700">${row.regional_pengirim || '-'}</td>
                         <td class="p-4 font-semibold text-slate-800">${row.nomor_surat}</td>
                         <td class="p-4"><span class="capitalize text-xs font-semibold bg-slate-100 px-2 py-1 rounded">${row.jenis_surat}</span></td>
                         <td class="p-4 text-slate-700">${row.perihal}</td>
                         <td class="p-4">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${statusColor}">
+                            <span id="statusBadge_${row.id}" class="px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${statusColor}">
                                 ${row.status}
                             </span>
                         </td>
-                        <td class="p-4">
-                            <a href="${row.file_url}" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center">
-                                Unduh PDF
-                            </a>
+                        <td class="p-4 whitespace-nowrap text-slate-600">${date}</td>
+                        <td class="p-4 text-center space-x-2">
+                            <a href="${row.file_url}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Buka PDF</a>
+                            <span class="text-slate-300">|</span>
+                            <button onclick="openModal('${row.id}', '${row.nomor_surat}', '${row.status}')" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Update</button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
             }
         }
+
+        // Modal Logic
+        const modal = document.getElementById('statusModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelModalBtn = document.getElementById('cancelModalBtn');
+
+        function openModal(id, noSurat, currentStatus) {
+            document.getElementById('modalSuratId').value = id;
+            document.getElementById('modalNoSurat').textContent = `No Surat: ${noSurat}`;
+            document.getElementById('modalStatus').value = currentStatus;
+            document.getElementById('modalCatatan').value = '';
+            document.getElementById('modalMsg').classList.add('hidden');
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelModalBtn.addEventListener('click', closeModal);
+
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitUpdateBtn');
+            const msg = document.getElementById('modalMsg');
+            
+            btn.disabled = true;
+            btn.textContent = 'Menyimpan...';
+            msg.className = "hidden text-sm p-3 rounded mt-2";
+
+            const suratId = document.getElementById('modalSuratId').value;
+            const newStatus = document.getElementById('modalStatus').value;
+            const catatan = document.getElementById('modalCatatan').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/sap`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: sessionToken,
+                        region: sessionRegion,
+                        action: 'updateSurat',
+                        surat_id: suratId,
+                        status: newStatus,
+                        catatan: catatan
+                    })
+                });
+
+                const jsonRes = await res.json();
+                if (!jsonRes.success) throw new Error(jsonRes.message);
+
+                msg.textContent = "Status berhasil diupdate!";
+                msg.classList.add('bg-green-50', 'text-green-700', 'border', 'border-green-200');
+                msg.classList.remove('hidden');
+
+                fetchSurat(); // Refresh table
+                setTimeout(closeModal, 1500);
+
+            } catch (err) {
+                msg.textContent = "Error: " + err.message;
+                msg.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
+                msg.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Simpan Perubahan';
+            }
+        });
 
         init();
     </script>
 </body>
-
 </html>
