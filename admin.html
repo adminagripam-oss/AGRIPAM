@@ -1078,16 +1078,19 @@
         var API_BASE = "/api";
         // Pemetaan action lama (Apps Script) → endpoint baru
         var ACTION_MAP = {
-            "login"              : "login",
-            "logout"             : "logout",
-            "refreshToken"       : "refresh",
-            "getData"            : "getData",
-            "getRunningTextData" : "getData",
-            "insert"             : "insert",
-            "delete"             : "delete",
-            "getEstimasiData"    : "getEstimasi",
-            "insertEstimasi"     : "insertEstimasi",
-            "deleteEstimasi"     : "deleteEstimasi"
+            "login"              : "auth",
+            "logout"             : "auth",
+            "refreshToken"       : "auth",
+            "getData"            : "realisasi",
+            "getRunningTextData" : "realisasi",
+            "insert"             : "realisasi",
+            "delete"             : "realisasi",
+            "getEstimasiData"    : "estimasi",
+            "insertEstimasi"     : "estimasi",
+            "deleteEstimasi"     : "estimasi",
+            "requestDelete": "deleteRequest",
+            "getDeleteRequests": "deleteRequest",
+            "resolveDeleteRequest": "deleteRequest"
         };
         var MAX_RETRIES = 2;
         var RETRY_DELAY_MS = 3000;
