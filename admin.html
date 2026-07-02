@@ -909,6 +909,10 @@
                         <button type="button" id="deleteBtn" class="btn-delete" onclick="handleDelete()">Hapus Jam
                             Ini</button>
                     </div>
+                    <div class="btn-group" style="margin-top: 10px;">
+                        <button type="button" id="saveDraftRealisasiBtn" class="btn-submit" style="background-color: #17a2b8;" onclick="saveDraftRealisasi()">Simpan Draft</button>
+                        <button type="button" id="clearDraftRealisasiBtn" class="btn-delete" style="background-color: #ffc107; color: #000;" onclick="clearDraftRealisasi()">Hapus Draft</button>
+                    </div>
 
                     <button type="button" class="btn-refresh"
                         style="width:100%; margin-top:10px; background-color: #17a2b8;" onclick="bukaEstimasi()">
@@ -1015,6 +1019,10 @@
                     Estimasi</button>
                 <button type="button" id="deleteEstimasiBtn" class="btn-delete" onclick="handleDeleteEstimasi()">Hapus
                     Estimasi</button>
+            </div>
+            <div class="btn-group" style="margin-top: 10px;">
+                <button type="button" id="saveDraftEstimasiBtn" class="btn-submit" style="background-color: #17a2b8;" onclick="saveDraftEstimasi()">Simpan Draft</button>
+                <button type="button" id="clearDraftEstimasiBtn" class="btn-delete" style="background-color: #ffc107; color: #000;" onclick="clearDraftEstimasi()">Hapus Draft</button>
             </div>
 
             <button type="button" class="btn-logout" style="width:100%; margin-top:10px; background-color: #17a2b8;"
@@ -1167,6 +1175,84 @@
         // Tombol di estimasi section — diambil saat dibutuhkan agar tidak null saat load
         function getEstimasiBtn() { return document.getElementById("submitEstimasiBtn"); }
         function getDeleteEstBtn() { return document.getElementById("deleteEstimasiBtn"); }
+
+        // =========================================================================
+        // DRAFT MANAGEMENT
+        // =========================================================================
+        function saveDraftEstimasi() {
+            var s = loadSession();
+            if (!s) return;
+            var data = {
+                tanggal: document.getElementById("tanggalEstimasi").value,
+                luas: document.getElementById("luasPanen").value,
+                restanLalu: document.getElementById("estimasiRestanLalu").value,
+                tk: document.getElementById("tkPanen").value,
+                panen: document.getElementById("estimasiPanen").value,
+                out: document.getElementById("outputPanen").value,
+                kirim: document.getElementById("estimasiKirim").value,
+                restan: document.getElementById("estimasiRestan").value
+            };
+            localStorage.setItem("draftEstimasi_" + s.region, JSON.stringify(data));
+            alert("Draft Estimasi tersimpan!");
+        }
+
+        function loadDraftEstimasi() {
+            var s = loadSession();
+            if (!s) return;
+            var raw = localStorage.getItem("draftEstimasi_" + s.region);
+            if (!raw) return;
+            try {
+                var d = JSON.parse(raw);
+                document.getElementById("tanggalEstimasi").value = d.tanggal || "";
+                document.getElementById("luasPanen").value = d.luas || "";
+                document.getElementById("estimasiRestanLalu").value = d.restanLalu || "";
+                document.getElementById("tkPanen").value = d.tk || "";
+                document.getElementById("estimasiPanen").value = d.panen || "";
+                document.getElementById("outputPanen").value = d.out || "";
+                document.getElementById("estimasiKirim").value = d.kirim || "";
+                document.getElementById("estimasiRestan").value = d.restan || "";
+                checkEstimasi();
+            } catch(e) {}
+        }
+
+        function clearDraftEstimasi() {
+            var s = loadSession();
+            if (s) localStorage.removeItem("draftEstimasi_" + s.region);
+            alert("Draft Estimasi dihapus.");
+        }
+
+        function saveDraftRealisasi() {
+            var s = loadSession();
+            if (!s) return;
+            var data = {
+                tanggal: document.getElementById("tanggal").value,
+                jam: document.getElementById("jam").value,
+                tonase: document.getElementById("tonase").value,
+                keterangan: document.getElementById("keterangan").value
+            };
+            localStorage.setItem("draftRealisasi_" + s.region, JSON.stringify(data));
+            alert("Draft Realisasi tersimpan!");
+        }
+
+        function loadDraftRealisasi() {
+            var s = loadSession();
+            if (!s) return;
+            var raw = localStorage.getItem("draftRealisasi_" + s.region);
+            if (!raw) return;
+            try {
+                var d = JSON.parse(raw);
+                document.getElementById("tanggal").value = d.tanggal || "";
+                document.getElementById("jam").value = d.jam || "";
+                document.getElementById("tonase").value = d.tonase || "";
+                document.getElementById("keterangan").value = d.keterangan || "";
+            } catch(e) {}
+        }
+
+        function clearDraftRealisasi() {
+            var s = loadSession();
+            if (s) localStorage.removeItem("draftRealisasi_" + s.region);
+            alert("Draft Realisasi dihapus.");
+        }
 
         // =========================================================================
         // SESSION HELPERS
@@ -1581,7 +1667,17 @@
                 { action: "login", region: region, password: password, ip: clientIP, clientTime: getClientWIBTimeStr() },
                 function (res) {
                     if (res.success) {
+                        // Hapus draft realisasi karena sudah berhasil dikirim
+                        var s = loadSession();
+                        if (s) {
+                            localStorage.removeItem("draftRealisasi_" + s.region);
+                        }
+                        
                         saveSession(region, res.token, res.ttlMs);
+                        
+                        // Load drafts
+                        loadDraftEstimasi();
+                        loadDraftRealisasi();
 
                         if (bc) bc.postMessage({ type: "SESSION_STARTED", region: region });
 
