@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +10,12 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #f8fafc; }
+        body {
+            background-color: #f8fafc;
+        }
     </style>
 </head>
+
 <body class="text-slate-800 font-sans min-h-screen flex flex-col">
 
     <!-- Navbar -->
@@ -24,7 +28,8 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <span class="text-sm" id="userName">User</span>
-                    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-medium transition-colors shadow">
+                    <button id="logoutBtn"
+                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-medium transition-colors shadow">
                         Logout
                     </button>
                 </div>
@@ -34,7 +39,7 @@
 
     <!-- Main Content -->
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        
+
         <!-- Form Input Surat -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
             <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Input Surat Baru</h2>
@@ -42,35 +47,44 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Nomor Surat</label>
-                        <input type="text" id="nomor_surat" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none">
+                        <input type="text" id="nomor_surat" required
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Jenis Surat</label>
-                        <select id="jenis_surat" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none">
+                        <select id="jenis_surat" required
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none">
                             <option value="masuk">Surat Masuk</option>
                             <option value="permintaan">Surat Permintaan</option>
                         </select>
                     </div>
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Perihal</label>
-                    <input type="text" id="perihal" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none">
+                    <input type="text" id="perihal" required
+                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">File Surat (PDF)</label>
-                    <input type="file" id="file_surat" accept="application/pdf" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <input type="file" id="file_surat" accept="application/pdf" required
+                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                 </div>
 
                 <div id="formMsg" class="hidden text-sm p-3 rounded mt-2"></div>
 
                 <div class="flex justify-end pt-2">
-                    <button type="submit" id="submitSuratBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center shadow-md">
+                    <button type="submit" id="submitSuratBtn"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center shadow-md">
                         <span>Upload & Simpan</span>
-                        <svg id="submitLoading" class="hidden animate-spin ml-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg id="submitLoading" class="hidden animate-spin ml-2 h-4 w-4 text-white"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
                         </svg>
                     </button>
                 </div>
@@ -81,7 +95,8 @@
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-6 border-b bg-slate-50 flex justify-between items-center">
                 <h2 class="text-xl font-bold text-slate-800">Monitoring Surat Saya</h2>
-                <button onclick="fetchSurat()" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Refresh Data</button>
+                <button onclick="fetchSurat()" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Refresh
+                    Data</button>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -96,7 +111,9 @@
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="text-sm divide-y divide-slate-200">
-                        <tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat data...</td></tr>
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-500">Memuat data...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -141,7 +158,7 @@
             const btn = document.getElementById('submitSuratBtn');
             const loading = document.getElementById('submitLoading');
             const msg = document.getElementById('formMsg');
-            
+
             btn.disabled = true;
             loading.classList.remove('hidden');
             msg.className = "hidden text-sm p-3 rounded mt-2";
@@ -150,7 +167,7 @@
             const file = fileInput.files[0];
             const fileExt = file.name.split('.').pop();
             const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-            
+
             try {
                 // 1. Upload File ke Storage (Anonim dibolehkan di public bucket berkas_surat)
                 const { data: uploadData, error: uploadError } = await supabase.storage
@@ -165,7 +182,7 @@
                     .getPublicUrl(fileName);
 
                 // 3. Insert ke Tabel Surat (via Backend API Agripam)
-                const res = await fetch('/api/sap', {
+                const res = await fetch('https://agri-pam-production-teamapn1.vercel.app/api/sap', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -204,9 +221,9 @@
             tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat data...</td></tr>';
 
             try {
-                const res = await fetch(`/api/sap?action=getSurat&token=${encodeURIComponent(sessionToken)}&region=${encodeURIComponent(sessionRegion)}`);
+                const res = await fetch(`https://agri-pam-production-teamapn1.vercel.app/api/sap?action=getSurat&token=${encodeURIComponent(sessionToken)}&region=${encodeURIComponent(sessionRegion)}`);
                 const jsonRes = await res.json();
-                
+
                 if (!jsonRes.success) throw new Error(jsonRes.message);
 
                 const data = jsonRes.data;
@@ -218,13 +235,13 @@
 
                 tbody.innerHTML = '';
                 data.forEach(row => {
-                    const date = new Date(row.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
-                    
+                    const date = new Date(row.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
                     let statusColor = 'bg-slate-100 text-slate-700';
-                    if(row.status === 'menunggu') statusColor = 'bg-yellow-100 text-yellow-700';
-                    if(row.status === 'diproses') statusColor = 'bg-blue-100 text-blue-700';
-                    if(row.status === 'selesai') statusColor = 'bg-green-100 text-green-700';
-                    if(row.status === 'ditolak') statusColor = 'bg-red-100 text-red-700';
+                    if (row.status === 'menunggu') statusColor = 'bg-yellow-100 text-yellow-700';
+                    if (row.status === 'diproses') statusColor = 'bg-blue-100 text-blue-700';
+                    if (row.status === 'selesai') statusColor = 'bg-green-100 text-green-700';
+                    if (row.status === 'ditolak') statusColor = 'bg-red-100 text-red-700';
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
@@ -253,4 +270,5 @@
         init();
     </script>
 </body>
+
 </html>
