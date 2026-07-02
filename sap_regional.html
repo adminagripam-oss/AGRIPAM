@@ -165,12 +165,13 @@
                     .getPublicUrl(fileName);
 
                 // 3. Insert ke Tabel Surat (via Backend API Agripam)
-                const res = await fetch('/api/sap_insertSurat', {
+                const res = await fetch('/api/sap', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         token: sessionToken,
                         region: sessionRegion,
+                        action: 'insertSurat',
                         nomor_surat: document.getElementById('nomor_surat').value,
                         jenis_surat: document.getElementById('jenis_surat').value,
                         perihal: document.getElementById('perihal').value,
@@ -203,7 +204,7 @@
             tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat data...</td></tr>';
 
             try {
-                const res = await fetch(`/api/sap_getSurat?token=${encodeURIComponent(sessionToken)}&region=${encodeURIComponent(sessionRegion)}`);
+                const res = await fetch(`/api/sap?action=getSurat&token=${encodeURIComponent(sessionToken)}&region=${encodeURIComponent(sessionRegion)}`);
                 const jsonRes = await res.json();
                 
                 if (!jsonRes.success) throw new Error(jsonRes.message);
