@@ -111,6 +111,10 @@
 
     <!-- KONFIGURASI SUPABASE (Hanya untuk keperluan masa depan jika butuh anon) -->
     <script>
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? '/api'
+            : 'https://agripam-backend.vercel.app/api';
+
         let sessionToken = null;
         let sessionRegion = null;
 
@@ -140,7 +144,7 @@
             tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-500">Memuat data...</td></tr>';
 
             try {
-                const res = await fetch(`/api/sap?action=getSurat&token=${encodeURIComponent(sessionToken)}&region=${encodeURIComponent(sessionRegion)}`);
+                const res = await fetch(`${API_BASE}/sap?action=getSurat&token=${encodeURIComponent(sessionToken)}&region=${encodeURIComponent(sessionRegion)}`);
                 const jsonRes = await res.json();
 
                 if (!jsonRes.success) throw new Error(jsonRes.message);
@@ -222,7 +226,7 @@
             const catatan = document.getElementById('modalCatatan').value;
 
             try {
-                const res = await fetch('/api/sap', {
+                const res = await fetch(`${API_BASE}/sap`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
