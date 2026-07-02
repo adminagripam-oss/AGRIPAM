@@ -140,7 +140,7 @@
             tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-500">Memuat data...</td></tr>';
 
             try {
-                const res = await fetch(`/api/sap_getSurat?token=${encodeURIComponent(sessionToken)}&region=${encodeURIComponent(sessionRegion)}`);
+                const res = await fetch(`/api/sap?action=getSurat&token=${encodeURIComponent(sessionToken)}&region=${encodeURIComponent(sessionRegion)}`);
                 const jsonRes = await res.json();
 
                 if (!jsonRes.success) throw new Error(jsonRes.message);
@@ -222,12 +222,13 @@
             const catatan = document.getElementById('modalCatatan').value;
 
             try {
-                const res = await fetch('/api/sap_updateSurat', {
+                const res = await fetch('/api/sap', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         token: sessionToken,
                         region: sessionRegion,
+                        action: 'updateSurat',
                         surat_id: suratId,
                         status: newStatus,
                         catatan: catatan
