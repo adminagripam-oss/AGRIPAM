@@ -1728,12 +1728,20 @@
               Ini</button>
           </div>
           <div class="btn-group" style="margin-top: 10px;">
-            <button type="button" id="saveDraftRealisasiBtn" class="btn-submit" style="background-color: #17a2b8;" onclick="saveDraftRealisasi()">Simpan Draft</button>
-            <button type="button" id="clearDraftRealisasiBtn" class="btn-delete" style="background-color: #ffc107; color: #000;" onclick="clearDraftRealisasi()">Hapus Draft</button>
+            <button type="button" id="saveDraftRealisasiBtn" class="btn-submit" style="background-color: #17a2b8;"
+              onclick="saveDraftRealisasi()">Simpan Draft</button>
+            <button type="button" id="clearDraftRealisasiBtn" class="btn-delete"
+              style="background-color: #ffc107; color: #000;" onclick="clearDraftRealisasi()">Hapus Draft</button>
           </div>
         </div>
-        <button type="button" class="btn-submit" style="width:100%; margin-bottom: 10px; background-color: #28a745; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="bukaSAP()">
-          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+        <button type="button" class="btn-submit"
+          style="width:100%; margin-bottom: 10px; background-color: #28a745; display: flex; align-items: center; justify-content: center; gap: 8px;"
+          onclick="bukaSAP()">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+            </path>
+          </svg>
           Buka SAP (Persuratan)
         </button>
 
@@ -1851,8 +1859,10 @@
             Estimasi</button>
         </div>
         <div class="btn-group" style="margin-top: 10px;">
-          <button type="button" id="saveDraftEstimasiBtn" class="btn-submit" style="background-color: #17a2b8;" onclick="saveDraftEstimasi()">Simpan Draft</button>
-          <button type="button" id="clearDraftEstimasiBtn" class="btn-delete" style="background-color: #ffc107; color: #000;" onclick="clearDraftEstimasi()">Hapus Draft</button>
+          <button type="button" id="saveDraftEstimasiBtn" class="btn-submit" style="background-color: #17a2b8;"
+            onclick="saveDraftEstimasi()">Simpan Draft</button>
+          <button type="button" id="clearDraftEstimasiBtn" class="btn-delete"
+            style="background-color: #ffc107; color: #000;" onclick="clearDraftEstimasi()">Hapus Draft</button>
         </div>
 
         <button type="button" class="btn-logout" style="width:100%; margin-top:10px; background-color: #6c757d;"
@@ -1916,9 +1926,9 @@
     // KONFIGURASI
     // =========================================================================
     // ── API Configuration (Supabase via Vercel Serverless) ──────────────
-    var API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? '/api'
-        : 'https://api.agri-pam.id/api';
+    var API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:'
+      ? 'http://localhost:3000/api'
+      : '/api';
     // Pemetaan action lama (Apps Script) → endpoint baru
     var ACTION_MAP = {
       "login": "auth",
@@ -2026,11 +2036,11 @@
 
     function saveSession(region, token, ttlMs) {
       var expiry = Date.now() + (ttlMs || 8 * 60 * 60 * 1000);
-      
+
       // Load drafts if available
       loadDraftEstimasi();
       loadDraftRealisasi();
-      
+
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({
         region: region,
         token: token,
@@ -4159,7 +4169,7 @@
           if (draft.outputPanen) document.getElementById("outputPanen").value = draft.outputPanen;
           if (draft.estimasiKirim) document.getElementById("estimasiKirim").value = draft.estimasiKirim;
           if (draft.estimasiRestan) document.getElementById("estimasiRestan").value = draft.estimasiRestan;
-          
+
           if (draft.isTidakPanen) {
             if (!isTidakPanen) toggleTidakPanen();
           } else {
@@ -4170,7 +4180,7 @@
               btn.style.backgroundColor = "#28a745";
             }
           }
-        } catch(e) { console.error("Gagal meload draft estimasi", e); }
+        } catch (e) { console.error("Gagal meload draft estimasi", e); }
       }
     }
 
@@ -4214,7 +4224,7 @@
           if (draft.tanggal) document.getElementById("tanggal").value = draft.tanggal;
           if (draft.jam) document.getElementById("jam").value = draft.jam;
           if (draft.tonase) document.getElementById("tonase").value = draft.tonase;
-        } catch(e) { console.error("Gagal meload draft realisasi", e); }
+        } catch (e) { console.error("Gagal meload draft realisasi", e); }
       }
     }
 
