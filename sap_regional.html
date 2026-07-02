@@ -127,6 +127,10 @@
         const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? '/api'
+            : 'https://agripam-backend.vercel.app/api';
+
         let sessionToken = null;
         let sessionRegion = null;
 
@@ -182,7 +186,7 @@
                     .getPublicUrl(fileName);
 
                 // 3. Insert ke Tabel Surat (via Backend API Agripam)
-                const res = await fetch('/api/sap', {
+                const res = await fetch(`${API_BASE}/sap`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -221,7 +225,7 @@
             tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat data...</td></tr>';
 
             try {
-                const res = await fetch(`/api/sap?action=getSurat&token=${encodeURIComponent(sessionToken)}&region=${encodeURIComponent(sessionRegion)}`);
+                const res = await fetch(`${API_BASE}/sap?action=getSurat&token=${encodeURIComponent(sessionToken)}&region=${encodeURIComponent(sessionRegion)}`);
                 const jsonRes = await res.json();
 
                 if (!jsonRes.success) throw new Error(jsonRes.message);
