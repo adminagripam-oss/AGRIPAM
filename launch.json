@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Start Dev Server (Node.js)",
+            "program": "${workspaceFolder}/dev-server.js",
+            "runtimeArgs": [
+                "--env-file=.env"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Chrome (Localhost)",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Start Server & Chrome",
+            "configurations": [
+                "Start Dev Server (Node.js)",
+                "Launch Chrome (Localhost)"
+            ]
+        }
+    ]
+}
