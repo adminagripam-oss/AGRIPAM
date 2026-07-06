@@ -1,0 +1,498 @@
+<title>Panduan Regional — AgriPaM</title>
+<style>
+  :root {
+    --ink: #182b1c;
+    --ink-soft: #3d4f3f;
+    --paper: #f6f4ec;
+    --paper-raised: #fffdf6;
+    --green-deep: #1b5e20;
+    --green-mid: #4b7a4f;
+    --amber: #b8792a;
+    --line: rgba(24, 43, 28, 0.14);
+    --line-strong: rgba(24, 43, 28, 0.28);
+    --shadow: 0 1px 2px rgba(24, 43, 28, 0.06), 0 8px 24px rgba(24, 43, 28, 0.06);
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --font-body: "Segoe UI", "Century Gothic", "Trebuchet MS", system-ui, sans-serif;
+    --font-mono: Consolas, "SF Mono", "Cascadia Mono", ui-monospace, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e9ede7;
+      --ink-soft: #b9c4ba;
+      --paper: #121810;
+      --paper-raised: #1a2117;
+      --green-deep: #7bc47f;
+      --green-mid: #6fa374;
+      --amber: #dba85a;
+      --line: rgba(233, 237, 231, 0.14);
+      --line-strong: rgba(233, 237, 231, 0.26);
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #e9ede7;
+    --ink-soft: #b9c4ba;
+    --paper: #121810;
+    --paper-raised: #1a2117;
+    --green-deep: #7bc47f;
+    --green-mid: #6fa374;
+    --amber: #dba85a;
+    --line: rgba(233, 237, 231, 0.14);
+    --line-strong: rgba(233, 237, 231, 0.26);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  :root[data-theme="light"] {
+    --ink: #182b1c;
+    --ink-soft: #3d4f3f;
+    --paper: #f6f4ec;
+    --paper-raised: #fffdf6;
+    --green-deep: #1b5e20;
+    --green-mid: #4b7a4f;
+    --amber: #b8792a;
+    --line: rgba(24, 43, 28, 0.14);
+    --line-strong: rgba(24, 43, 28, 0.28);
+    --shadow: 0 1px 2px rgba(24, 43, 28, 0.06), 0 8px 24px rgba(24, 43, 28, 0.06);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 22px;
+    margin-bottom: 8px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    margin: 0 0 10px;
+  }
+
+  h1.title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(30px, 5vw, 42px);
+    line-height: 1.12;
+    margin: 0 0 10px;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+
+  .subtitle {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    max-width: 60ch;
+  }
+
+  .masthead-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 16px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- Nav chips ---------- */
+  nav.toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 26px 0 46px;
+  }
+
+  nav.toc a {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 7px 13px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--paper-raised);
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  nav.toc a:hover,
+  nav.toc a:focus-visible {
+    border-color: var(--green-deep);
+    color: var(--green-deep);
+    outline: none;
+  }
+
+  nav.toc span.num {
+    font-family: var(--font-mono);
+    color: var(--amber);
+    margin-right: 6px;
+  }
+
+  /* ---------- Chapters ---------- */
+  section.chapter {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 0 22px;
+    padding-top: 44px;
+    scroll-margin-top: 24px;
+  }
+
+  section.chapter + section.chapter {
+    border-top: 1px solid var(--line);
+  }
+
+  .chapter-num {
+    font-family: var(--font-display);
+    font-size: 44px;
+    color: var(--green-deep);
+    line-height: 1;
+    opacity: 0.85;
+  }
+
+  .chapter-body h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 26px;
+    margin: 0 0 4px;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
+  .chapter-sub {
+    margin: 0 0 22px;
+    color: var(--ink-soft);
+    font-size: 14.5px;
+  }
+
+  .chapter-body { padding-bottom: 8px; }
+
+  /* ---------- Steps ---------- */
+  ol.steps {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    counter-reset: step;
+  }
+
+  ol.steps > li {
+    counter-increment: step;
+    position: relative;
+    padding: 12px 0 12px 40px;
+    border-bottom: 1px solid var(--line);
+    font-size: 15px;
+  }
+
+  ol.steps > li:last-child { border-bottom: none; }
+
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 12px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--green-deep);
+    color: var(--green-deep);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  ol.steps b { color: var(--ink); }
+
+  ui { /* fake tag guard, unused */ }
+
+  .ui-label {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: var(--paper-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .ui-btn {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: var(--green-deep);
+    color: var(--paper-raised);
+    border-radius: 4px;
+    padding: 1px 7px;
+    white-space: nowrap;
+  }
+
+  /* ---------- Notes / callouts ---------- */
+  .note {
+    margin: 18px 0;
+    padding: 14px 0;
+    border-top: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .note .note-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .note.tip .note-label { color: var(--green-deep); }
+  .note.warn .note-label { color: var(--amber); }
+
+  .note p { margin: 0; font-size: 14px; color: var(--ink-soft); }
+  .note p + p { margin-top: 6px; }
+
+  /* ---------- Field reference tables ---------- */
+  .field-ref {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4px 0 22px;
+    font-size: 13.5px;
+  }
+
+  .field-ref caption {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  .field-ref th,
+  .field-ref td {
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  .field-ref th {
+    font-weight: 600;
+    color: var(--ink-soft);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .field-ref-wrap { overflow-x: auto; }
+
+  /* ---------- Footer ---------- */
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 2px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 560px) {
+    section.chapter {
+      grid-template-columns: 40px 1fr;
+      gap: 0 14px;
+    }
+    .chapter-num { font-size: 30px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="masthead">
+    <p class="eyebrow">Panduan Pengguna &middot; Akun Regional</p>
+    <h1 class="title">Mengoperasikan AgriPaM dari Kebun</h1>
+    <p class="subtitle">Langkah demi langkah login, lapor realisasi panen per jam, ajukan estimasi &amp; rencana panen, dan kelola persuratan SAP — untuk staf regional PT Agrinas Palma Nusantara.</p>
+    <div class="masthead-meta">
+      <span>APLIKASI: AGRIPAM</span>
+      <span>PERAN: REGIONAL</span>
+      <span>BERKAS: login.html &middot; FORMAT_ESTIMASI_PANEN.html &middot; sap_regional.html</span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-label="Daftar isi">
+    <a href="#login"><span class="num">01</span>Login</a>
+    <a href="#realisasi"><span class="num">02</span>Grafik Realisasi Tiap Jam</a>
+    <a href="#hapus-jam"><span class="num">03</span>Menghapus Jam</a>
+    <a href="#estimasi"><span class="num">04</span>Rencana &amp; Estimasi Panen</a>
+    <a href="#sap"><span class="num">05</span>SAP Regional</a>
+  </nav>
+
+  <!-- 01 LOGIN -->
+  <section class="chapter" id="login">
+    <div class="chapter-num">01</div>
+    <div class="chapter-body">
+      <h2>Masuk ke Dashboard</h2>
+      <p class="chapter-sub">Satu halaman untuk login dan dashboard harian Anda — tidak ada perpindahan halaman.</p>
+
+      <ol class="steps">
+        <li>Buka halaman <span class="ui-label">login.html</span> di browser (biasanya sudah jadi halaman default saat mengetik alamat website).</li>
+        <li>Pada dropdown <b>Region / Wilayah</b>, pilih wilayah kerja Anda dari daftar.</li>
+        <li>Isi kolom <b>Password Region</b> dengan kata sandi wilayah Anda. Gunakan ikon mata untuk menampilkan/menyembunyikan ketikan.</li>
+        <li>Klik tombol <span class="ui-btn">Masuk</span>.</li>
+        <li>Sistem menampilkan <i>"Berhasil masuk. Memuat dashboard..."</i>, lalu dashboard regional terbuka otomatis di halaman yang sama.</li>
+      </ol>
+
+      <div class="note warn">
+        <span class="note-label">Perhatian</span>
+        <p>Password diatur per wilayah, bukan per orang. Kalau lupa, hubungi Admin Kantor Pusat — jangan mencoba menebak berkali-kali.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 REALISASI -->
+  <section class="chapter" id="realisasi">
+    <div class="chapter-num">02</div>
+    <div class="chapter-body">
+      <h2>Mengisi Grafik Realisasi Tiap Jam</h2>
+      <p class="chapter-sub">Setiap laporan jam yang Anda kirim langsung menambah satu titik pada <i>Grafik Realisasi Tiap Jam</i> di dashboard.</p>
+
+      <ol class="steps">
+        <li>Cek kolom <b>Tanggal Laporan</b> — sudah terisi otomatis tanggal hari ini (WIB). Ubah hanya jika melapor untuk tanggal lain.</li>
+        <li>Pilih jam panen pada dropdown <b>Jam Laporan</b>.</li>
+        <li>Isi <b>Realisasi Panen Saat Ini (Ton)</b> dengan tonase TBS yang masuk pada jam tersebut.</li>
+        <li>Periksa <b>Total Akumulasi (Ton)</b> — terisi otomatis; tekan tombol <span class="ui-btn">Refresh</span> di sampingnya bila angkanya terasa belum ter-update.</li>
+        <li>Klik <span class="ui-btn">Kirim Data</span>.</li>
+        <li>Grafik <i>Realisasi Tiap Jam</i> di atas form akan langsung memperbarui batang/titik untuk jam yang baru saja dikirim.</li>
+      </ol>
+
+      <div class="field-ref-wrap">
+        <table class="field-ref">
+          <caption>Referensi jam laporan yang tersedia</caption>
+          <tbody>
+            <tr><td>06.00</td><td>07.00</td><td>08.00</td><td>09.00</td><td>10.00</td><td>11.00</td></tr>
+            <tr><td>12.00</td><td>13.00</td><td>14.00</td><td>15.00</td><td>16.00</td><td>17.30</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note tip">
+        <span class="note-label">Tips</span>
+        <p>Memilih jam yang datanya sudah pernah dikirim akan menampilkan tonase yang tersimpan di jam itu (bukan form kosong) — berguna untuk mengecek sebelum mengoreksi atau menghapus.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 HAPUS JAM -->
+  <section class="chapter" id="hapus-jam">
+    <div class="chapter-num">03</div>
+    <div class="chapter-body">
+      <h2>Cara Menghapus Jam</h2>
+      <p class="chapter-sub">Aturannya sederhana: data hari ini bisa dihapus sendiri, data tanggal lampau butuh persetujuan Admin.</p>
+
+      <ol class="steps">
+        <li>Pilih tanggal &amp; jam yang datanya ingin dihapus (field tonase akan terisi otomatis sesuai data tersimpan).</li>
+        <li>Klik <span class="ui-btn">Hapus Jam Ini</span> di samping tombol Kirim Data.</li>
+        <li><b>Jika tanggalnya hari ini</b> — muncul konfirmasi <i>"Apakah Anda yakin ingin menghapus data laporan jam …? Tonase sebesar … Ton akan dihapus dari database &amp; akumulasi."</i> Klik OK, data langsung terhapus dan akumulasi otomatis dihitung ulang.</li>
+        <li><b>Jika tanggalnya bukan hari ini</b> — muncul konfirmasi berbeda: <i>"Penghapusan data di luar Hari Ini membutuhkan persetujuan ADMIN. Kirim permintaan hapus untuk jam …?"</i> Klik OK untuk mengirim permintaan.</li>
+        <li>Setelah terkirim, muncul pesan <i>"Permintaan hapus data telah dikirim ke Admin untuk diverifikasi."</i> Data baru benar-benar terhapus setelah Admin menyetujuinya di menu Verifikasi Hapus.</li>
+      </ol>
+
+      <div class="note warn">
+        <span class="note-label">Perhatian</span>
+        <p>Satu jam hanya boleh punya satu permintaan hapus aktif. Mengulang permintaan untuk jam yang sama akan ditolak dengan pesan <i>"sudah diajukan dan sedang menunggu persetujuan Admin."</i></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 ESTIMASI -->
+  <section class="chapter" id="estimasi">
+    <div class="chapter-num">04</div>
+    <div class="chapter-body">
+      <h2>Rencana Panen &amp; Estimasi Panen</h2>
+      <p class="chapter-sub">Estimasi harian per kebun diajukan lewat modul Infografis, terpisah dari laporan realisasi jam-jaman.</p>
+
+      <ol class="steps">
+        <li>Di dashboard, klik panah bulat mengambang di sisi kanan layar (<b>Buka Infografis Rencana &amp; Estimasi Panen</b>).</li>
+        <li>Pada halaman Infografis yang terbuka, klik tombol <span class="ui-btn">Form Estimasi Panen</span>.</li>
+        <li>Isi <b>Tanggal Estimasi</b>, <b>Luas Panen (Ha)</b>, <b>Estimasi Restan Lalu (Kg)</b>, <b>TK Panen (Hk)</b>, dan <b>Estimasi Panen (Kg)</b> — kolom <b>Output Panen (Kg/Hk)</b> terhitung otomatis dari angka-angka ini.</li>
+        <li>Kebun tidak panen hari itu? Klik tombol status <i>"Status: Aktif Panen (Klik jika Tidak Panen)"</i> untuk menandainya.</li>
+        <li>Lengkapi <b>Estimasi Kirim (Kg)</b> dan <b>Estimasi Restan (Kg)</b>, lalu klik <span class="ui-btn">Kirim Estimasi</span>.</li>
+        <li>Untuk melihat rekap semua tanggal, buka tombol <span class="ui-btn">Tabel Rencana &amp; Estimasi</span> di halaman yang sama.</li>
+      </ol>
+
+      <div class="note warn">
+        <span class="note-label">Menghapus estimasi</span>
+        <p>Tombol <span class="ui-btn">Hapus Estimasi</span> mengikuti aturan H-1: estimasi tanggal <b>kemarin</b> terhapus langsung setelah konfirmasi. Estimasi yang lebih lama mengirim permintaan hapus yang harus disetujui Admin — sama seperti alur di Bab 03.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 SAP -->
+  <section class="chapter" id="sap">
+    <div class="chapter-num">05</div>
+    <div class="chapter-body">
+      <h2>SAP Regional — Persuratan</h2>
+      <p class="chapter-sub">Mengirim surat ke Kantor Pusat dan memantau statusnya, tanpa perlu kirim fisik atau email terpisah.</p>
+
+      <ol class="steps">
+        <li>Di sidebar kiri dashboard, klik ikon amplop (<b>Buka SAP (Persuratan)</b>).</li>
+        <li>Pada form <b>Input Surat Baru</b>, isi <b>Nomor Surat</b>, pilih <b>Jenis Surat</b> (Surat Masuk / Surat Permintaan), dan tulis <b>Perihal</b>.</li>
+        <li>Lampirkan berkas pada <b>File Surat (PDF / Word)</b> — mendukung <span class="ui-label">.pdf</span> maupun <span class="ui-label">.docx</span>, maksimal 5 MB.</li>
+        <li>Klik <span class="ui-btn">Upload &amp; Simpan</span>.</li>
+        <li>Pantau statusnya di tabel <b>Monitoring Surat Saya</b> — kolom Tanggal, No Surat, Jenis, Perihal, <b>Status</b>, Tujuan, dan File.</li>
+        <li>Gunakan kolom pencarian <i>"Cari nomor surat / perihal…"</i> untuk menemukan surat lama dengan cepat.</li>
+      </ol>
+
+      <div class="field-ref-wrap">
+        <table class="field-ref">
+          <caption>Arti status surat</caption>
+          <thead><tr><th>Status</th><th>Artinya</th></tr></thead>
+          <tbody>
+            <tr><td>Menunggu</td><td>Surat sudah masuk, belum diperiksa Admin.</td></tr>
+            <tr><td>Diproses</td><td>Sedang ditindaklanjuti oleh bagian tujuan.</td></tr>
+            <tr><td>Selesai</td><td>Surat sudah selesai diproses.</td></tr>
+            <tr><td>Ditolak</td><td>Surat dikembalikan — cek kolom Catatan dari Admin.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note tip">
+        <span class="note-label">Fitur baru: edit dokumen Word</span>
+        <p>Kalau berkas yang diunggah berformat <span class="ui-label">.docx</span>, akan muncul tautan <span class="ui-btn">Edit</span> di sebelah "Buka File". Klik untuk membuka editor teks langsung di browser (bold/italic/underline, heading, bullet/nomor, rata kiri-kanan), lalu klik <span class="ui-btn">Simpan Dokumen</span> untuk menyimpan perubahan sebagai berkas Word baru.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>AgriPaM &middot; Panduan Regional</span>
+    <span>Untuk pertanyaan teknis, hubungi Admin Kantor Pusat</span>
+  </footer>
+
+</div>

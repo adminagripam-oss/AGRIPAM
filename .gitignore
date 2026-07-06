@@ -12,3 +12,9 @@ Thumbs.db
 .env
 .env.local
 .env.production
+
+# Claude Code runtime state
+.claude/scheduled_tasks.lock
+
+# Nested/duplicate repo — jangan ikut ke-commit
+/AGRIPAM/
