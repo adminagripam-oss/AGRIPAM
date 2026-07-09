@@ -12,16 +12,6 @@ module.exports = async (req, res) => {
   const tanggal = (p.tanggal || '').trim();
   const region = (p.region || '').trim();
 
-  // Validasi token tanpa cek region spesifik dulu — ADMIN boleh akses region manapun
-  const check = await verifyToken(token, null);
-  if (!check.valid) return res.json({ success: false, message: check.message });
-
-  // Regional hanya boleh akses region miliknya sendiri; ADMIN boleh akses region manapun (termasuk ALL)
-  if (check.region !== 'ADMIN' && check.region !== region) {
-    return res.json({ success: false, message: 'Anda tidak memiliki akses ke region ini.' });
-  }
-
-
   if (action === 'getEstimasi') {
     if (!tanggal) return res.json({ success: false, message: 'Tanggal wajib diisi.' });
 
@@ -69,6 +59,13 @@ module.exports = async (req, res) => {
   }
 
   if (action === 'insertEstimasi') {
+    const check = await verifyToken(token, null);
+    if (!check.valid) return res.json({ success: false, message: check.message });
+
+    if (check.region !== 'ADMIN' && check.region !== region) {
+      return res.json({ success: false, message: 'Anda tidak memiliki akses ke region ini.' });
+    }
+
     const restanLalu = parseFloat(p.estimasiRestanLalu);
     const luasPanen = parseFloat(p.luasPanen);
     const tkPanen = parseFloat(p.tkPanen);
@@ -103,6 +100,13 @@ module.exports = async (req, res) => {
   }
 
   if (action === 'deleteEstimasi') {
+    const check = await verifyToken(token, null);
+    if (!check.valid) return res.json({ success: false, message: check.message });
+
+    if (check.region !== 'ADMIN' && check.region !== region) {
+      return res.json({ success: false, message: 'Anda tidak memiliki akses ke region ini.' });
+    }
+
     if (!tanggal || !region) return res.json({ success: false, message: 'Tanggal dan Region wajib diisi.' });
 
     const { data: deleted, error } = await supabase.from('data_estimasi').delete().eq('tanggal', tanggal).eq('region', region).select('id');

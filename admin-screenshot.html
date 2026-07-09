@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — AgriPaM (Screenshot Mode)</title>
+  <link rel="icon" type="image/jpeg" href="LOGO AGRIPAM.jpeg">
+  <style>
+    :root {
+      /* Light Mode Default */
+      --bg-overlay-color: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.55));
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-bg-solid: #ffffff;
+      --text-primary: #111111;
+      --text-secondary: #555555;
+      --text-muted: #888888;
+      --border-color: rgba(0, 0, 0, 0.08);
+      --input-bg: #ffffff;
+      --input-text: #111111;
+      --input-border: #cccccc;
+      --clock-bg: rgba(255, 255, 255, 0.45);
+      --shadow-color: rgba(0, 0, 0, 0.25);
+      --sidebar-btn-bg: #e2e8f0;
+      --sidebar-btn-hover: #cbd5e1;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Mode Variables */
+      --bg-overlay-color: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.85));
+      --card-bg: rgba(30, 41, 59, 0.85);
+      --card-bg-solid: #1e293b;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --input-bg: #334155;
+      --input-text: #f8fafc;
+      --input-border: #475569;
+      --clock-bg: rgba(15, 23, 42, 0.45);
+      --shadow-color: rgba(0, 0, 0, 0.55);
+      --sidebar-btn-bg: #334155;
+      --sidebar-btn-hover: #475569;
+    }
+
+    body {
+      font-family: 'Trebuchet MS', sans-serif;
+      margin: 0;
+      padding: 20px 20px 60px 20px;
+      min-height: 100vh;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--card-bg-solid);
+      transition: background-color 0.3s ease;
+    }
+
+    /* Background Slider Container */
+    .bg-slider {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .bg-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    .bg-slide.active {
+      opacity: 1;
+    }
+
+    /* Overlay */
+    .bg-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      background: var(--bg-overlay-color);
+      transition: background 0.3s ease;
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 30px 25px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px var(--shadow-color);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--text-primary);
+      font-size: 20px;
+      transition: color 0.3s ease;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      transition: color 0.3s ease;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 6px 12px;
+      margin-top: 5px;
+      border: 1px solid var(--input-border);
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 15px;
+      font-weight: bold;
+      background-color: var(--input-bg);
+      color: var(--input-text);
+      transition: all 0.3s ease;
+    }
+
+    select option {
+      background-color: var(--input-bg);
+      color: var(--input-text);
+    }
+
+    .readonly-input {
+      background-color: var(--input-bg);
+      opacity: 0.6;
+      color: var(--input-text);
+      cursor: not-allowed;
+    }
+
+    /* Logo */
+    .logo-wrapper {
+      text-align: center;
+      margin-bottom: 18px;
+      margin-top: 4px;
+    }
+
+    .logo-wrapper img {
+      max-width: 400px;
+      width: 100%;
+      height: auto;
+    }
+
+    .logo-divider {
+      border: none;
+      border-top: 1px solid #e0e0e0;
+      margin: 0 0 16px 0;
+    }
+
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn-submit {
+      background-color: #28a745;
+    }
+
+    .btn-submit:hover {
+      background-color: #218838;
+    }
+
+    .btn-refresh {
+      background-color: #007bff;
+      flex: 0 0 auto;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+    .btn-refresh:hover {
+      background-color: #0069d9;
+    }
+
+    button:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+
+    #status {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    .akumulasi-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .akumulasi-row .field-wrap {
+      flex: 1;
+    }
+
+    small.hint {
+      color: var(--text-muted);
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      transition: color 0.3s ease;
+    }
+
+    /* Region Aktif */
+    .active-region {
+      text-align: center;
+      color: #007bff;
+      font-weight: bold;
+      margin-top: -10px;
+      margin-bottom: 15px;
+      font-size: 15px;
+    }
+
+    [data-theme="dark"] .active-region {
+      color: #38bdf8;
+    }
+
+    /* WIB Clock */
+    .wib-clock-container {
+      text-align: center;
+      background: var(--clock-bg);
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin: 10px 0 15px 0;
+      border: 1px solid var(--border-color);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    .wib-clock-time {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--text-primary);
+      font-family: 'Courier New', Courier, monospace;
+      letter-spacing: 1px;
+      transition: color 0.3s ease;
+    }
+
+    .wib-clock-date {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      transition: color 0.3s ease;
+    }
+
+    .wib-clock-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+
+    /* Two-Column Layout */
+    .layout-wrapper {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      max-width: 1400px;
+      box-sizing: border-box;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .column-left {
+      flex: 1;
+      min-width: 320px;
+      max-width: 420px;
+    }
+
+    .column-right {
+      flex: 2.2;
+      min-width: 320px;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      padding: 30px 25px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px var(--shadow-color);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .layout-wrapper.admin-layout {
+      max-width: 100%;
+      padding: 0 40px;
+    }
+
+    .layout-wrapper.admin-layout .column-left {
+      max-width: 100%;
+    }
+
+    .layout-wrapper.admin-layout .column-right {
+      flex: 3;
+    }
+
+    @media (min-width: 769px) {
+      body.dashboard-active {
+        height: 100vh;
+        overflow: hidden;
+        padding: 20px 20px 50px 20px !important;
+        box-sizing: border-box;
+      }
+
+      body.dashboard-active .layout-wrapper {
+        height: calc(100vh - 70px);
+        box-sizing: border-box;
+        position: relative;
+      }
+
+      body.dashboard-active .column-left {
+        position: absolute;
+        left: 60px;
+        top: 0;
+        bottom: 0;
+        width: 370px;
+        max-width: 370px;
+        height: 100%;
+        max-height: 100%;
+        box-sizing: border-box;
+        overflow-y: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        z-index: 10;
+        margin: 0 !important;
+        border-radius: 12px 0 0 12px;
+        box-shadow: 2px 0 10px var(--shadow-color);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease !important;
+      }
+
+      body.dashboard-active .column-left::-webkit-scrollbar {
+        display: none;
+      }
+
+      body.dashboard-active .column-right {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100%;
+        max-height: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+        padding-left: 460px !important;
+        border-radius: 12px;
+        transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative;
+      }
+
+      /* Collapsed Sidebar */
+      body.dashboard-active .sidebar-collapsed .column-left {
+        transform: translateX(-110%);
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      body.dashboard-active .sidebar-collapsed .column-right {
+        padding-left: 85px !important;
+      }
+
+      /* Sidetrack */
+      .sidetrack {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 60px;
+        background: #4bacc6;
+        border-right: 1px solid var(--border-color);
+        z-index: 60;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+        gap: 15px;
+        border-radius: 12px 0 0 12px;
+        box-shadow: 2px 0 10px var(--shadow-color);
+      }
+
+      #sidebarToggleBtn {
+        position: relative;
+        background: var(--sidebar-btn-bg);
+        color: var(--text-primary);
+        border: 1px solid transparent;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 50;
+        border-radius: 8px;
+      }
+
+      #sidebarToggleBtn:hover {
+        transform: scale(1.1);
+        background: var(--sidebar-btn-hover);
+      }
+
+      .sidebar-collapsed #sidebarToggleBtn svg {
+        transform: scaleX(-1);
+      }
+
+      body.dashboard-active #chartContainer {
+        position: relative;
+        flex: 1 1 0%;
+        min-height: 0;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        aspect-ratio: auto !important;
+        margin: 10px 0;
+      }
+
+      body.dashboard-active #realisasiChart {
+        width: 100% !important;
+        height: 100% !important;
+      }
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 12px var(--shadow-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.08) rotate(15deg);
+      box-shadow: 0 6px 16px var(--shadow-color);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.95);
+    }
+
+    .theme-toggle-icon-wrapper {
+      position: relative;
+      width: 22px;
+      height: 22px;
+    }
+
+    .theme-toggle svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--text-primary);
+    }
+
+    [data-theme="light"] .theme-toggle .sun-icon {
+      opacity: 0;
+      transform: scale(0.5) rotate(-90deg);
+    }
+
+    [data-theme="light"] .theme-toggle .moon-icon {
+      opacity: 1;
+      transform: scale(1) rotate(0);
+    }
+
+    [data-theme="dark"] .theme-toggle .sun-icon {
+      opacity: 1;
+      transform: scale(1) rotate(0);
+    }
+
+    [data-theme="dark"] .theme-toggle .moon-icon {
+      opacity: 0;
+      transform: scale(0.5) rotate(90deg);
+    }
+
+    /* Session Info */
+    .session-info {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 15px;
+      text-align: center;
+      transition: color 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+      .layout-wrapper {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .column-left,
+      .column-right {
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .sidetrack {
+        position: static;
+        width: 100%;
+        max-width: 400px;
+        box-sizing: border-box;
+        background: #4bacc6;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 10px;
+        margin: 0 auto 12px;
+      }
+
+      #sidebarToggleBtn {
+        position: relative;
+        background: var(--sidebar-btn-bg);
+        color: var(--text-primary);
+        border-radius: 8px;
+      }
+    }
+
+    /* Running Text */
+    .running-text-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 8px 0;
+      overflow: hidden;
+      z-index: 9999;
+      font-size: 13px;
+      box-shadow: 0 -2px 10px var(--shadow-color);
+      transition: background 0.3s ease, border 0.3s ease;
+    }
+
+    .running-text-content {
+      display: inline-block;
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: marquee 75s linear infinite;
+    }
+
+    .running-text-content:hover {
+      animation-play-state: paused;
+    }
+
+    .running-text-item {
+      display: inline-block;
+      padding-right: 40px;
+    }
+
+    .running-text-item strong {
+      color: #28a745;
+    }
+
+    [data-theme="dark"] .running-text-item strong {
+      color: #4ade80;
+    }
+
+    @keyframes marquee {
+      0% {
+        transform: translateX(0);
+      }
+
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+
+  </style>
+</head>
+
+<body class="dashboard-active">
+  <!-- Background -->
+  <div class="bg-slider">
+    <div class="bg-slide active" style="background-image: url('BG1.webp');"></div>
+    <div class="bg-slide" style="background-image: url('BG2.webp');"></div>
+    <div class="bg-slide" style="background-image: url('BG3.webp');"></div>
+  </div>
+  <div class="bg-overlay"></div>
+
+  <!-- ===================== MAIN DASHBOARD (NO LOGIN REQUIRED) ===================== -->
+  <div id="mainSection" class="layout-wrapper admin-layout" style="display:flex;">
+    <!-- Sidetrack -->
+    <div class="sidetrack">
+      <button id="sidebarToggleBtn" onclick="toggleSidebar()"
+        style="position:relative; background:var(--sidebar-btn-bg); color:var(--text-primary); border:1px solid transparent; border-radius:8px; z-index:50;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          aria-hidden="true">
+          <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+          <path d="M9 3v18"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- KOLOM KIRI: Admin Controls -->
+    <div class="column-left container" style="margin: 0; max-width: 100%;">
+      <div class="logo-wrapper">
+        <img src="AGRINAS DANANTARA.png" alt="Logo Agrinas Palma Nusantara">
+      </div>
+      <hr class="logo-divider">
+
+      <h2>AgriPaM</h2>
+      <div class="wib-clock-container">
+        <div class="wib-clock-time" id="wibClockTime">--:--:--</div>
+        <div class="wib-clock-date" id="wibClockDate">Mengambil Waktu WIB...</div>
+        <div class="wib-clock-label">WAKTU SERVER WIB (UTC+7)</div>
+      </div>
+
+      <p id="displayRegionText" class="active-region" style="display:none;"></p>
+
+      <!-- Admin dropdown -->
+      <div id="adminRegionSelectContainer"
+        style="display: block; text-align: center; margin-top: -10px; margin-bottom: 15px;">
+        <div style="margin-bottom: 8px;">
+          <label
+            style="display: inline-block; width: 120px; max-width: 100%; box-sizing: border-box; text-align: left; margin-top: 0; color: var(--text-secondary); font-size: 14px;">Region
+            Monitor:</label>
+          <select id="adminRegionSelect" onchange="onAdminRegionChange()"
+            style="display: inline-block; width: 320px; max-width: 100%; box-sizing: border-box; padding: 6px 12px; margin-top: 0; font-weight: bold;">
+            <option value="">- Pilih Region -</option>
+            <option value="Aceh">Aceh</option>
+            <option value="Sumatera Utara 1">Sumatera Utara 1</option>
+            <option value="Sumatera Utara 2 Ex Torganda">Sumatera Utara 2 Ex Torganda</option>
+            <option value="Riau 1">Riau 1</option>
+            <option value="Riau 2">Riau 2</option>
+            <option value="Riau 3">Riau 3</option>
+            <option value="Riau 4">Riau 4</option>
+            <option value="Bangka Belitung">Bangka Belitung</option>
+            <option value="Jambi">Jambi</option>
+            <option value="Sumatera Barat">Sumatera Barat</option>
+            <option value="Sumatera Selatan">Sumatera Selatan</option>
+            <option value="Kalimantan Barat 1">Kalimantan Barat 1</option>
+            <option value="Kalimantan Barat 2">Kalimantan Barat 2</option>
+            <option value="Kalimantan Selatan 1">Kalimantan Selatan 1</option>
+            <option value="Kalimantan Selatan 2">Kalimantan Selatan 2</option>
+            <option value="Kalimantan Timur">Kalimantan Timur</option>
+            <option value="Kalimantan Utara">Kalimantan Utara</option>
+            <option value="Kalimantan Tengah 1">Kalimantan Tengah 1</option>
+            <option value="Kalimantan Tengah 2">Kalimantan Tengah 2</option>
+            <option value="Kalimantan Tengah 3">Kalimantan Tengah 3</option>
+            <option value="Sulawesi Tenggara">Sulawesi Tenggara</option>
+            <option value="Sulawesi Tengah">Sulawesi Tengah</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 8px;">
+          <label
+            style="display: inline-block; width: 120px; max-width: 100%; box-sizing: border-box; text-align: left; margin-top: 0; color: var(--text-secondary); font-size: 14px;">Rekapan
+            CRO:</label>
+          <select id="adminCROSelect" onchange="onAdminCROChange()"
+            style="display: inline-block; width: 320px; max-width: 100%; box-sizing: border-box; padding: 6px 12px; margin-top: 0; font-weight: bold;">
+            <option value="">- Pilih CRO -</option>
+            <option value="CRO I">CRO I (Aceh, Sumut 1, Sumut 2)</option>
+            <option value="CRO II">CRO II (Riau 1)</option>
+            <option value="CRO III">CRO III (Riau 2, Riau 3)</option>
+            <option value="CRO IV">CRO IV (Riau 4)</option>
+            <option value="CRO V">CRO V (Sumbar, Jambi, Babel)</option>
+            <option value="CRO VI">CRO VI (Kalbar 1, Kalbar 2)</option>
+            <option value="CRO VII">CRO VII (Kalsel 1, Kalsel 2, Kaltim, Kalut)</option>
+            <option value="CRO VIII">CRO VIII (Kalteng 1, Kalteng 3)</option>
+            <option value="CRO IX">CRO IX (Kalteng 2)</option>
+            <option value="CRO X">CRO X (Sultra, Sulteng)</option>
+          </select>
+        </div>
+        <div style="margin-top: 10px; text-align: center;">
+          <button type="button" class="btn-submit" onclick="onAdminTotalAllClick()"
+            style="display: inline-block; width: 450px; max-width: 100%; padding: 8px 12px; font-size: 14px; font-weight: bold;">
+            Tampilkan Total Semua Region
+          </button>
+        </div>
+      </div>
+
+      <p id="sessionInfo" class="session-info">Mode Screenshot — Tanpa Login</p>
+
+      <form id="panenForm" onsubmit="return false;">
+        <label>Tanggal Laporan:</label>
+        <input type="date" id="tanggal" name="tanggal" required onchange="onTanggalChange()">
+
+        <!-- Hidden for admin -->
+        <div id="panenInputFields" style="display: none;">
+          <label>Jam Laporan:</label>
+          <select id="jam" name="jam" required>
+            <option value="" disabled selected>Pilih Jam...</option>
+            <option value="06.00">06.00</option>
+            <option value="07.00">07.00</option>
+            <option value="08.00">08.00</option>
+            <option value="09.00">09.00</option>
+            <option value="10.00">10.00</option>
+            <option value="11.00">11.00</option>
+            <option value="12.00">12.00</option>
+            <option value="13.00">13.00</option>
+            <option value="14.00">14.00</option>
+            <option value="15.00">15.00</option>
+            <option value="16.00">16.00</option>
+            <option value="17.30">17.30</option>
+          </select>
+          <small class="hint" id="jamHint"></small>
+
+          <label>Total Akumulasi (Ton)</label>
+          <div class="akumulasi-row">
+            <div class="field-wrap">
+              <input type="number" step="0.01" id="akumulasi" class="readonly-input" value="0" readonly>
+            </div>
+            <button type="button" class="btn-refresh" onclick="checkAccumulation()">Refresh</button>
+          </div>
+        </div>
+
+        <!-- Visible akumulasi for admin -->
+        <label>Total Akumulasi (Ton)</label>
+        <div class="akumulasi-row">
+          <div class="field-wrap">
+            <input type="number" step="0.01" id="akumulasi" class="readonly-input" value="0" readonly>
+          </div>
+          <button type="button" class="btn-refresh" onclick="checkAccumulation()">Refresh</button>
+        </div>
+
+        <p id="status"></p>
+      </form>
+    </div>
+
+    <div class="column-right">
+      <h3 id="chartTitle"
+        style="text-align: center; color: var(--text-primary); margin-top: 0; font-size: 30px; font-weight: bold;">
+        Grafik Realisasi Tiap Jam</h3>
+      <div id="chartContainer"
+        style="width: 822px; height: auto; max-width: 100%; aspect-ratio: 1 / 1; position: relative; margin: 15px auto; box-sizing: border-box;">
+        <canvas id="realisasiChart"></canvas>
+      </div>
+
+      <!-- Comparison Card Estimasi vs Realisasi -->
+      <div id="estimasiComparisonCard"
+        style="display: none; margin-top: 15px; padding: 15px; border-radius: 8px; background: var(--clock-bg); border: 1px solid var(--border-color);">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; font-family: 'Calibri', sans-serif;">
+          <div>
+            <span
+              style="font-size: 11px; color: var(--text-secondary); font-weight: bold; text-transform: uppercase;">Estimasi
+              Rencana</span>
+            <div style="font-size: 16px; font-weight: bold; color: var(--text-primary);" id="compCardEstimasi">0.00 Ton
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <span
+              style="font-size: 11px; color: var(--text-secondary); font-weight: bold; text-transform: uppercase;">Total
+              Realisasi</span>
+            <div style="font-size: 16px; font-weight: bold; color: var(--text-primary);" id="compCardRealisasi">0.00 Ton
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <span
+              style="font-size: 11px; color: var(--text-secondary); font-weight: bold; text-transform: uppercase;">Pencapaian</span>
+            <div style="font-size: 18px; font-weight: bold;" id="compCardPercentage">0.00%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Infografis Section (iframe) -->
+  <div id="infografisSection"
+    style="display:none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; background: transparent; box-sizing: border-box; padding: 0;">
+    <iframe id="infografisIframe" src=""
+      style="width: 100%; height: 100%; border: none; border-radius: 0; box-shadow: none;"></iframe>
+  </div>
+
+  <!-- Running Text -->
+  <div id="runningTextContainer" class="running-text-container" style="display: none;">
+    <div class="running-text-content" id="runningTextContent">
+      Mengambil data hasil produksi...
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // =========================================================================
+    // THEME MANAGEMENT
+    // =========================================================================
+    var savedTheme = "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+
+    function toggleTheme() {
+      var currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+      var newTheme = currentTheme === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", newTheme);
+      localStorage.setItem("agripam_theme", newTheme);
+      applyChartTheme();
+    }
+
+    function applyChartTheme() {
+      if (!myChart) return;
+      var theme = document.documentElement.getAttribute("data-theme") || "light";
+      var gridColor = theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)";
+      var textColor = theme === "dark" ? "#cbd5e1" : "#444444";
+      myChart.options.scales.y.grid.color = gridColor;
+      myChart.options.scales.x.grid.color = gridColor;
+      myChart.options.scales.x.ticks.color = textColor;
+      myChart.options.scales.y.ticks.color = textColor;
+      myChart.update();
+    }
+
+    // =========================================================================
+    // KONFIGURASI
+    // =========================================================================
+    var API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000/api'
+      : '/api';
+
+    var ACTION_MAP = {
+      "getData": "realisasi",
+      "getRunningTextData": "realisasi",
+      "getEstimasi": "estimasi"
+    };
+    var MAX_RETRIES = 2;
+    var RETRY_DELAY_MS = 3000;
+    var SESSION_KEY = "agripam_session";
+
+    // =========================================================================
+    // STATE
+    // =========================================================================
+    var currentJamData = {};
+    var isSubmitting = false;
+    var currentEstimasiPanen = 0;
+    var isAdminTotalAll = false;
+    var myChart = null;
+    var akumulasiEl = document.getElementById("akumulasi");
+    var statusText = document.getElementById("status");
+
+    // =========================================================================
+    // SESSION — Auto-set as ADMIN (no login needed)
+    // =========================================================================
+    function loadSession() {
+      return { region: "ADMIN", token: "screenshot-mode", expiry: Date.now() + 86400000 };
+    }
+
+    // =========================================================================
+    // API REQUEST ENGINE
+    // =========================================================================
+    function jsonpRequest(params, onSuccess, onError, _retry) {
+      var retry = _retry || 0;
+      var action = params.action || "";
+      var endpoint = ACTION_MAP[action] || action;
+      var url = API_BASE + "/" + endpoint;
+
+      var query = Object.keys(params).map(function (k) {
+        return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]);
+      }).join("&");
+
+      var controller = new AbortController();
+      var timeoutId = setTimeout(function () { controller.abort(); }, 20000);
+
+      fetch(url + "?" + query, { signal: controller.signal })
+        .then(function (res) {
+          clearTimeout(timeoutId);
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.json();
+        })
+        .then(function (data) { onSuccess(data); })
+        .catch(function (err) {
+          clearTimeout(timeoutId);
+          if (retry < MAX_RETRIES) {
+            setTimeout(function () {
+              jsonpRequest(params, onSuccess, onError, retry + 1);
+            }, RETRY_DELAY_MS);
+          } else {
+            onError("Koneksi gagal. Periksa koneksi internet Anda.");
+          }
+        });
+    }
+
+    // =========================================================================
+    // CRO GROUPS & REGIONS
+    // =========================================================================
+    var CRO_GROUPS = {
+      "CRO I": ["Aceh", "Sumatera Utara 1", "Sumatera Utara 2 Ex Torganda"],
+      "CRO II": ["Riau 1"],
+      "CRO III": ["Riau 2", "Riau 3"],
+      "CRO IV": ["Riau 4"],
+      "CRO V": ["Sumatera Barat", "Jambi", "Bangka Belitung"],
+      "CRO VI": ["Kalimantan Barat 1", "Kalimantan Barat 2"],
+      "CRO VII": ["Kalimantan Selatan 1", "Kalimantan Selatan 2", "Kalimantan Timur", "Kalimantan Utara"],
+      "CRO VIII": ["Kalimantan Tengah 1", "Kalimantan Tengah 3"],
+      "CRO IX": ["Kalimantan Tengah 2"],
+      "CRO X": ["Sulawesi Tenggara", "Sulawesi Tengah"]
+    };
+
+    var ALL_REGIONS = [
+      "Aceh", "Sumatera Utara 1", "Sumatera Utara 2 Ex Torganda",
+      "Riau 1", "Riau 2", "Riau 3", "Riau 4",
+      "Bangka Belitung", "Jambi", "Sumatera Barat", "Sumatera Selatan",
+      "Kalimantan Barat 1", "Kalimantan Barat 2",
+      "Kalimantan Selatan 1", "Kalimantan Selatan 2",
+      "Kalimantan Timur", "Kalimantan Utara",
+      "Kalimantan Tengah 1", "Kalimantan Tengah 2", "Kalimantan Tengah 3",
+      "Sulawesi Tenggara", "Sulawesi Tengah"
+    ];
+
+    // =========================================================================
+    // ADMIN CONTROLS
+    // =========================================================================
+    function onAdminRegionChange() {
+      var croSelect = document.getElementById("adminCROSelect");
+      if (croSelect) croSelect.value = "";
+      isAdminTotalAll = false;
+      currentJamData = {};
+      updateJamHint();
+      checkAccumulation();
+    }
+
+    function onAdminCROChange() {
+      var adminSelect = document.getElementById("adminRegionSelect");
+      if (adminSelect) adminSelect.value = "";
+      isAdminTotalAll = false;
+      currentJamData = {};
+      updateJamHint();
+      checkAccumulation();
+    }
+
+    function onAdminTotalAllClick() {
+      var adminSelect = document.getElementById("adminRegionSelect");
+      if (adminSelect) adminSelect.value = "";
+      var croSelect = document.getElementById("adminCROSelect");
+      if (croSelect) croSelect.value = "";
+      isAdminTotalAll = true;
+      currentJamData = {};
+      updateJamHint();
+      checkAccumulation();
+    }
+
+    function onTanggalChange() {
+      currentJamData = {};
+      updateJamHint();
+      checkAccumulation();
+      updateRunningText();
+    }
+
+    // =========================================================================
+    // ACCUMULATION
+    // =========================================================================
+    function fetchAndAccumulate(regions, label, tanggal, isSilent) {
+      if (!regions || regions.length === 0) return;
+
+      var totalRealisasi = 0;
+      var combinedJamData = {};
+      var totalEstimasi = 0;
+      var hasError = false;
+      var errorMsg = "";
+
+      var hours = ["06.00", "07.00", "08.00", "09.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.30"];
+      for (var i = 0; i < hours.length; i++) {
+        combinedJamData[hours[i]] = 0;
+      }
+
+      var completedData = false;
+      var completedEstimasi = false;
+      var s = loadSession();
+
+      jsonpRequest(
+        { action: "getData", tanggal: tanggal, region: "ALL" },
+        function (res) {
+          if (res.success && res.allRecords) {
+            res.allRecords.forEach(function (r) {
+              if (regions.includes(r.region)) {
+                var t = parseFloat(r.tonase) || 0;
+                totalRealisasi += t;
+                if (r.jam) {
+                  combinedJamData[r.jam] = (combinedJamData[r.jam] || 0) + t;
+                }
+              }
+            });
+          } else {
+            hasError = true;
+            errorMsg = res.message || "Gagal mengambil data realisasi";
+          }
+          completedData = true;
+          checkIfDone();
+        },
+        function (err) {
+          hasError = true;
+          errorMsg = err;
+          completedData = true;
+          checkIfDone();
+        }
+      );
+
+      jsonpRequest(
+        { action: "getEstimasi", tanggal: tanggal, region: "ALL", token: s ? s.token : "" },
+        function (estRes) {
+          if (estRes.success && estRes.allEstimasi) {
+            regions.forEach(function (reg) {
+              var regData = estRes.allEstimasi[reg];
+              if (regData) {
+                var estPanenKg = parseFloat(regData.estPanen) || 0;
+                var estKirimKg = parseFloat(regData.estKirim) || 0;
+                if (estPanenKg === 0) estPanenKg = estKirimKg;
+                totalEstimasi += estPanenKg / 1000;
+              }
+            });
+          }
+          completedEstimasi = true;
+          checkIfDone();
+        },
+        function () {
+          completedEstimasi = true;
+          checkIfDone();
+        }
+      );
+
+      function checkIfDone() {
+        if (completedData && completedEstimasi) {
+          if (hasError && totalRealisasi === 0) {
+            akumulasiEl.value = "0";
+            currentJamData = {};
+            setStatus(errorMsg, "#dc3545");
+            currentEstimasiPanen = 0;
+          } else {
+            akumulasiEl.value = totalRealisasi.toFixed(2);
+            currentJamData = combinedJamData;
+            currentEstimasiPanen = totalEstimasi;
+            setStatus("", "");
+          }
+          updateJamHint();
+          updateEstimasiComparison();
+        }
+      }
+    }
+
+    function checkAccumulation(isSilent) {
+      var tanggal = document.getElementById("tanggal").value;
+      var s = loadSession();
+      if (!tanggal || !s) {
+        akumulasiEl.value = "0";
+        currentJamData = {};
+        updateJamHint();
+        currentEstimasiPanen = 0;
+        updateEstimasiComparison();
+        return;
+      }
+
+      var region = s.region;
+      var croGroup = "";
+
+      // Admin logic
+      if (isAdminTotalAll) {
+        fetchAndAccumulate(ALL_REGIONS, "Semua Region", tanggal, isSilent);
+        return;
+      }
+
+      var adminSelect = document.getElementById("adminRegionSelect");
+      var croSelect = document.getElementById("adminCROSelect");
+      if (croSelect && croSelect.value) {
+        croGroup = croSelect.value;
+      } else if (adminSelect && adminSelect.value) {
+        region = adminSelect.value;
+      } else {
+        akumulasiEl.value = "0";
+        currentJamData = {};
+        updateJamHint();
+        currentEstimasiPanen = 0;
+        updateEstimasiComparison();
+        return;
+      }
+
+      if (croGroup) {
+        fetchAndAccumulate(CRO_GROUPS[croGroup], croGroup, tanggal, isSilent);
+        return;
+      }
+
+      jsonpRequest(
+        { action: "getData", tanggal: tanggal, region: region },
+        function (res) {
+          if (res.success) {
+            akumulasiEl.value = res.total.toFixed(2);
+            currentJamData = res.jamData || {};
+            setStatus("", "");
+          } else {
+            akumulasiEl.value = "0";
+            currentJamData = {};
+            setStatus(res.message || "Gagal mengambil data.", "#dc3545");
+          }
+          updateJamHint();
+
+          jsonpRequest(
+            { action: "getEstimasi", tanggal: tanggal, region: region, token: s.token },
+            function (estRes) {
+              if (estRes.success && estRes.exists) {
+                var estPanenKg = parseFloat(estRes.data.estPanen) || 0;
+                var estKirimKg = parseFloat(estRes.data.estKirim) || 0;
+                if (estPanenKg === 0) estPanenKg = estKirimKg;
+                currentEstimasiPanen = estPanenKg / 1000;
+              } else {
+                currentEstimasiPanen = 0;
+              }
+              updateEstimasiComparison();
+            },
+            function () {
+              currentEstimasiPanen = 0;
+              updateEstimasiComparison();
+            }
+          );
+        },
+        function (errMsg) {
+          akumulasiEl.value = "0";
+          setStatus(errMsg, "#dc3545");
+          currentEstimasiPanen = 0;
+          updateEstimasiComparison();
+        }
+      );
+    }
+
+    // =========================================================================
+    // HELPERS
+    // =========================================================================
+    function setStatus(text, color) {
+      if (statusText) {
+        statusText.textContent = text;
+        statusText.style.color = color;
+      }
+    }
+
+    function updateJamHint() {
+      updateChart();
+    }
+
+    function formatNumberId(num) {
+      if (typeof num !== "number") num = parseFloat(num) || 0;
+      return num.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function updateEstimasiComparison() {
+      var card = document.getElementById("estimasiComparisonCard");
+      var compEstimasi = document.getElementById("compCardEstimasi");
+      var compRealisasi = document.getElementById("compCardRealisasi");
+      var compPercentage = document.getElementById("compCardPercentage");
+
+      if (!card || !compEstimasi || !compRealisasi || !compPercentage) return;
+
+      var tanggal = document.getElementById("tanggal").value;
+      if (!tanggal) { card.style.display = "none"; return; }
+
+      var totalRealisasi = parseFloat(akumulasiEl.value) || 0;
+      card.style.display = "block";
+      compRealisasi.textContent = formatNumberId(totalRealisasi) + " Ton";
+
+      if (currentEstimasiPanen > 0) {
+        compEstimasi.textContent = formatNumberId(currentEstimasiPanen) + " Ton";
+        var pct = (totalRealisasi / currentEstimasiPanen) * 100;
+        compPercentage.textContent = formatNumberId(pct) + "%";
+        if (pct >= 100) { compPercentage.style.color = "#28a745"; }
+        else if (pct >= 80) { compPercentage.style.color = "#ffa600"; }
+        else { compPercentage.style.color = "#dc3545"; }
+      } else {
+        compEstimasi.textContent = "0,00 Ton";
+        compPercentage.textContent = "0,00%";
+        compPercentage.style.color = "var(--text-muted)";
+      }
+      updateChart();
+    }
+
+    // =========================================================================
+    // RUNNING TEXT
+    // =========================================================================
+    function updateRunningText() {
+      var container = document.getElementById("runningTextContainer");
+      var content = document.getElementById("runningTextContent");
+      if (!container || !content) return;
+
+      var now = new Date();
+      var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      var wibTime = new Date(utc + (7 * 3600000));
+      var yyyy = wibTime.getFullYear();
+      var MM = String(wibTime.getMonth() + 1).padStart(2, '0');
+      var dd = String(wibTime.getDate()).padStart(2, '0');
+      var todayDateStr = yyyy + "-" + MM + "-" + dd;
+      var tanggal = todayDateStr;
+
+      var tanggalEl = document.getElementById("tanggal");
+      if (tanggalEl && tanggalEl.value) tanggal = tanggalEl.value;
+
+      var isToday = (tanggal === todayDateStr);
+      var wibHourFloat = wibTime.getHours() + (wibTime.getMinutes() / 60);
+
+      var realisasiRes = null;
+      var estimasiRes = null;
+      var hasError = false;
+      var errorMsg = "";
+      var s = loadSession();
+
+      function checkDone() {
+        if (hasError) {
+          container.style.display = "block";
+          content.innerHTML = '<span class="running-text-item" style="color: #dc3545;">Gagal memperbarui data running text: ' + errorMsg + '</span>';
+          return;
+        }
+
+        if (realisasiRes && estimasiRes) {
+          if (realisasiRes.success && realisasiRes.allRecords && realisasiRes.allRecords.length > 0) {
+            container.style.display = "block";
+
+            function parseHourFloat(jamStr) {
+              if (!jamStr) return 0;
+              var p = jamStr.split(".");
+              var h = parseInt(p[0], 10) || 0;
+              var m = parseInt(p[1], 10) || 0;
+              return h + (m / 60);
+            }
+
+            var regionMap = {};
+            realisasiRes.allRecords.forEach(function (rec) {
+              if (isToday && parseHourFloat(rec.jam) > wibHourFloat) return;
+              var key = rec.region;
+              if (!regionMap[key]) regionMap[key] = { region: rec.region, totalRealisasi: 0, latestJam: rec.jam };
+              regionMap[key].totalRealisasi += rec.tonase;
+              if (rec.jam > regionMap[key].latestJam) regionMap[key].latestJam = rec.jam;
+            });
+
+            var items = Object.keys(regionMap).map(function (key) {
+              var r = regionMap[key];
+              var estObj = null;
+              if (estimasiRes.allEstimasi) {
+                var matchKey = Object.keys(estimasiRes.allEstimasi).find(function (k) {
+                  return k.trim().toLowerCase() === key.trim().toLowerCase();
+                });
+                if (matchKey) estObj = estimasiRes.allEstimasi[matchKey];
+              }
+              var estPanenKg = 0;
+              if (estObj && estObj.estPanen) estPanenKg = parseFloat(estObj.estPanen) || 0;
+              var estKirimKg = 0;
+              if (estObj && estObj.estKirim) estKirimKg = parseFloat(estObj.estKirim) || 0;
+              if (estPanenKg === 0) estPanenKg = estKirimKg;
+              var estPanenTon = estPanenKg / 1000;
+
+              var percentageStr = "-";
+              if (estPanenTon > 0) {
+                var percentage = (r.totalRealisasi / estPanenTon) * 100;
+                percentageStr = percentage.toFixed(2) + "%";
+              }
+
+              return '<span class="running-text-item">' +
+                r.region + ' (Produksi s.d Jam ' + r.latestJam + ': <strong>' + r.totalRealisasi.toFixed(2) + ' Ton</strong>) ' +
+                '<strong>' + percentageStr + '</strong>' +
+                '</span>';
+            });
+
+            if (items.length > 0) {
+              var html = items.join(' <span style="margin: 0 15px; opacity: 0.3;">●</span> ');
+              if (items.length < 5) html = html + ' <span style="margin: 0 30px; opacity: 0.3;">●</span> ' + html;
+              if (content.innerHTML !== html) {
+                content.innerHTML = html;
+                content.style.animation = 'none';
+                content.offsetHeight;
+                content.style.animation = '';
+              }
+            } else {
+              content.innerHTML = '<span class="running-text-item" style="font-style: italic; opacity: 0.7;">Belum ada laporan produksi masuk</span>';
+            }
+          } else {
+            container.style.display = "block";
+            content.innerHTML = '<span class="running-text-item" style="font-style: italic; opacity: 0.7;">Belum ada laporan produksi masuk untuk tanggal ' + tanggal.split("-").reverse().join("/") + '</span>';
+          }
+        }
+      }
+
+      jsonpRequest(
+        { action: "getRunningTextData", tanggal: tanggal, region: "ALL" },
+        function (res) { realisasiRes = res; checkDone(); },
+        function (errMsg) { hasError = true; errorMsg = errMsg; checkDone(); }
+      );
+
+      jsonpRequest(
+        { action: "getEstimasi", tanggal: tanggal, region: "ALL", token: s.token },
+        function (res) { estimasiRes = res; checkDone(); },
+        function () { estimasiRes = { success: true, allEstimasi: {} }; checkDone(); }
+      );
+    }
+
+    // =========================================================================
+    // WIB CLOCK
+    // =========================================================================
+    function updateWIBClock() {
+      var now = new Date();
+      var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      var wibTime = new Date(utc + (7 * 3600000));
+
+      var hh = String(wibTime.getHours()).padStart(2, '0');
+      var mm = String(wibTime.getMinutes()).padStart(2, '0');
+      var ss = String(wibTime.getSeconds()).padStart(2, '0');
+
+      var days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      var months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+      var el = document.getElementById("wibClockTime");
+      if (el) el.textContent = hh + ":" + mm + ":" + ss;
+      var el2 = document.getElementById("wibClockDate");
+      if (el2) el2.textContent = days[wibTime.getDay()] + ", " + wibTime.getDate() + " " + months[wibTime.getMonth()] + " " + wibTime.getFullYear();
+    }
+    setInterval(updateWIBClock, 1000);
+    updateWIBClock();
+
+    // =========================================================================
+    // CHART
+    // =========================================================================
+    var TREND_UP_COLOR = '#2563eb';
+    var TREND_DOWN_COLOR = '#dc2626';
+    var TREND_FLAT_COLOR = 'rgba(148, 163, 184, 0.6)';
+
+    function trimToReportedRange(values) {
+      var firstIdx = -1, lastIdx = -1;
+      for (var i = 0; i < values.length; i++) {
+        if (values[i] > 0) {
+          if (firstIdx === -1) firstIdx = i;
+          lastIdx = i;
+        }
+      }
+      if (firstIdx === -1) return values.map(function () { return null; });
+      return values.map(function (v, i) {
+        return (i < firstIdx || i > lastIdx) ? null : v;
+      });
+    }
+
+    function segmentColorForLine(datasetIndex) {
+      return function (ctx) {
+        var data = ctx.chart.data.datasets[datasetIndex].data;
+        var v0 = data[ctx.p0DataIndex];
+        var v1 = data[ctx.p1DataIndex];
+        if (v0 == null || v1 == null) return TREND_FLAT_COLOR;
+        if (v1 > v0) return TREND_UP_COLOR;
+        if (v1 < v0) return TREND_DOWN_COLOR;
+        return TREND_FLAT_COLOR;
+      };
+    }
+
+    function pointColorForLine(datasetIndex) {
+      return function (ctx) {
+        var data = ctx.chart.data.datasets[datasetIndex].data;
+        var i = ctx.dataIndex;
+        var v1 = data[i];
+        if (i === 0 || v1 == null) return TREND_FLAT_COLOR;
+        var v0 = data[i - 1];
+        if (v0 == null) return TREND_FLAT_COLOR;
+        if (v1 > v0) return TREND_UP_COLOR;
+        if (v1 < v0) return TREND_DOWN_COLOR;
+        return TREND_FLAT_COLOR;
+      };
+    }
+
+    function updateChart() {
+      var canvas = document.getElementById("realisasiChart");
+      if (!canvas) return;
+
+      var titleEl = document.getElementById("chartTitle");
+      if (titleEl) {
+        var titleText = "Grafik Realisasi Tiap Jam";
+        var adminSelect = document.getElementById("adminRegionSelect");
+        var croSelect = document.getElementById("adminCROSelect");
+        if (isAdminTotalAll) {
+          titleText += " - Semua Region";
+        } else if (croSelect && croSelect.value) {
+          titleText += " - " + croSelect.value;
+        } else if (adminSelect && adminSelect.value) {
+          titleText += " - " + adminSelect.value;
+        }
+        titleEl.textContent = titleText;
+      }
+
+      var hours = ["06.00", "07.00", "08.00", "09.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.30"];
+      var dataValues = [];
+      var hasData = false;
+
+      for (var i = 0; i < hours.length; i++) {
+        var h = hours[i];
+        var val = currentJamData.hasOwnProperty(h) ? parseFloat(currentJamData[h]) : 0;
+        dataValues.push(val);
+        if (val > 0) hasData = true;
+      }
+
+      var lineData = trimToReportedRange(dataValues);
+
+      if (myChart) {
+        myChart.data.datasets[0].data = dataValues;
+        myChart.data.datasets[1].data = lineData;
+
+        var ctx = canvas.getContext("2d");
+        var gradient = ctx.createLinearGradient(0, 0, 0, canvas.clientHeight || 300);
+        gradient.addColorStop(0, 'rgba(40, 167, 69, 0.9)');
+        gradient.addColorStop(1, 'rgba(40, 167, 69, 0.15)');
+        myChart.data.datasets[0].backgroundColor = gradient;
+        myChart.update();
+      } else {
+        var ctx = canvas.getContext("2d");
+        var theme = document.documentElement.getAttribute("data-theme") || "light";
+        var gridColor = theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)";
+        var textColor = theme === "dark" ? "#cbd5e1" : "#444444";
+
+        var gradient = ctx.createLinearGradient(0, 0, 0, canvas.clientHeight || 300);
+        gradient.addColorStop(0, 'rgba(40, 167, 69, 0.9)');
+        gradient.addColorStop(1, 'rgba(40, 167, 69, 0.15)');
+
+        var hoverGradient = ctx.createLinearGradient(0, 0, 0, canvas.clientHeight || 300);
+        hoverGradient.addColorStop(0, 'rgba(40, 167, 69, 1)');
+        hoverGradient.addColorStop(1, 'rgba(40, 167, 69, 0.35)');
+
+        var chartDataLabelsPlugin = {
+          id: 'chartDataLabels',
+          afterDatasetsDraw: function (chart) {
+            var ctx = chart.ctx;
+            var theme = document.documentElement.getAttribute("data-theme") || "light";
+
+            var barDataset = chart.data.datasets[0];
+            var barMeta = chart.getDatasetMeta(0);
+            barMeta.data.forEach(function (bar, index) {
+              var val = barDataset.data[index];
+              if (val === 0) return;
+
+              ctx.save();
+              ctx.font = "bold 11px Calibri";
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+
+              var pctText = "";
+              var pctColor = "";
+              if (currentEstimasiPanen > 0) {
+                var cumulativeSum = 0;
+                for (var k = 0; k <= index; k++) cumulativeSum += barDataset.data[k];
+                var pct = (cumulativeSum / currentEstimasiPanen) * 100;
+                pctText = pct.toFixed(2) + "%";
+                pctColor = theme === "dark" ? "#cbd5e1" : "#444444";
+              }
+
+              var valText = val.toFixed(2);
+              ctx.fillStyle = theme === "dark" ? "#cbd5e1" : "#111111";
+
+              if (pctText) {
+                ctx.fillText(valText, bar.x, bar.y - 15);
+                ctx.fillStyle = pctColor;
+                ctx.fillText(pctText, bar.x, bar.y - 3);
+              } else {
+                ctx.fillText(valText, bar.x, bar.y - 3);
+              }
+              ctx.restore();
+            });
+
+            var lineDataset = chart.data.datasets[1];
+            var lineMeta = chart.getDatasetMeta(1);
+            lineMeta.data.forEach(function (point, index) {
+              if (index === 0) return;
+              var prev = lineDataset.data[index - 1];
+              var curr = lineDataset.data[index];
+              if (!prev || !curr) return;
+
+              var change = ((curr - prev) / prev) * 100;
+              var isUp = change > 0;
+              var isFlat = change === 0;
+              var color = isFlat ? TREND_FLAT_COLOR : (isUp ? TREND_UP_COLOR : TREND_DOWN_COLOR);
+              var arrow = isFlat ? "▬" : (isUp ? "▲" : "▼");
+              var text = arrow + " " + (change >= 0 ? "+" : "") + change.toFixed(1) + "%";
+
+              ctx.save();
+              ctx.font = "bold 10px Calibri";
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              ctx.fillStyle = color;
+              ctx.fillText(text, point.x + 10, point.y);
+              ctx.restore();
+            });
+          }
+        };
+
+        myChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: hours,
+            datasets: [
+              {
+                type: 'bar',
+                label: 'Realisasi Panen (Ton)',
+                data: dataValues,
+                backgroundColor: gradient,
+                borderColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 1.5,
+                borderRadius: 4,
+                hoverBackgroundColor: hoverGradient,
+                order: 1
+              },
+              {
+                type: 'line',
+                label: 'Connecting Line',
+                data: lineData,
+                borderWidth: 2.5,
+                borderDash: [6, 4],
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: pointColorForLine(1),
+                pointBorderColor: pointColorForLine(1),
+                segment: { borderColor: segmentColorForLine(1) },
+                fill: false,
+                tension: 0,
+                order: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                grace: '15%',
+                grid: { display: true, color: gridColor },
+                ticks: {
+                  color: textColor,
+                  font: { family: 'Calibri', size: 11, weight: 'bold' },
+                  callback: function (value) { return value + ' Ton'; }
+                }
+              },
+              x: {
+                grid: { display: true, color: gridColor },
+                ticks: {
+                  color: textColor,
+                  font: { family: 'Calibri', size: 11, weight: 'bold' }
+                }
+              }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                titleFont: { family: 'Calibri', size: 11, weight: 'bold' },
+                bodyFont: { family: 'Calibri', size: 11, weight: 'bold' },
+                callbacks: {
+                  label: function (context) { return ' ' + context.dataset.label + ': ' + context.parsed.y + ' Ton'; }
+                }
+              }
+            }
+          },
+          plugins: [chartDataLabelsPlugin]
+        });
+      }
+    }
+
+    // =========================================================================
+    // INFOGRAFIS NAVIGATION
+    // =========================================================================
+    function bukaInfografis() {
+      var iframe = document.getElementById("infografisIframe");
+      iframe.src = "FORMAT_ESTIMASI_PANEN.html?t=" + new Date().getTime();
+
+      var infografisSec = document.getElementById("infografisSection");
+      infografisSec.style.display = "flex";
+
+      document.getElementById("mainSection").style.display = "none";
+      document.body.classList.remove("dashboard-active");
+
+      var runningContainer = document.getElementById("runningTextContainer");
+      if (runningContainer) runningContainer.style.display = "none";
+    }
+
+    function tutupInfografis() {
+      document.getElementById("mainSection").style.display = "flex";
+      document.body.classList.add("dashboard-active");
+
+      var infografisSec = document.getElementById("infografisSection");
+      infografisSec.style.display = "none";
+      document.getElementById("infografisIframe").src = "";
+
+      updateRunningText();
+    }
+
+    // Handle close request from iframe
+    window.addEventListener('message', function (event) {
+      if (event.data && event.data.action === 'closeInfografis') {
+        tutupInfografis();
+      }
+    });
+
+    // =========================================================================
+    // SIDEBAR TOGGLE
+    // =========================================================================
+    function toggleSidebar() {
+      var mainSec = document.getElementById("mainSection");
+      mainSec.classList.toggle("sidebar-collapsed");
+      var isCollapsed = mainSec.classList.contains("sidebar-collapsed");
+      localStorage.setItem("agripam_sidebar_collapsed", isCollapsed ? "true" : "false");
+    }
+
+    // Restore sidebar state
+    (function () {
+      var sidebarCollapsed = localStorage.getItem("agripam_sidebar_collapsed") === "true";
+      if (sidebarCollapsed) {
+        var mainSec = document.getElementById("mainSection");
+        if (mainSec) mainSec.classList.add("sidebar-collapsed");
+      }
+    })();
+
+    // =========================================================================
+    // BACKGROUND SLIDESHOW
+    // =========================================================================
+    (function initBgSlideshow() {
+      var slides = document.querySelectorAll('.bg-slide');
+      if (slides.length === 0) return;
+      var currentSlide = 0;
+      setInterval(function () {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+      }, 15000);
+    })();
+
+    // =========================================================================
+    // INIT — Auto load with today's date
+    // =========================================================================
+    (function init() {
+      // Set today's date
+      var now = new Date();
+      var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      var wibTime = new Date(utc + (7 * 3600000));
+      var yyyy = wibTime.getFullYear();
+      var MM = String(wibTime.getMonth() + 1).padStart(2, '0');
+      var dd = String(wibTime.getDate()).padStart(2, '0');
+      document.getElementById("tanggal").value = yyyy + "-" + MM + "-" + dd;
+
+      // Automatically show total of all regions on page load
+      onAdminTotalAllClick();
+
+      // Start updates
+      updateRunningText();
+      setInterval(updateRunningText, 30000);
+
+      // Auto-update data every 30 seconds
+      setInterval(function () {
+        checkAccumulation(true);
+      }, 30000);
+    })();
+  </script>
+</body>
+
+</html>

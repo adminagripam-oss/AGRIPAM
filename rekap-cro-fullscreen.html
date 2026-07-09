@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="id" class="dark" data-theme="dark">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Rekap Rencana vs Realisasi CRO (Fullscreen) | PT AGRINAS PALMA NUSANTARA</title>
+    <link rel="icon" type="image/jpeg" href="LOGO AGRIPAM.jpeg">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface": "#f8f9fb",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#c0c9bb",
+                        "on-surface": "#191c1e"
+                    },
+                    fontFamily: {
+                        "body-base": ["Manrope"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: #0f172a;
+            color: #cbd5e1;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            /* No scroll on body */
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-900 text-slate-200">
+    <div class="flex-1 flex flex-col h-full w-full overflow-hidden">
+        <!-- Header -->
+        <div class="px-1.5 py-1 flex flex-col md:flex-row md:items-center justify-between gap-2"
+            style="background-color:#1e3a5f;">
+            <div class="flex items-center gap-2">
+                <img src="AGRINAS DANANTARA.png" alt="Logo APN" class="h-8 bg-white/90 p-1 rounded" />
+                <div>
+                    <h2 class="font-bold text-base md:text-lg text-white uppercase tracking-wide">Rencana vs Realisasi
+                        Panen PT Agrinas Palma Nusantara</h2>
+                    <p class="text-xs text-white/70 mt-0">Data Real-time (Auto Refresh)</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-1.5 py-1 w-fit">
+                <span class="material-symbols-outlined text-white text-lg">calendar_today</span>
+                <label class="text-[10px] font-bold text-white">Tanggal:</label>
+                <input type="date" id="rekapCRODatePicker"
+                    class="bg-transparent border-none text-[10px] font-bold text-white outline-none cursor-pointer focus:ring-0 p-0"
+                    style="color-scheme: dark;" />
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="p-1 overflow-auto flex-1 bg-slate-900">
+            <div class="overflow-x-auto border border-slate-800 rounded-lg h-full">
+                <table class="w-full border-collapse text-[10px] whitespace-nowrap">
+                    <thead class="sticky top-0 z-10">
+                        <tr style="background-color:#1e3a5f;" class="text-white font-semibold text-center">
+                            <th rowspan="2" class="border border-slate-700 px-1.5 py-1">No</th>
+                            <th rowspan="2" class="border border-slate-700 px-1.5 py-1">CRO</th>
+                            <th rowspan="2" class="border border-slate-700 px-1.5 py-1 text-left min-w-[180px]">Wilayah
+                            </th>
+                            <th rowspan="2" class="border border-slate-700 px-1.5 py-1">Luas TM<br>Planted (Ha)</th>
+                            <th colspan="2" class="border border-slate-700 px-1.5 py-1">Produksi Harian (Ton)</th>
+                            <th colspan="2" class="border border-slate-700 px-1.5 py-1">Tenaga Panen (Hk)</th>
+                            <th colspan="2" class="border border-slate-700 px-1.5 py-1">Varian Produksi</th>
+                            <th colspan="2" class="border border-slate-700 px-1.5 py-1">Varian HK</th>
+                            <th rowspan="2" class="border border-slate-700 px-1.5 py-1">Restan<br>(Ton)</th>
+                            <th rowspan="2" class="border border-slate-700 px-1.5 py-1">Est Kirim<br>(Ton)</th>
+                        </tr>
+                        <tr style="background-color:#28618f;" class="text-white font-semibold text-center">
+                            <th class="border border-slate-700 px-1.5 py-1">Prognosa<br>(Target)</th>
+                            <th class="border border-slate-700 px-1.5 py-1">Renc/Real</th>
+                            <th class="border border-slate-700 px-1.5 py-1">Kebutuhan</th>
+                            <th class="border border-slate-700 px-1.5 py-1">Renc/Real</th>
+                            <th class="border border-slate-700 px-1.5 py-1">+/-</th>
+                            <th class="border border-slate-700 px-1.5 py-1">%</th>
+                            <th class="border border-slate-700 px-1.5 py-1">+/-</th>
+                            <th class="border border-slate-700 px-1.5 py-1">%</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rekapCROBody" class="text-slate-200">
+                        <tr>
+                            <td colspan="14" class="text-center py-4">Memuat data...</td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="sticky bottom-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+                        <tr id="rekapCROTotalRow" style="background-color:#1e3a5f;" class="text-white font-bold"></tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let globalAllEstimasi = {};
+        let globalSelectedDate = "";
+
+        const luasPlantedMap = {
+            "Aceh": 1257, "Sumatera Utara 1": 6498, "Sumatera Utara 2 Ex Torganda": 46678,
+            "Riau 1": 65723, "Riau 2": 48102, "Riau 3": 4703, "Riau 4": 38121,
+            "Bangka Belitung": 568, "Jambi": 566, "Sumatera Barat": 2742, "Sumatera Selatan": 8713,
+            "Kalimantan Barat 1": 77956, "Kalimantan Barat 2": 12993, "Kalimantan Selatan 1": 4772,
+            "Kalimantan Selatan 2": 2850, "Kalimantan Utara": 3562, "Kalimantan Timur": 1145,
+            "Kalimantan Tengah 1": 63248, "Kalimantan Tengah 2": 31222, "Kalimantan Tengah 3": 17355,
+            "Sulawesi Tengah": 3231, "Sulawesi Tenggara": 2117
+        };
+
+        const produksiHarianTargetMap = {
+            "Aceh": 10, "Sumatera Utara 1": 70, "Sumatera Utara 2 Ex Torganda": 900,
+            "Riau 1": 5000, "Riau 2": 1000, "Riau 3": 75, "Riau 4": 400,
+            "Bangka Belitung": 25, "Jambi": 10, "Sumatera Barat": 150, "Sumatera Selatan": 70,
+            "Kalimantan Barat 1": 2800, "Kalimantan Barat 2": 70, "Kalimantan Selatan 1": 120,
+            "Kalimantan Selatan 2": 80, "Kalimantan Timur": 7, "Kalimantan Utara": 120,
+            "Kalimantan Tengah 1": 1300, "Kalimantan Tengah 3": 150, "Kalimantan Tengah 2": 900,
+            "Sulawesi Tenggara": 58, "Sulawesi Tengah": 65
+        };
+
+        const CRO_GROUPS_REKAP = {
+            "CRO 1": ["Aceh", "Sumatera Utara 1", "Sumatera Utara 2 Ex Torganda"],
+            "CRO 2": ["Riau 1"], "CRO 3": ["Riau 2", "Riau 3"], "CRO 4": ["Riau 4"],
+            "CRO 5": ["Bangka Belitung", "Jambi", "Sumatera Barat", "Sumatera Selatan"],
+            "CRO 6": ["Kalimantan Barat 1", "Kalimantan Barat 2"],
+            "CRO 7": ["Kalimantan Selatan 1", "Kalimantan Selatan 2", "Kalimantan Timur", "Kalimantan Utara"],
+            "CRO 8": ["Kalimantan Tengah 1", "Kalimantan Tengah 3"],
+            "CRO 9": ["Kalimantan Tengah 2"], "CRO 10": ["Sulawesi Tenggara", "Sulawesi Tengah"]
+        };
+
+        function getWIBDateStr() {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const wibTime = new Date(utc + (7 * 3600000));
+            const yyyy = wibTime.getFullYear();
+            const MM = String(wibTime.getMonth() + 1).padStart(2, '0');
+            const dd = String(wibTime.getDate()).padStart(2, '0');
+            return yyyy + "-" + MM + "-" + dd;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const dateInput = document.getElementById("rekapCRODatePicker");
+            const today = getWIBDateStr();
+            dateInput.value = today;
+            globalSelectedDate = today;
+
+            loadData(today);
+
+            dateInput.addEventListener("change", function () {
+                if (this.value) {
+                    globalSelectedDate = this.value;
+                    loadData(this.value);
+                }
+            });
+
+            // Auto refresh every 5 minutes
+            setInterval(() => {
+                loadData(globalSelectedDate);
+            }, 5 * 60 * 1000);
+        });
+
+        function loadData(tanggal) {
+            // Using ALL to get data for all regions. No token needed for read-only.
+            const urlEstimasi = `/api/estimasi?action=getEstimasi&tanggal=${tanggal}&region=ALL`;
+
+            fetch(urlEstimasi)
+                .then(res => res.json())
+                .then(resEstimasi => {
+                    if (resEstimasi.success && resEstimasi.exists) {
+                        globalAllEstimasi = resEstimasi.allEstimasi || {};
+                    } else {
+                        globalAllEstimasi = {};
+                    }
+                    renderRekapCROTable();
+                })
+                .catch(err => {
+                    console.error("Error loading data:", err);
+                    globalAllEstimasi = {};
+                    renderRekapCROTable();
+                });
+        }
+
+        function renderRekapCROTable() {
+            const fmt0 = (num) => new Intl.NumberFormat('id-ID').format(Math.round(num));
+            const fmt2 = (num) => new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+
+            let bodyHtml = "";
+            let groupNo = 1;
+            const grand = { planted: 0, prognosa: 0, real: 0, kebutuhan: 0, realHk: 0, restan: 0, kirim: 0 };
+
+            Object.keys(CRO_GROUPS_REKAP).forEach(croLabel => {
+                const regions = CRO_GROUPS_REKAP[croLabel];
+                const g = { planted: 0, prognosa: 0, real: 0, kebutuhan: 0, realHk: 0, restan: 0, kirim: 0 };
+
+                regions.forEach((regionName, idx) => {
+                    const est = globalAllEstimasi[regionName] || {};
+                    const planted = luasPlantedMap[regionName] || 0;
+                    const prognosa = produksiHarianTargetMap[regionName] || 0;
+                    
+                    let estPanen = parseFloat(est.estPanen) || 0;
+                    const estKirimRaw = parseFloat(est.estKirim) || 0;
+                    if (estPanen === 0 && estKirimRaw > 0) estPanen = estKirimRaw;
+
+                    const real = estPanen / 1000;
+                    const kebutuhan = prognosa / 1.5;
+                    const realHk = parseFloat(est.tkPanen) || 0;
+                    const restan = (parseFloat(est.estRestan) || 0) / 1000;
+                    const kirim = real + restan;
+
+                    g.planted += planted; g.prognosa += prognosa; g.real += real;
+                    g.kebutuhan += kebutuhan; g.realHk += realHk; g.restan += restan; g.kirim += kirim;
+
+                    const varProdAbs = prognosa - real;
+                    const varProdPct = prognosa > 0 ? (real / prognosa * 100) : 0;
+                    const varHkAbs = kebutuhan - realHk;
+                    const varHkPct = kebutuhan > 0 ? (realHk / kebutuhan * 100) : 0;
+
+                    bodyHtml += `<tr class="hover:bg-slate-800/50">`;
+                    if (idx === 0) {
+                        bodyHtml += `<td rowspan="${regions.length}" class="border border-slate-700 px-1.5 py-1 text-center font-bold align-middle">${groupNo}</td>`;
+                        bodyHtml += `<td rowspan="${regions.length}" class="border border-slate-700 px-1.5 py-1 text-center font-bold align-middle">${croLabel}</td>`;
+                    }
+                    bodyHtml += `
+                        <td class="border border-slate-700 px-1.5 py-1 text-left">${regionName}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right">${fmt0(planted)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right">${fmt0(prognosa)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-emerald-400 font-semibold">${fmt0(real)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right">${fmt0(kebutuhan)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-emerald-400 font-semibold">${fmt0(realHk)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-red-400 font-semibold">${fmt0(varProdAbs)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right">${fmt2(varProdPct)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-red-400 font-semibold">${fmt0(varHkAbs)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right">${fmt2(varHkPct)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right">${fmt0(restan)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right font-bold text-sky-400">${fmt0(kirim)}</td>
+                    </tr>`;
+                });
+
+                const gVarProdAbs = g.prognosa - g.real;
+                const gVarProdPct = g.prognosa > 0 ? (g.real / g.prognosa * 100) : 0;
+                const gVarHkAbs = g.kebutuhan - g.realHk;
+                const gVarHkPct = g.kebutuhan > 0 ? (g.realHk / g.kebutuhan * 100) : 0;
+
+                bodyHtml += `
+                    <tr class="bg-slate-800 font-bold text-slate-100">
+                        <td colspan="3" class="border border-slate-700 px-1.5 py-1 text-center text-sky-300">Subtotal</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.planted)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.prognosa)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.real)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.kebutuhan)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.realHk)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-red-400">${fmt0(gVarProdAbs)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt2(gVarProdPct)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-red-400">${fmt0(gVarHkAbs)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt2(gVarHkPct)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.restan)}</td>
+                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.kirim)}</td>
+                    </tr>`;
+
+                grand.planted += g.planted; grand.prognosa += g.prognosa; grand.real += g.real;
+                grand.kebutuhan += g.kebutuhan; grand.realHk += g.realHk; grand.restan += g.restan; grand.kirim += g.kirim;
+                groupNo++;
+            });
+
+            const bodyEl = document.getElementById("rekapCROBody");
+            if (bodyEl) bodyEl.innerHTML = bodyHtml;
+
+            const grandVarProdAbs = grand.prognosa - grand.real;
+            const grandVarProdPct = grand.prognosa > 0 ? (grand.real / grand.prognosa * 100) : 0;
+            const grandVarHkAbs = grand.kebutuhan - grand.realHk;
+            const grandVarHkPct = grand.kebutuhan > 0 ? (grand.realHk / grand.kebutuhan * 100) : 0;
+
+            const totalRowEl = document.getElementById("rekapCROTotalRow");
+            if (totalRowEl) {
+                totalRowEl.innerHTML = `
+                    <td colspan="3" class="border border-slate-700 px-1.5 py-1 text-center text-[10px]">TOTAL ALL WILAYAH</td>
+                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px]">${fmt0(grand.planted)}</td>
+                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px]">${fmt0(grand.prognosa)}</td>
+                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px] text-emerald-300">${fmt0(grand.real)}</td>
+                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px]">${fmt0(grand.kebutuhan)}</td>
+                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px] text-emerald-300">${fmt0(grand.realHk)}</td>
+                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px] text-red-300">${fmt0(grandVarProdAbs)}</td>
+                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px]">${fmt2(grandVarProdPct)}</td>
+                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px] text-red-300">${fmt0(grandVarHkAbs)}</td>
+                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px]">${fmt2(grandVarHkPct)}</td>
+                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px]">${fmt0(grand.restan)}</td>
+                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px] text-sky-300">${fmt0(grand.kirim)}</td>
+                `;
+            }
+        }
+    </script>
+</body>
+
+</html>

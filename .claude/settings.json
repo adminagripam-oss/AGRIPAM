@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -rf \"C:/Users/JOI/AppData/Local/Temp/claude/d--AGRINAS-PALMA-NUSANTARA-AGRIPAM/f5794aa5-5593-46ba-90fe-e456b687dea9/scratchpad/repo_check\")",
+      "Bash(git clone *)",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git fetch *)",
+      "Bash(git reset *)",
+      "Bash(git branch *)",
+      "Bash(git push *)"
+    ]
+  }
+}

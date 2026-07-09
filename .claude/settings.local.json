@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(Get-Command winget -ErrorAction SilentlyContinue)"
+      "PowerShell(Get-Command winget -ErrorAction SilentlyContinue)",
+      "Bash(node --env-file=.env -e ' *)",
+      "Bash(node \"d:/AGRINAS PALMA NUSANTARA/AGRIPAM/_visual_test_tmp.js\")",
+      "Bash(rm -f _visual_test_tmp.js)",
+      "Bash(npm uninstall *)",
+      "Bash(node -e ' *)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(node --env-file=.env dev-server.js)",
+      "Bash(curl -s -o /dev/null -w \"server up: HTTP %{http_code}\\\\n\" http://localhost:3000/login.html)"
     ]
   }
 }

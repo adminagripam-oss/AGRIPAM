@@ -316,6 +316,16 @@
         #adminApprovalModal.backdrop-hide {
             opacity: 0;
         }
+
+        /* Modal Fullscreen Toggle */
+        .modal-fullscreen {
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+        }
     </style>
 </head>
 
@@ -372,9 +382,14 @@
                                 style="color-scheme: dark;" />
                         </div>
                     </div>
-                    <button onclick="closeRekapCROModal()" class="text-white/80 hover:text-white transition-colors">
-                        <span class="material-symbols-outlined text-2xl">close</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button id="rekapCROFullscreenBtn" onclick="toggleRekapCROFullscreen()" class="text-white/80 hover:text-white transition-colors" title="Fullscreen">
+                            <span class="material-symbols-outlined text-2xl">fullscreen</span>
+                        </button>
+                        <button onclick="closeRekapCROModal()" class="text-white/80 hover:text-white transition-colors">
+                            <span class="material-symbols-outlined text-2xl">close</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="p-4 overflow-auto flex-1 bg-surface-container-lowest dark:bg-slate-900">
                     <div class="overflow-x-auto border border-outline-variant dark:border-slate-800 rounded-lg">
@@ -579,9 +594,14 @@
             <div
                 class="px-6 py-4 border-b border-outline-variant dark:border-slate-800 flex items-center justify-between bg-primary text-white">
                 <h3 class="font-bold text-lg">Tabel Rencana &amp; Estimasi Panen</h3>
-                <button onclick="closeTableModal()" class="text-white/80 hover:text-white transition-colors">
-                    <span class="material-symbols-outlined text-2xl">close</span>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button id="tableModalFullscreenBtn" onclick="toggleTableModalFullscreen()" class="text-white/80 hover:text-white transition-colors" title="Fullscreen">
+                        <span class="material-symbols-outlined text-2xl">fullscreen</span>
+                    </button>
+                    <button onclick="closeTableModal()" class="text-white/80 hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-2xl">close</span>
+                    </button>
+                </div>
             </div>
             <!-- Modal Body -->
             <div class="p-4 overflow-auto flex-1 bg-surface-container-lowest dark:bg-slate-900">
@@ -1377,6 +1397,11 @@
             const modal = document.getElementById("rekapCROModal");
             modal.classList.add("hidden");
             modal.classList.remove("flex");
+            // Reset fullscreen state
+            const inner = modal.querySelector(':scope > div');
+            if (inner) inner.classList.remove('modal-fullscreen');
+            const btn = document.getElementById('rekapCROFullscreenBtn');
+            if (btn) btn.querySelector('.material-symbols-outlined').textContent = 'fullscreen';
         }
 
         function renderRekapCROTable() {
@@ -1670,7 +1695,13 @@
         }
 
         function closeTableModal() {
-            document.getElementById("tableModal").classList.add("hidden");
+            const modal = document.getElementById("tableModal");
+            modal.classList.add("hidden");
+            // Reset fullscreen state
+            const inner = modal.querySelector(':scope > div');
+            if (inner) inner.classList.remove('modal-fullscreen');
+            const btn = document.getElementById('tableModalFullscreenBtn');
+            if (btn) btn.querySelector('.material-symbols-outlined').textContent = 'fullscreen';
         }
 
         function openAdminApprovalModal() {
@@ -1826,6 +1857,25 @@
                     }
                 })
                 .catch(e => console.error("Error checking delete requests:", e));
+        }
+        // Fullscreen toggle for Rekap CRO Modal
+        function toggleRekapCROFullscreen() {
+            const inner = document.querySelector('#rekapCROModal > div');
+            const btn = document.getElementById('rekapCROFullscreenBtn');
+            if (!inner || !btn) return;
+            inner.classList.toggle('modal-fullscreen');
+            btn.querySelector('.material-symbols-outlined').textContent =
+                inner.classList.contains('modal-fullscreen') ? 'fullscreen_exit' : 'fullscreen';
+        }
+
+        // Fullscreen toggle for Table Modal
+        function toggleTableModalFullscreen() {
+            const inner = document.querySelector('#tableModal > div');
+            const btn = document.getElementById('tableModalFullscreenBtn');
+            if (!inner || !btn) return;
+            inner.classList.toggle('modal-fullscreen');
+            btn.querySelector('.material-symbols-outlined').textContent =
+                inner.classList.contains('modal-fullscreen') ? 'fullscreen_exit' : 'fullscreen';
         }
     </script>
 </body>

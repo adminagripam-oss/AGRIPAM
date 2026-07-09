@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id" class="dark" data-theme="dark">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Tabel Rencana & Estimasi Panen (Fullscreen) | PT AGRINAS PALMA NUSANTARA</title>
+    <link rel="icon" type="image/jpeg" href="LOGO AGRIPAM.jpeg">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00450d",
+                        "surface": "#f8f9fb",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#c0c9bb",
+                        "on-surface": "#191c1e"
+                    },
+                    fontFamily: {
+                        "body-base": ["Manrope"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: #0f172a;
+            color: #cbd5e1;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* No scroll on body */
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-900 text-slate-200">
+    <div class="flex-1 flex flex-col h-full w-full overflow-hidden">
+        <!-- Header -->
+        <div class="px-1.5 py-1 flex flex-col md:flex-row md:items-center justify-between gap-2" style="background-color:#1e3a5f;">
+            <div class="flex items-center gap-2">
+                <img src="AGRINAS DANANTARA.png" alt="Logo APN" class="h-8 bg-white/90 p-1 rounded" />
+                <div>
+                    <h2 class="font-bold text-base md:text-lg text-white uppercase tracking-wide">Tabel Rencana & Estimasi Panen</h2>
+                    <p class="text-xs text-white/70 mt-0">Data Real-time (Auto Refresh)</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-1.5 py-1 w-fit">
+                    <span class="material-symbols-outlined text-white text-lg">calendar_today</span>
+                    <label class="text-[10px] font-bold text-white">Tanggal:</label>
+                    <input type="date" id="modalDatePicker" class="bg-transparent border-none text-[10px] font-bold text-white outline-none cursor-pointer focus:ring-0 p-0" style="color-scheme: dark;" />
+                </div>
+                
+                <div class="flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-1.5 py-1 w-fit">
+                    <span class="material-symbols-outlined text-white text-lg">location_on</span>
+                    <label class="text-[10px] font-bold text-white">Regional:</label>
+                    <select id="modalRegionSelect" class="bg-transparent border-none text-[10px] font-bold text-white outline-none cursor-pointer focus:ring-0 p-0 pr-6">
+                        <option value="ALL" class="text-slate-900">-- Semua Regional --</option>
+                        <option value="Aceh" class="text-slate-900">Aceh</option>
+                        <option value="Sumatera Utara 1" class="text-slate-900">Sumatera Utara 1</option>
+                        <option value="Sumatera Utara 2 Ex Torganda" class="text-slate-900">Sumatera Utara 2 Ex Torganda</option>
+                        <option value="Riau 1" class="text-slate-900">Riau 1</option>
+                        <option value="Riau 2" class="text-slate-900">Riau 2</option>
+                        <option value="Riau 3" class="text-slate-900">Riau 3</option>
+                        <option value="Riau 4" class="text-slate-900">Riau 4</option>
+                        <option value="Bangka Belitung" class="text-slate-900">Bangka Belitung</option>
+                        <option value="Jambi" class="text-slate-900">Jambi</option>
+                        <option value="Sumatera Barat" class="text-slate-900">Sumatera Barat</option>
+                        <option value="Sumatera Selatan" class="text-slate-900">Sumatera Selatan</option>
+                        <option value="Kalimantan Barat 1" class="text-slate-900">Kalimantan Barat 1</option>
+                        <option value="Kalimantan Barat 2" class="text-slate-900">Kalimantan Barat 2</option>
+                        <option value="Kalimantan Selatan 1" class="text-slate-900">Kalimantan Selatan 1</option>
+                        <option value="Kalimantan Selatan 2" class="text-slate-900">Kalimantan Selatan 2</option>
+                        <option value="Kalimantan Timur" class="text-slate-900">Kalimantan Timur</option>
+                        <option value="Kalimantan Utara" class="text-slate-900">Kalimantan Utara</option>
+                        <option value="Kalimantan Tengah 1" class="text-slate-900">Kalimantan Tengah 1</option>
+                        <option value="Kalimantan Tengah 2" class="text-slate-900">Kalimantan Tengah 2</option>
+                        <option value="Kalimantan Tengah 3" class="text-slate-900">Kalimantan Tengah 3</option>
+                        <option value="Sulawesi Tenggara" class="text-slate-900">Sulawesi Tenggara</option>
+                        <option value="Sulawesi Tengah" class="text-slate-900">Sulawesi Tengah</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meta Bar -->
+        <div class="px-6 py-2 bg-slate-800 border-b border-slate-700 flex justify-end">
+            <span id="modalRowCount" class="text-[10px] text-slate-300 font-medium"></span>
+        </div>
+
+        <!-- Table Container -->
+        <div class="p-1 overflow-auto flex-1 bg-slate-900">
+            <div class="overflow-x-auto border border-slate-800 rounded-lg h-full">
+                <table class="w-full text-left border-collapse text-[10px] whitespace-nowrap">
+                    <thead class="sticky top-0 z-10">
+                        <tr class="bg-sky-700 text-white font-bold text-center">
+                            <th rowspan="2" class="border border-slate-600 px-1.5 py-1">NO.</th>
+                            <th rowspan="2" class="border border-slate-600 px-1.5 py-1 min-w-[200px] text-left">NAMA REGIONAL</th>
+                            <th colspan="9" class="border border-slate-600 px-1.5 py-1">RENCANA PANEN DAN ESTIMASI PANEN</th>
+                        </tr>
+                        <tr class="bg-sky-600 text-white font-semibold text-center text-xs">
+                            <th class="border border-slate-600 px-1.5 py-1">Luas Lahan<br>Planted (Ha)</th>
+                            <th class="border border-slate-600 px-1.5 py-1">Estimasi<br>Restan Lalu</th>
+                            <th class="border border-slate-600 px-1.5 py-1">Luas Panen<br>(Ha)</th>
+                            <th class="border border-slate-600 px-1.5 py-1">TK Panen<br>(Hk)</th>
+                            <th class="border border-slate-600 px-1.5 py-1">Ha/Hk</th>
+                            <th class="border border-slate-600 px-1.5 py-1">Estimasi Panen<br>(Kg)</th>
+                            <th class="border border-slate-600 px-1.5 py-1">Output Panen<br>(Kg/Hk)</th>
+                            <th class="border border-slate-600 px-1.5 py-1">Estimasi Kirim<br>(Kg)</th>
+                            <th class="border border-slate-600 px-1.5 py-1">Estimasi<br>Restan (Kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalTableBody" class="text-slate-200">
+                        <tr><td colspan="11" class="text-center py-4">Memuat data...</td></tr>
+                    </tbody>
+                    <tfoot class="sticky bottom-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.2)]">
+                        <tr id="modalTableFooter" class="bg-sky-900 font-bold text-right text-white">
+                            <!-- Totals populated dynamically -->
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let globalAllEstimasi = {};
+        let globalSelectedDate = "";
+
+        const luasPlantedMap = {
+            "Aceh": 1257, "Sumatera Utara 1": 6498, "Sumatera Utara 2 Ex Torganda": 46678,
+            "Riau 1": 65723, "Riau 2": 48102, "Riau 3": 4703, "Riau 4": 38121,
+            "Bangka Belitung": 568, "Jambi": 566, "Sumatera Barat": 2742, "Sumatera Selatan": 8713,
+            "Kalimantan Barat 1": 77956, "Kalimantan Barat 2": 12993, "Kalimantan Selatan 1": 4772,
+            "Kalimantan Selatan 2": 2850, "Kalimantan Utara": 3562, "Kalimantan Timur": 1145,
+            "Kalimantan Tengah 1": 63248, "Kalimantan Tengah 2": 31222, "Kalimantan Tengah 3": 17355,
+            "Sulawesi Tengah": 3231, "Sulawesi Tenggara": 2117
+        };
+
+        const allRegionsList = [
+            "Aceh", "Sumatera Utara 1", "Sumatera Utara 2 Ex Torganda", "Riau 1",
+            "Riau 2", "Riau 3", "Riau 4", "Bangka Belitung", "Jambi", "Sumatera Barat",
+            "Sumatera Selatan", "Kalimantan Barat 1", "Kalimantan Barat 2",
+            "Kalimantan Selatan 1", "Kalimantan Selatan 2", "Kalimantan Utara",
+            "Kalimantan Timur", "Kalimantan Tengah 1", "Kalimantan Tengah 2",
+            "Kalimantan Tengah 3", "Sulawesi Tengah", "Sulawesi Tenggara"
+        ];
+
+        function getWIBDateStr() {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const wibTime = new Date(utc + (7 * 3600000));
+            const yyyy = wibTime.getFullYear();
+            const MM = String(wibTime.getMonth() + 1).padStart(2, '0');
+            const dd = String(wibTime.getDate()).padStart(2, '0');
+            return yyyy + "-" + MM + "-" + dd;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const dateInput = document.getElementById("modalDatePicker");
+            const regionSelect = document.getElementById("modalRegionSelect");
+            
+            const today = getWIBDateStr();
+            dateInput.value = today;
+            globalSelectedDate = today;
+
+            loadData(today);
+
+            dateInput.addEventListener("change", function () {
+                if (this.value) {
+                    globalSelectedDate = this.value;
+                    loadData(this.value);
+                }
+            });
+
+            regionSelect.addEventListener("change", function () {
+                renderTable(); // Only need to re-render, data is already fetched
+            });
+
+            // Auto refresh every 5 minutes
+            setInterval(() => {
+                loadData(globalSelectedDate);
+            }, 5 * 60 * 1000);
+        });
+
+        function loadData(tanggal) {
+            // Fetch all regions data
+            const urlEstimasi = `/api/estimasi?action=getEstimasi&tanggal=${tanggal}&region=ALL`;
+
+            fetch(urlEstimasi)
+                .then(res => res.json())
+                .then(resEstimasi => {
+                    if (resEstimasi.success && resEstimasi.exists) {
+                        globalAllEstimasi = resEstimasi.allEstimasi || {};
+                    } else {
+                        globalAllEstimasi = {};
+                    }
+                    renderTable();
+                })
+                .catch(err => {
+                    console.error("Error loading data:", err);
+                    globalAllEstimasi = {};
+                    renderTable();
+                });
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById("modalTableBody");
+            const tfoot = document.getElementById("modalTableFooter");
+            const filterRegion = document.getElementById("modalRegionSelect").value;
+
+            tbody.innerHTML = "";
+            tfoot.innerHTML = "";
+
+            let sumPlanted = 0;
+            let sumRestanLalu = 0;
+            let sumLuasPanen = 0;
+            let sumTkPanen = 0;
+            let sumEstPanen = 0;
+            let sumEstKirim = 0;
+            let sumEstRestan = 0;
+
+            const formatNumber = (num) => {
+                return new Intl.NumberFormat('id-ID').format(Math.round(num));
+            };
+
+            const formatRatio = (num) => {
+                return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+            };
+
+            let rowDisplayNumber = 1;
+
+            allRegionsList.forEach((regionName) => {
+                // Filter: if a specific regional is selected, skip non-matching rows
+                if (filterRegion !== "ALL" && regionName !== filterRegion) return;
+
+                const data = globalAllEstimasi[regionName] || {
+                    restanLalu: 0, luasPanen: 0, tkPanen: 0, estPanen: 0, outPanen: 0, estKirim: 0, estRestan: 0
+                };
+
+                const planted = luasPlantedMap[regionName] || 0;
+                const restanLalu = parseFloat(data.restanLalu) || 0;
+                const luasPanen = parseFloat(data.luasPanen) || 0;
+                const tkPanen = parseFloat(data.tkPanen) || 0;
+                const estPanen = parseFloat(data.estPanen) || 0;
+                const outPanen = parseFloat(data.outPanen) || 0;
+                const estKirim = parseFloat(data.estKirim) || 0;
+                const estRestan = parseFloat(data.estRestan) || 0;
+                const haPerHk = tkPanen > 0 ? (luasPanen / tkPanen) : 0;
+
+                sumPlanted += planted;
+                sumRestanLalu += restanLalu;
+                sumLuasPanen += luasPanen;
+                sumTkPanen += tkPanen;
+                sumEstPanen += estPanen;
+                sumEstKirim += estKirim;
+                sumEstRestan += estRestan;
+
+                const hasNoInput = (restanLalu === 0 && luasPanen === 0 && tkPanen === 0 && estPanen === 0);
+
+                const regionCellStyle = hasNoInput
+                    ? 'background-color:#b91c1c;color:#ffffff;font-weight:700;'
+                    : 'background-color:#15803d;color:#ffffff;font-weight:700;';
+
+                const statusIcon = hasNoInput ? '&#9711;' : '&#10003;';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/60 border-b border-slate-800">
+                        <td class="border-r border-slate-800 px-1.5 py-1 text-center font-bold">${rowDisplayNumber++}</td>
+                        <td class="border-r border-slate-800 px-1.5 py-1 text-left" style="${regionCellStyle}">
+                            <span style="margin-right:8px;font-size:14px;">${statusIcon}</span>${regionName}
+                        </td>
+                        <td class="border-r border-slate-800 px-1.5 py-1 text-right">${planted > 0 ? formatNumber(planted) : '0'}</td>
+                        <td class="border-r border-slate-800 px-1.5 py-1 text-right">${restanLalu > 0 ? formatNumber(restanLalu) : '0'}</td>
+                        <td class="border-r border-slate-800 px-1.5 py-1 text-right">${luasPanen > 0 ? formatNumber(luasPanen) : '0'}</td>
+                        <td class="border-r border-slate-800 px-1.5 py-1 text-right">${tkPanen > 0 ? formatNumber(tkPanen) : '0'}</td>
+                        <td class="border-r border-slate-800 px-1.5 py-1 text-right">${haPerHk > 0 ? formatRatio(haPerHk) : '0,00'}</td>
+                        <td class="border-r border-slate-800 px-1.5 py-1 text-right font-bold text-emerald-400">${estPanen > 0 ? formatNumber(estPanen) : '0'}</td>
+                        <td class="border-r border-slate-800 px-1.5 py-1 text-right">${outPanen > 0 ? formatNumber(outPanen) : '0'}</td>
+                        <td class="border-r border-slate-800 px-1.5 py-1 text-right font-bold text-sky-400">${estKirim > 0 ? formatNumber(estKirim) : '0'}</td>
+                        <td class="border-r border-slate-800 px-1.5 py-1 text-right">${estRestan > 0 ? formatNumber(estRestan) : '0'}</td>
+                    </tr>
+                `;
+            });
+
+            const rowCountEl = document.getElementById("modalRowCount");
+            if (rowCountEl) {
+                const totalRows = rowDisplayNumber - 1;
+                rowCountEl.textContent = filterRegion !== "ALL"
+                    ? `Menampilkan 1 regional`
+                    : `Menampilkan ${totalRows} dari 22 regional`;
+            }
+
+            const avgOutPanen = sumTkPanen > 0 ? (sumEstPanen / sumTkPanen) : 0;
+            const avgHaPerHk = sumTkPanen > 0 ? (sumLuasPanen / sumTkPanen) : 0;
+
+            tfoot.innerHTML = `
+                <td colspan="2" class="border-r border-slate-700 px-1.5 py-1 text-center font-bold text-white text-base">TOTAL</td>
+                <td class="border-r border-slate-700 px-1.5 py-1 text-right">${formatNumber(sumPlanted)}</td>
+                <td class="border-r border-slate-700 px-1.5 py-1 text-right">${formatNumber(sumRestanLalu)}</td>
+                <td class="border-r border-slate-700 px-1.5 py-1 text-right">${formatNumber(sumLuasPanen)}</td>
+                <td class="border-r border-slate-700 px-1.5 py-1 text-right">${formatNumber(sumTkPanen)}</td>
+                <td class="border-r border-slate-700 px-1.5 py-1 text-right">${formatRatio(avgHaPerHk)}</td>
+                <td class="border-r border-slate-700 px-1.5 py-1 text-right text-emerald-300">${formatNumber(sumEstPanen)}</td>
+                <td class="border-r border-slate-700 px-1.5 py-1 text-right">${formatNumber(avgOutPanen)}</td>
+                <td class="border-r border-slate-700 px-1.5 py-1 text-right text-sky-300">${formatNumber(sumEstKirim)}</td>
+                <td class="border-r border-slate-700 px-1.5 py-1 text-right">${formatNumber(sumEstRestan)}</td>
+            `;
+        }
+    </script>
+</body>
+</html>
