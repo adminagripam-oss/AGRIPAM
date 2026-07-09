@@ -2975,7 +2975,7 @@
                                 pctColor = theme === "dark" ? "#cbd5e1" : "#444444";
                             }
 
-                            var valText = val.toFixed(2);
+                            var valText = val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                             ctx.fillStyle = theme === "dark" ? "#cbd5e1" : "#111111";
 
                             if (pctText) {
@@ -3067,7 +3067,7 @@
                                         weight: 'bold'
                                     },
                                     callback: function (value) {
-                                        return value + ' Ton';
+                                        return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Ton';
                                     }
                                 }
                             },
@@ -3103,7 +3103,7 @@
                                 },
                                 callbacks: {
                                     label: function (context) {
-                                        return ' ' + context.dataset.label + ': ' + context.parsed.y + ' Ton';
+                                        return ' ' + context.dataset.label + ': ' + context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Ton';
                                     }
                                 }
                             }

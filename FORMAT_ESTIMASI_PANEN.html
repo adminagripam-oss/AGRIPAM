@@ -1256,10 +1256,12 @@
                 `;
             }
 
-            const persentaseRealisasi = totalEstimasiPanen > 0 ? (totalRealisasi / totalEstimasiPanen) * 100 : 0;
+            // totalRealisasi is already in Ton, totalEstimasiPanen is in Kg
+            const totalEstimasiTon = totalEstimasiPanen / 1000;
+            const persentaseRealisasi = totalEstimasiTon > 0 ? (totalRealisasi / totalEstimasiTon) * 100 : 0;
             const persentaseText = formatDecimal(persentaseRealisasi);
-            const realisasiTon = formatDecimal(totalRealisasi / 1000);
-            const estimasiTon = formatDecimal(totalEstimasiPanen / 1000);
+            const realisasiTon = formatDecimal(totalRealisasi);
+            const estimasiTon = formatDecimal(totalEstimasiTon);
 
             highlightContainer.innerHTML += `
                 <div class="flex gap-4">
@@ -1429,7 +1431,7 @@
                     const kebutuhan = prognosa / 1.5; // Tenaga Panen (Hk) Kebutuhan = Prognosa / 1,5
                     const realHk = parseFloat(est.tkPanen) || 0; // Tenaga Panen (Hk) Renc/Real = TK Panen (Hk) dari form estimasi
                     const restan = (parseFloat(est.estRestan) || 0) / 1000; // estimasi_restan_kg -> Ton
-                    const kirim = real + restan; // Produksi Harian Renc/Real + Restan
+                    const kirim = (parseFloat(est.estKirim) || 0) / 1000; // Est Kirim langsung dari db
 
                     g.planted += planted; g.prognosa += prognosa; g.real += real;
                     g.kebutuhan += kebutuhan; g.realHk += realHk; g.restan += restan; g.kirim += kirim;

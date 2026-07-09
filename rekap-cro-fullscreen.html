@@ -231,7 +231,7 @@
                     const kebutuhan = prognosa / 1.5;
                     const realHk = parseFloat(est.tkPanen) || 0;
                     const restan = (parseFloat(est.estRestan) || 0) / 1000;
-                    const kirim = real + restan;
+                    const kirim = (parseFloat(est.estKirim) || 0) / 1000;
 
                     g.planted += planted; g.prognosa += prognosa; g.real += real;
                     g.kebutuhan += kebutuhan; g.realHk += realHk; g.restan += restan; g.kirim += kirim;
