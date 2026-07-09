@@ -1,10 +1,9 @@
 const { supabase } = require('./lib/supabase');
 const { verifyToken } = require('./lib/auth');
+const { applyCors } = require('./lib/cors');
 
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  applyCors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const p = req.method === 'POST' ? req.body : req.query;

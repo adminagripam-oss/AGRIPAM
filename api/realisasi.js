@@ -1,13 +1,19 @@
 const { supabase } = require('./lib/supabase');
 const { verifyToken } = require('./lib/auth');
+const { applyCors } = require('./lib/cors');
 
 const MIN_TONASE = 0;
 const MAX_TONASE = 5000;
 
+function computeJamDataAndTotal(rows) {
+  const jamData = {};
+  (rows || []).forEach(r => { jamData[r.jam] = parseFloat(r.tonase) || 0; });
+  const total = Object.values(jamData).reduce((sum, t) => sum + t, 0);
+  return { jamData, total: Math.round(total * 100) / 100 };
+}
+
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  applyCors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const p = req.method === 'POST' ? req.body : req.query;
@@ -30,15 +36,8 @@ module.exports = async (req, res) => {
       return res.json({ success: true, allRecords });
     }
 
-    let total = 0;
-    const jamData = {};
-    (data || []).forEach(r => {
-      const t = parseFloat(r.tonase) || 0;
-      total += t;
-      jamData[r.jam] = t;
-    });
-
-    return res.json({ success: true, total: Math.round(total * 100) / 100, jamData });
+    const { jamData, total } = computeJamDataAndTotal(data);
+    return res.json({ success: true, total, jamData });
   }
 
   if (action === 'insert') {
@@ -60,19 +59,17 @@ module.exports = async (req, res) => {
 
     if (existing) {
       const { data: allRows } = await supabase.from('database_input').select('jam, tonase').eq('tanggal', tanggal).eq('region', region);
-      let total = 0; const jamData = {};
-      (allRows || []).forEach(r => { const t = parseFloat(r.tonase) || 0; total += t; jamData[r.jam] = t; });
-      return res.json({ success: false, message: `Data jam ${jam} sudah ada. Gunakan 'Hapus Jam Ini' untuk merevisi.`, total: Math.round(total * 100) / 100, jamData });
+      const { jamData, total } = computeJamDataAndTotal(allRows);
+      return res.json({ success: false, message: `Data jam ${jam} sudah ada. Gunakan 'Hapus Jam Ini' untuk merevisi.`, total, jamData });
     }
 
     const { error } = await supabase.from('database_input').insert({ tanggal, region, jam, tonase: tonaseNum });
     if (error) return res.json({ success: false, message: 'Gagal menyimpan data: ' + error.message });
 
     const { data: allRows } = await supabase.from('database_input').select('jam, tonase').eq('tanggal', tanggal).eq('region', region);
-    let newTotal = 0; const jamData = {};
-    (allRows || []).forEach(r => { const t = parseFloat(r.tonase) || 0; newTotal += t; jamData[r.jam] = t; });
+    const { jamData, total } = computeJamDataAndTotal(allRows);
 
-    return res.json({ success: true, message: 'Data berhasil disimpan.', total: Math.round(newTotal * 100) / 100, jamData });
+    return res.json({ success: true, message: 'Data berhasil disimpan.', total, jamData });
   }
 
   if (action === 'delete') {
@@ -88,16 +85,14 @@ module.exports = async (req, res) => {
     const deletedCount = (deleted || []).length;
     if (deletedCount === 0) {
       const { data: allRows } = await supabase.from('database_input').select('jam, tonase').eq('tanggal', tanggal).eq('region', region);
-      let total = 0; const jamData = {};
-      (allRows || []).forEach(r => { const t = parseFloat(r.tonase) || 0; total += t; jamData[r.jam] = t; });
-      return res.json({ success: false, message: `Data jam ${jam} tidak ditemukan.`, total: Math.round(total * 100) / 100, jamData });
+      const { jamData, total } = computeJamDataAndTotal(allRows);
+      return res.json({ success: false, message: `Data jam ${jam} tidak ditemukan.`, total, jamData });
     }
 
     const { data: allRows } = await supabase.from('database_input').select('jam, tonase').eq('tanggal', tanggal).eq('region', region);
-    let total = 0; const jamData = {};
-    (allRows || []).forEach(r => { const t = parseFloat(r.tonase) || 0; total += t; jamData[r.jam] = t; });
+    const { jamData, total } = computeJamDataAndTotal(allRows);
 
-    return res.json({ success: true, message: `Data jam ${jam} berhasil dihapus.`, total: Math.round(total * 100) / 100, jamData });
+    return res.json({ success: true, message: `Data jam ${jam} berhasil dihapus.`, total, jamData });
   }
 
   return res.json({ success: false, message: 'Action tidak dikenal.' });

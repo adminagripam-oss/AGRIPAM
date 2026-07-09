@@ -1,10 +1,9 @@
 const { supabase } = require('./lib/supabase');
 const { verifyToken } = require('./lib/auth');
+const { applyCors } = require('./lib/cors');
 
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  applyCors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const p = req.method === 'POST' ? req.body : req.query;
@@ -13,14 +12,13 @@ module.exports = async (req, res) => {
   const tanggal = (p.tanggal || '').trim();
   const region = (p.region || '').trim();
 
-  // Validasi token — saat region=ALL (tampilan ADMIN), verifikasi tanpa cek region spesifik
-  const tokenRegion = region.toUpperCase() === 'ALL' ? null : region;
-  const check = await verifyToken(token, tokenRegion);
+  // Validasi token tanpa cek region spesifik dulu — ADMIN boleh akses region manapun
+  const check = await verifyToken(token, null);
   if (!check.valid) return res.json({ success: false, message: check.message });
 
-  // Pastikan hanya ADMIN yang boleh akses region=ALL
-  if (region.toUpperCase() === 'ALL' && check.region !== 'ADMIN') {
-    return res.json({ success: false, message: 'Hanya Admin yang dapat mengakses data semua region.' });
+  // Regional hanya boleh akses region miliknya sendiri; ADMIN boleh akses region manapun (termasuk ALL)
+  if (check.region !== 'ADMIN' && check.region !== region) {
+    return res.json({ success: false, message: 'Anda tidak memiliki akses ke region ini.' });
   }
 
 

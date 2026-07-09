@@ -1,13 +1,12 @@
 const { supabase } = require('./lib/supabase');
 const { signToken, verifyToken, SESSION_TTL_MS } = require('./lib/auth');
+const { applyCors } = require('./lib/cors');
 
 const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WIN_MS = 10 * 60 * 1000; // 10 menit
 
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  applyCors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const p = req.method === 'POST' ? req.body : req.query;

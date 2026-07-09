@@ -912,8 +912,11 @@
                             Ini</button>
                     </div>
                     <div class="btn-group" style="margin-top: 10px;">
-                        <button type="button" id="saveDraftRealisasiBtn" class="btn-submit" style="background-color: #17a2b8;" onclick="saveDraftRealisasi()">Simpan Draft</button>
-                        <button type="button" id="clearDraftRealisasiBtn" class="btn-delete" style="background-color: #ffc107; color: #000;" onclick="clearDraftRealisasi()">Hapus Draft</button>
+                        <button type="button" id="saveDraftRealisasiBtn" class="btn-submit"
+                            style="background-color: #17a2b8;" onclick="saveDraftRealisasi()">Simpan Draft</button>
+                        <button type="button" id="clearDraftRealisasiBtn" class="btn-delete"
+                            style="background-color: #ffc107; color: #000;" onclick="clearDraftRealisasi()">Hapus
+                            Draft</button>
                     </div>
 
                     <button type="button" class="btn-refresh"
@@ -974,8 +977,7 @@
     </div>
     <div id="estimasiSection" class="container" style="display:none;">
         <div class="logo-wrapper">
-            <img src="LOGO AGRIPAM.jpeg"
-                alt="Logo Agrinas Palma Nusantara">
+            <img src="LOGO AGRIPAM.jpeg" alt="Logo Agrinas Palma Nusantara">
         </div>
         <hr class="logo-divider">
 
@@ -1023,8 +1025,10 @@
                     Estimasi</button>
             </div>
             <div class="btn-group" style="margin-top: 10px;">
-                <button type="button" id="saveDraftEstimasiBtn" class="btn-submit" style="background-color: #17a2b8;" onclick="saveDraftEstimasi()">Simpan Draft</button>
-                <button type="button" id="clearDraftEstimasiBtn" class="btn-delete" style="background-color: #ffc107; color: #000;" onclick="clearDraftEstimasi()">Hapus Draft</button>
+                <button type="button" id="saveDraftEstimasiBtn" class="btn-submit" style="background-color: #17a2b8;"
+                    onclick="saveDraftEstimasi()">Simpan Draft</button>
+                <button type="button" id="clearDraftEstimasiBtn" class="btn-delete"
+                    style="background-color: #ffc107; color: #000;" onclick="clearDraftEstimasi()">Hapus Draft</button>
             </div>
 
             <button type="button" class="btn-logout" style="width:100%; margin-top:10px; background-color: #17a2b8;"
@@ -1068,6 +1072,7 @@
             var textColor = theme === "dark" ? "#cbd5e1" : "#444444";
 
             myChart.options.scales.y.grid.color = gridColor;
+            myChart.options.scales.x.grid.color = gridColor;
             myChart.options.scales.x.ticks.color = textColor;
             myChart.options.scales.y.ticks.color = textColor;
             myChart.update();
@@ -1082,16 +1087,16 @@
             : '/api';
         // Pemetaan action lama (Apps Script) → endpoint baru
         var ACTION_MAP = {
-            "login"              : "auth",
-            "logout"             : "auth",
-            "refreshToken"       : "auth",
-            "getData"            : "realisasi",
-            "getRunningTextData" : "realisasi",
-            "insert"             : "realisasi",
-            "delete"             : "realisasi",
-            "getEstimasiData"    : "estimasi",
-            "insertEstimasi"     : "estimasi",
-            "deleteEstimasi"     : "estimasi",
+            "login": "auth",
+            "logout": "auth",
+            "refreshToken": "auth",
+            "getData": "realisasi",
+            "getRunningTextData": "realisasi",
+            "insert": "realisasi",
+            "delete": "realisasi",
+            "getEstimasi": "estimasi",
+            "insertEstimasi": "estimasi",
+            "deleteEstimasi": "estimasi",
             "requestDelete": "deleteRequest",
             "getDeleteRequests": "deleteRequest",
             "resolveDeleteRequest": "deleteRequest"
@@ -1172,6 +1177,8 @@
         var sessionTimer = null;
         var currentEstimasiPanen = 0; // estimasi panen dalam Ton
         var isAdminTotalAll = false;
+        var myChart = null; // instance Chart.js grafik realisasi — dideklarasikan di sini (bukan dekat updateChart())
+                             // karena init() yang memanggil updateChart() lebih dulu jalan di posisi source ini
 
         var statusText = document.getElementById("status");
         var submitBtn = document.getElementById("submitBtn");
@@ -1219,7 +1226,7 @@
                 document.getElementById("estimasiKirim").value = d.kirim || "";
                 document.getElementById("estimasiRestan").value = d.restan || "";
                 checkEstimasi();
-            } catch(e) {}
+            } catch (e) { }
         }
 
         function clearDraftEstimasi() {
@@ -1252,7 +1259,7 @@
                 document.getElementById("jam").value = d.jam || "";
                 document.getElementById("tonase").value = d.tonase || "";
                 document.getElementById("keterangan").value = d.keterangan || "";
-            } catch(e) {}
+            } catch (e) { }
         }
 
         function clearDraftRealisasi() {
@@ -1364,7 +1371,7 @@
             setLoading(true, "Memeriksa data estimasi...");
 
             jsonpRequest(
-                { action: "getEstimasiData", tanggal: tanggal, region: s.region },
+                { action: "getEstimasi", tanggal: tanggal, region: s.region, token: s.token },
                 function (res) {
                     setLoading(false);
                     if (res.success) {
@@ -1423,17 +1430,17 @@
 
         // ── API Request Engine (fetch-based, menggantikan JSONP) ─────────────
         function jsonpRequest(params, onSuccess, onError, _retry) {
-            var retry   = _retry || 0;
-            var action  = params.action || "";
+            var retry = _retry || 0;
+            var action = params.action || "";
             var endpoint = ACTION_MAP[action] || action;
-            var url     = API_BASE + "/" + endpoint;
+            var url = API_BASE + "/" + endpoint;
 
             var query = Object.keys(params).map(function (k) {
                 return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]);
             }).join("&");
 
             var controller = new AbortController();
-            var timeoutId  = setTimeout(function () { controller.abort(); }, 20000);
+            var timeoutId = setTimeout(function () { controller.abort(); }, 20000);
 
             fetch(url + "?" + query, { signal: controller.signal })
                 .then(function (res) {
@@ -1646,7 +1653,7 @@
 
             // Fetch Estimasi
             jsonpRequest(
-                { action: "getEstimasiData", tanggal: tanggal, region: "ALL" },
+                { action: "getEstimasi", tanggal: tanggal, region: "ALL", token: s.token },
                 function (res) {
                     estimasiRes = res;
                     checkDone();
@@ -1679,9 +1686,9 @@
                         if (s) {
                             localStorage.removeItem("draftRealisasi_" + s.region);
                         }
-                        
+
                         saveSession(region, res.token, res.ttlMs);
-                        
+
                         // Load drafts
                         loadDraftEstimasi();
                         loadDraftRealisasi();
@@ -1765,7 +1772,6 @@
                     },
                     function () {
                         // Gagal koneksi — biarkan saja, coba lagi di interval berikutnya
-                        console.log("Heartbeat gagal, akan coba lagi...");
                     }
                 );
             }, 30 * 60 * 1000); // setiap 30 menit
@@ -2054,7 +2060,7 @@
 
                 // Fetch Estimasi
                 jsonpRequest(
-                    { action: "getEstimasiData", tanggal: tanggal, region: reg },
+                    { action: "getEstimasi", tanggal: tanggal, region: reg, token: s ? s.token : "" },
                     function (estRes) {
                         if (estRes.success && estRes.exists) {
                             var estPanenKg = parseFloat(estRes.data.estPanen) || 0;
@@ -2167,7 +2173,7 @@
 
                     // Ambil data estimasi rencana
                     jsonpRequest(
-                        { action: "getEstimasiData", tanggal: tanggal, region: region },
+                        { action: "getEstimasi", tanggal: tanggal, region: region, token: s.token },
                         function (estRes) {
                             if (!isSilent) {
                                 setLoading(false);
@@ -2768,7 +2774,7 @@
         fetch('https://api.ipify.org?format=json')
             .then(response => response.json())
             .then(data => { clientIP = data.ip; })
-            .catch(e => console.log("Gagal mendapatkan IP"));
+            .catch(e => { });
 
         // =========================================================================
         // JAM DIGITAL SERVER WIB (UTC+7)
@@ -2812,7 +2818,52 @@
         // =========================================================================
         // GRAFIK REALISASI PANEN TIAP JAM (CHART.JS)
         // =========================================================================
-        var myChart = null;
+
+        var TREND_UP_COLOR = '#2563eb';   // biru — kenaikan
+        var TREND_DOWN_COLOR = '#dc2626'; // merah — penurunan
+        var TREND_FLAT_COLOR = 'rgba(148, 163, 184, 0.6)'; // netral — tidak ada perubahan / tidak ada data
+
+        // Memotong data hanya pada rentang jam yang sudah dilaporkan: null sebelum jam pertama
+        // dan sesudah jam terakhir yang terisi, supaya garis penghubung tidak "rata di 0" di luar rentang itu.
+        function trimToReportedRange(values) {
+            var firstIdx = -1, lastIdx = -1;
+            for (var i = 0; i < values.length; i++) {
+                if (values[i] > 0) {
+                    if (firstIdx === -1) firstIdx = i;
+                    lastIdx = i;
+                }
+            }
+            if (firstIdx === -1) return values.map(function () { return null; });
+            return values.map(function (v, i) {
+                return (i < firstIdx || i > lastIdx) ? null : v;
+            });
+        }
+
+        function segmentColorForLine(datasetIndex) {
+            return function (ctx) {
+                var data = ctx.chart.data.datasets[datasetIndex].data;
+                var v0 = data[ctx.p0DataIndex];
+                var v1 = data[ctx.p1DataIndex];
+                if (v0 == null || v1 == null) return TREND_FLAT_COLOR;
+                if (v1 > v0) return TREND_UP_COLOR;
+                if (v1 < v0) return TREND_DOWN_COLOR;
+                return TREND_FLAT_COLOR;
+            };
+        }
+
+        function pointColorForLine(datasetIndex) {
+            return function (ctx) {
+                var data = ctx.chart.data.datasets[datasetIndex].data;
+                var i = ctx.dataIndex;
+                var v1 = data[i];
+                if (i === 0 || v1 == null) return TREND_FLAT_COLOR;
+                var v0 = data[i - 1];
+                if (v0 == null) return TREND_FLAT_COLOR;
+                if (v1 > v0) return TREND_UP_COLOR;
+                if (v1 < v0) return TREND_DOWN_COLOR;
+                return TREND_FLAT_COLOR;
+            };
+        }
 
         function updateChart() {
             var canvas = document.getElementById("realisasiChart");
@@ -2857,8 +2908,11 @@
                 noDataEl.style.display = hasData ? "none" : "block";
             }
 
+            var lineData = trimToReportedRange(dataValues);
+
             if (myChart) {
                 myChart.data.datasets[0].data = dataValues;
+                myChart.data.datasets[1].data = lineData;
 
                 // Re-create gradient on update to ensure it fits the canvas properly
                 var ctx = canvas.getContext("2d");
@@ -2866,6 +2920,7 @@
                 gradient.addColorStop(0, 'rgba(40, 167, 69, 0.9)');
                 gradient.addColorStop(1, 'rgba(40, 167, 69, 0.15)');
                 myChart.data.datasets[0].backgroundColor = gradient;
+                myChart.update();
 
             } else {
                 if (typeof Chart !== "undefined" && typeof Chart.getChart === "function") {
@@ -2889,54 +2944,73 @@
                 hoverGradient.addColorStop(0, 'rgba(40, 167, 69, 1)');
                 hoverGradient.addColorStop(1, 'rgba(40, 167, 69, 0.35)');
 
-                // Custom plugin to draw values and percentage change
+                // Custom plugin to draw nilai per jam + persentase kumulatif vs estimasi, dan persentase kenaikan/penurunan per jam
                 var chartDataLabelsPlugin = {
                     id: 'chartDataLabels',
                     afterDatasetsDraw: function (chart) {
                         var ctx = chart.ctx;
                         var theme = document.documentElement.getAttribute("data-theme") || "light";
 
-                        chart.data.datasets.forEach(function (dataset, i) {
-                            var meta = chart.getDatasetMeta(i);
-                            meta.data.forEach(function (bar, index) {
-                                var val = dataset.data[index];
-                                if (val === 0) return; // Don't draw if 0
+                        // Dataset 0 (bar): nilai per jam + persentase kumulatif terhadap estimasi
+                        var barDataset = chart.data.datasets[0];
+                        var barMeta = chart.getDatasetMeta(0);
+                        barMeta.data.forEach(function (bar, index) {
+                            var val = barDataset.data[index];
+                            if (val === 0) return; // Don't draw if 0
 
-                                ctx.save();
-                                ctx.font = "bold 11px Calibri";
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'bottom';
+                            ctx.save();
+                            ctx.font = "bold 11px Calibri";
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'bottom';
 
-                                // Calculate percentage contribution up to current hour compared to estimated harvest plan
-                                var pctText = "";
-                                var pctColor = "";
-
-                                if (currentEstimasiPanen > 0) {
-                                    var cumulativeSum = 0;
-                                    for (var k = 0; k <= index; k++) {
-                                        cumulativeSum += dataset.data[k];
-                                    }
-                                    var pct = (cumulativeSum / currentEstimasiPanen) * 100;
-                                    pctText = pct.toFixed(2) + "%";
-                                    pctColor = theme === "dark" ? "#cbd5e1" : "#444444";
+                            var pctText = "";
+                            var pctColor = "";
+                            if (currentEstimasiPanen > 0) {
+                                var cumulativeSum = 0;
+                                for (var k = 0; k <= index; k++) {
+                                    cumulativeSum += barDataset.data[k];
                                 }
+                                var pct = (cumulativeSum / currentEstimasiPanen) * 100;
+                                pctText = pct.toFixed(2) + "%";
+                                pctColor = theme === "dark" ? "#cbd5e1" : "#444444";
+                            }
 
-                                // Draw value text
-                                var valText = val.toFixed(2);
-                                ctx.fillStyle = theme === "dark" ? "#cbd5e1" : "#111111";
+                            var valText = val.toFixed(2);
+                            ctx.fillStyle = theme === "dark" ? "#cbd5e1" : "#111111";
 
-                                if (pctText) {
-                                    // Draw value higher to fit the percentage label below it
-                                    ctx.fillText(valText, bar.x, bar.y - 15);
-                                    // Draw percentage change
-                                    ctx.fillStyle = pctColor;
-                                    ctx.fillText(pctText, bar.x, bar.y - 3);
-                                } else {
-                                    // Draw only value if no percentage change
-                                    ctx.fillText(valText, bar.x, bar.y - 3);
-                                }
-                                ctx.restore();
-                            });
+                            if (pctText) {
+                                ctx.fillText(valText, bar.x, bar.y - 15);
+                                ctx.fillStyle = pctColor;
+                                ctx.fillText(pctText, bar.x, bar.y - 3);
+                            } else {
+                                ctx.fillText(valText, bar.x, bar.y - 3);
+                            }
+                            ctx.restore();
+                        });
+
+                        // Dataset 1 (garis penghubung): persentase kenaikan/penurunan dibanding jam sebelumnya
+                        var lineDataset = chart.data.datasets[1];
+                        var lineMeta = chart.getDatasetMeta(1);
+                        lineMeta.data.forEach(function (point, index) {
+                            if (index === 0) return; // jam pertama tidak punya pembanding
+                            var prev = lineDataset.data[index - 1];
+                            var curr = lineDataset.data[index];
+                            if (!prev || !curr) return; // di luar rentang terlapor / salah satu jam belum ada data
+
+                            var change = ((curr - prev) / prev) * 100;
+                            var isUp = change > 0;
+                            var isFlat = change === 0;
+                            var color = isFlat ? TREND_FLAT_COLOR : (isUp ? TREND_UP_COLOR : TREND_DOWN_COLOR);
+                            var arrow = isFlat ? "▬" : (isUp ? "▲" : "▼");
+                            var text = arrow + " " + (change >= 0 ? "+" : "") + change.toFixed(1) + "%";
+
+                            ctx.save();
+                            ctx.font = "bold 10px Calibri";
+                            ctx.textAlign = 'left';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillStyle = color;
+                            ctx.fillText(text, point.x + 10, point.y);
+                            ctx.restore();
                         });
                     }
                 };
@@ -2945,15 +3019,34 @@
                     type: 'bar',
                     data: {
                         labels: hours,
-                        datasets: [{
-                            label: 'Realisasi Panen (Ton)',
-                            data: dataValues,
-                            backgroundColor: gradient,
-                            borderColor: 'rgba(40, 167, 69, 1)',
-                            borderWidth: 1.5,
-                            borderRadius: 4,
-                            hoverBackgroundColor: hoverGradient
-                        }]
+                        datasets: [
+                            {
+                                type: 'bar',
+                                label: 'Realisasi Panen (Ton)',
+                                data: dataValues,
+                                backgroundColor: gradient,
+                                borderColor: 'rgba(40, 167, 69, 1)',
+                                borderWidth: 1.5,
+                                borderRadius: 4,
+                                hoverBackgroundColor: hoverGradient,
+                                order: 1
+                            },
+                            {
+                                type: 'line',
+                                label: 'Connecting Line',
+                                data: lineData,
+                                borderWidth: 2.5,
+                                borderDash: [6, 4],
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                pointBackgroundColor: pointColorForLine(1),
+                                pointBorderColor: pointColorForLine(1),
+                                segment: { borderColor: segmentColorForLine(1) },
+                                fill: false,
+                                tension: 0,
+                                order: 0
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
@@ -2963,6 +3056,7 @@
                                 beginAtZero: true,
                                 grace: '15%', // Prevent label clipping
                                 grid: {
+                                    display: true,
                                     color: gridColor
                                 },
                                 ticks: {
@@ -2979,7 +3073,8 @@
                             },
                             x: {
                                 grid: {
-                                    display: false
+                                    display: true,
+                                    color: gridColor
                                 },
                                 ticks: {
                                     color: textColor,
@@ -3008,7 +3103,7 @@
                                 },
                                 callbacks: {
                                     label: function (context) {
-                                        return ' ' + context.parsed.y + ' Ton';
+                                        return ' ' + context.dataset.label + ': ' + context.parsed.y + ' Ton';
                                     }
                                 }
                             }
@@ -3031,7 +3126,7 @@
                 slides[currentIndex].classList.remove('active');
                 currentIndex = (currentIndex + 1) % slides.length;
                 slides[currentIndex].classList.add('active');
-            }, 15000); // 15 seconds
+            }, 5000);
         })();
 
         updateRunningText();
