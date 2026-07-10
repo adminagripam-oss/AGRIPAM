@@ -2769,6 +2769,22 @@
             updateRunningText();
         })();
 
+        // =========================================================================
+        // PAGESHOW GUARD — cegah akses halaman dari bfcache setelah logout
+        // =========================================================================
+        window.addEventListener("pageshow", function (event) {
+          if (event.persisted) {
+            // Halaman dimuat dari bfcache (tombol Back/Forward)
+            var s = loadSession();
+            var loginSec = document.getElementById("loginSection");
+            var isOnDashboard = loginSec && loginSec.style.display === "none";
+            if (!s && isOnDashboard) {
+              // Session sudah dihapus (logout), tapi halaman masih menampilkan dashboard
+              _resetUI();
+            }
+          }
+        });
+
 
         var clientIP = "Tidak Terdeteksi";
         fetch('https://api.ipify.org?format=json')

@@ -33,6 +33,27 @@
         window.location.href = "login.html?msg=" + encodeURIComponent("Terjadi kesalahan sesi.");
       }
     })();
+
+    // Pageshow guard — cegah akses halaman dari bfcache setelah logout
+    window.addEventListener("pageshow", function (event) {
+      if (event.persisted) {
+        var raw = sessionStorage.getItem("agripam_session");
+        if (!raw) {
+          window.location.replace("login.html?msg=" + encodeURIComponent("Sesi telah berakhir. Silakan login kembali."));
+          return;
+        }
+        try {
+          var s = JSON.parse(raw);
+          if (Date.now() > s.expiry || s.region !== "ADMIN") {
+            sessionStorage.removeItem("agripam_session");
+            window.location.replace("login.html?msg=" + encodeURIComponent("Sesi telah berakhir. Silakan login kembali."));
+          }
+        } catch (e) {
+          sessionStorage.removeItem("agripam_session");
+          window.location.replace("login.html?msg=" + encodeURIComponent("Terjadi kesalahan sesi."));
+        }
+      }
+    });
   </script>
   <link rel="icon" type="image/jpeg" href="/LOGO AGRIPAM.jpeg" />
   <meta name="description"
@@ -200,83 +221,105 @@
       background: #e2e8f0;
       color: #475569;
     }
+
     /* Theme Toggle Overrides for Dark Mode */
     [data-theme="dark"] body {
       background-color: #0f172a !important;
       color: #f8fafc !important;
     }
+
     [data-theme="dark"] aside {
       background-color: #1e293b !important;
       border-color: #334155 !important;
     }
+
     [data-theme="dark"] header {
       background-color: #1e293b !important;
       border-color: #334155 !important;
     }
+
     [data-theme="dark"] section.dashboard-card {
       background-color: #1e293b !important;
       border-color: #334155 !important;
     }
-    [data-theme="dark"] select, [data-theme="dark"] input {
+
+    [data-theme="dark"] select,
+    [data-theme="dark"] input {
       background-color: #334155 !important;
       color: #f8fafc !important;
       border-color: #475569 !important;
     }
+
     [data-theme="dark"] select option {
       background-color: #1e293b !important;
       color: #f8fafc !important;
     }
-    [data-theme="dark"] .text-slate-800, [data-theme="dark"] h2 {
+
+    [data-theme="dark"] .text-slate-800,
+    [data-theme="dark"] h2 {
       color: #f8fafc !important;
     }
+
     [data-theme="dark"] .text-slate-700 {
       color: #cbd5e1 !important;
     }
+
     [data-theme="dark"] .text-slate-600 {
       color: #94a3b8 !important;
     }
+
     [data-theme="dark"] .text-slate-400 {
       color: #64748b !important;
     }
+
     [data-theme="dark"] .bg-slate-50 {
       background-color: #0f172a !important;
     }
+
     [data-theme="dark"] .border-slate-200 {
       border-color: #334155 !important;
     }
+
     [data-theme="dark"] .border-slate-100 {
       border-color: #334155 !important;
     }
+
     [data-theme="dark"] .bg-white {
       background-color: #1e293b !important;
     }
+
     [data-theme="dark"] .hover\:bg-slate-50:hover {
       background-color: #334155 !important;
     }
+
     [data-theme="dark"] .text-slate-500 {
       color: #cbd5e1 !important;
     }
+
     [data-theme="dark"] .bg-red-50 {
       background-color: rgba(239, 68, 68, 0.1) !important;
     }
+
     [data-theme="dark"] .text-red-800 {
       color: #f87171 !important;
     }
+
     [data-theme="dark"] .bg-green-50 {
       background-color: rgba(74, 222, 128, 0.1) !important;
       border-color: rgba(74, 222, 128, 0.3) !important;
       color: #4ade80 !important;
     }
-    
+
     /* Log-out button entirely red */
-    #root > div > aside > div.flex-shrink-0.border-t.border-slate-100 > div.flex.items-center.gap-3.px-4.py-3.border-t.border-slate-100.bg-slate-50 > button,
-    #root > div > aside > div.flex-shrink-0.border-t.border-slate-100 > div.flex.items-center.gap-3.px-4.py-3.bg-slate-50 > button,
-    #root > div > aside > div.flex-shrink-0.border-t.border-slate-100 > div > button,
+    #root>div>aside>div.flex-shrink-0.border-t.border-slate-100>div.flex.items-center.gap-3.px-4.py-3.border-t.border-slate-100.bg-slate-50>button,
+    #root>div>aside>div.flex-shrink-0.border-t.border-slate-100>div.flex.items-center.gap-3.px-4.py-3.bg-slate-50>button,
+    #root>div>aside>div.flex-shrink-0.border-t.border-slate-100>div>button,
     .logout-btn {
       color: #dc2626 !important;
     }
-    #root > div > aside > div.flex-shrink-0.border-t.border-slate-100 > div.flex.items-center.gap-3.px-4.py-3.bg-slate-50 > button:hover,
-    #root > div > aside > div.flex-shrink-0.border-t.border-slate-100 > div > button:hover,
+
+    #root>div>aside>div.flex-shrink-0.border-t.border-slate-100>div.flex.items-center.gap-3.px-4.py-3.bg-slate-50>button:hover,
+    #root>div>aside>div.flex-shrink-0.border-t.border-slate-100>div>button:hover,
     .logout-btn:hover {
       color: #991b1b !important;
     }
@@ -286,13 +329,16 @@
       color: #000000 !important;
       font-weight: 600;
     }
+
     [data-theme="dark"] .ticker-region {
       color: #f8fafc !important;
     }
+
     .ticker-time {
       color: #16a34a !important;
       font-weight: 600;
     }
+
     [data-theme="dark"] .ticker-time {
       color: #4ade80 !important;
     }
@@ -611,7 +657,7 @@
               {!collapsed && (
                 <button onClick={() => {
                   sessionStorage.removeItem("agripam_session");
-                  window.location.href = "login.html";
+                  window.location.replace("login.html");
                 }} className="text-slate-400 hover:text-slate-600 transition-colors logout-btn">
                   <Icon name="log-out" size={15} />
                 </button>
@@ -1175,8 +1221,8 @@
                 ctx.font = "bold 9px Calibri";
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'bottom';
-                ctx.fillStyle = datasetIndex === 0 
-                  ? (theme === 'dark' ? '#60a5fa' : '#1e3a8a') 
+                ctx.fillStyle = datasetIndex === 0
+                  ? (theme === 'dark' ? '#60a5fa' : '#1e3a8a')
                   : (theme === 'dark' ? '#4ade80' : '#16a34a');
 
                 const valText = val.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1462,7 +1508,7 @@
 
       useEffect(() => {
         if (!filters.tanggal || filters.tanggal === 'Semua Tanggal') return;
-        
+
         let active = true;
         const fetchDashboardData = async () => {
           setLoading(true);

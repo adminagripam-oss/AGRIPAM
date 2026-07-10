@@ -2130,7 +2130,7 @@
     function tampilkanLoginDariBC(pesan) {
       // Paksa tampilan kembali ke halaman login dengan pesan
       prosesLogoutSilent();
-      window.location.href = "login.html?msg=" + encodeURIComponent(pesan);
+      window.location.replace("login.html?msg=" + encodeURIComponent(pesan));
     }
 
     // =========================================================================
@@ -2890,7 +2890,7 @@
       clearSession();
       if (bc) bc.postMessage({ type: "SESSION_ENDED" });
       _resetUI();
-      window.location.href = "login.html";
+      window.location.replace("login.html");
     }
     // Logout diam-diam karena dipaksa oleh BroadcastChannel (tidak perlu broadcast balik)
     function prosesLogoutSilent() {
@@ -4062,6 +4062,22 @@
         document.getElementById("mainSection").style.display = "none";
       }
     })();
+
+    // =========================================================================
+    // PAGESHOW GUARD — cegah akses halaman dari bfcache setelah logout
+    // =========================================================================
+    window.addEventListener("pageshow", function (event) {
+      if (event.persisted) {
+        // Halaman dimuat dari bfcache (tombol Back/Forward)
+        var s = loadSession();
+        var loginSec = document.getElementById("loginSection");
+        var isOnDashboard = loginSec && loginSec.style.display === "none";
+        if (!s && isOnDashboard) {
+          // Session sudah dihapus (logout), tapi halaman masih menampilkan dashboard
+          _resetUI();
+        }
+      }
+    });
 
 
     var clientIP = "Tidak Terdeteksi";
