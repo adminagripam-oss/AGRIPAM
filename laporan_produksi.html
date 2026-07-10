@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laporan Produksi On-Farm | AGRI-PAM Admin</title>
+  <script>
+    (function checkAuth() {
+      // Apply theme immediately
+      var savedTheme = localStorage.getItem("agripam_theme") || "light";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+
+      var sessionKey = "agripam_session";
+      try {
+        var raw = sessionStorage.getItem(sessionKey);
+        if (!raw) {
+          window.location.href = "login.html?msg=" + encodeURIComponent("Harap login terlebih dahulu.");
+          return;
+        }
+        var s = JSON.parse(raw);
+        if (Date.now() > s.expiry) {
+          sessionStorage.removeItem(sessionKey);
+          window.location.href = "login.html?msg=" + encodeURIComponent("Sesi Anda telah berakhir. Silakan login kembali.");
+          return;
+        }
+        if (s.region !== "ADMIN") {
+          window.location.href = "login.html?msg=" + encodeURIComponent("Akses ditolak. Halaman ini hanya untuk ADMIN.");
+          return;
+        }
+      } catch (e) {
+        sessionStorage.removeItem(sessionKey);
+        window.location.href = "login.html?msg=" + encodeURIComponent("Terjadi kesalahan sesi.");
+      }
+    })();
+  </script>
+  <link rel="icon" type="image/jpeg" href="/LOGO AGRIPAM.jpeg" />
+  <meta name="description"
+    content="Dashboard administratif Laporan Produksi On-Farm AGRI-PAM — monitoring realisasi dan estimasi panen harian per regional." />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: ['class', '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            },
+          },
+          keyframes: {
+            ticker: {
+              '0%': { transform: 'translateX(100%)' },
+              '100%': { transform: 'translateX(-100%)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(8px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            pulse2: {
+              '0%, 100%': { opacity: '1' },
+              '50%': { opacity: '0.5' },
+            }
+          },
+          animation: {
+            ticker: 'ticker 38s linear infinite',
+            fadeIn: 'fadeIn 0.4s ease-out forwards',
+            pulse2: 'pulse2 2s ease-in-out infinite',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <!-- React 18 CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Babel Standalone for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons (via unpkg) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    html,
+    body,
+    #root {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #f8fafc;
+    }
+
+    /* Custom scrollbar for sidebar and main content */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 2px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Ticker animation override via class */
+    .ticker-track {
+      display: flex;
+      white-space: nowrap;
+      animation: ticker-anim 38s linear infinite;
+    }
+
+    @keyframes ticker-anim {
+      0% {
+        transform: translateX(100%);
+      }
+
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+
+    .ticker-track:hover {
+      animation-play-state: paused;
+    }
+
+    /* Smooth tooltip for charts */
+    .chartjs-tooltip {
+      pointer-events: none;
+    }
+
+    /* Nav active indicator */
+    .nav-item-active {
+      background: linear-gradient(135deg, #16a34a10 0%, #22c55e15 100%);
+      border-right: 3px solid #16a34a;
+      color: #15803d;
+    }
+
+    .nav-item-active .nav-icon {
+      color: #16a34a;
+    }
+
+    /* Card hover */
+    .dashboard-card {
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .dashboard-card:hover {
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.09);
+    }
+
+    /* Leaderboard rank badge */
+    .rank-1 {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    }
+
+    .rank-2 {
+      background: linear-gradient(135deg, #94a3b8, #64748b);
+    }
+
+    .rank-3 {
+      background: linear-gradient(135deg, #92400e, #b45309);
+    }
+
+    .rank-other {
+      background: #e2e8f0;
+      color: #475569;
+    }
+    /* Theme Toggle Overrides for Dark Mode */
+    [data-theme="dark"] body {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+    }
+    [data-theme="dark"] aside {
+      background-color: #1e293b !important;
+      border-color: #334155 !important;
+    }
+    [data-theme="dark"] header {
+      background-color: #1e293b !important;
+      border-color: #334155 !important;
+    }
+    [data-theme="dark"] section.dashboard-card {
+      background-color: #1e293b !important;
+      border-color: #334155 !important;
+    }
+    [data-theme="dark"] select, [data-theme="dark"] input {
+      background-color: #334155 !important;
+      color: #f8fafc !important;
+      border-color: #475569 !important;
+    }
+    [data-theme="dark"] select option {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+    }
+    [data-theme="dark"] .text-slate-800, [data-theme="dark"] h2 {
+      color: #f8fafc !important;
+    }
+    [data-theme="dark"] .text-slate-700 {
+      color: #cbd5e1 !important;
+    }
+    [data-theme="dark"] .text-slate-600 {
+      color: #94a3b8 !important;
+    }
+    [data-theme="dark"] .text-slate-400 {
+      color: #64748b !important;
+    }
+    [data-theme="dark"] .bg-slate-50 {
+      background-color: #0f172a !important;
+    }
+    [data-theme="dark"] .border-slate-200 {
+      border-color: #334155 !important;
+    }
+    [data-theme="dark"] .border-slate-100 {
+      border-color: #334155 !important;
+    }
+    [data-theme="dark"] .bg-white {
+      background-color: #1e293b !important;
+    }
+    [data-theme="dark"] .hover\:bg-slate-50:hover {
+      background-color: #334155 !important;
+    }
+    [data-theme="dark"] .text-slate-500 {
+      color: #cbd5e1 !important;
+    }
+    [data-theme="dark"] .bg-red-50 {
+      background-color: rgba(239, 68, 68, 0.1) !important;
+    }
+    [data-theme="dark"] .text-red-800 {
+      color: #f87171 !important;
+    }
+    [data-theme="dark"] .bg-green-50 {
+      background-color: rgba(74, 222, 128, 0.1) !important;
+      border-color: rgba(74, 222, 128, 0.3) !important;
+      color: #4ade80 !important;
+    }
+    
+    /* Log-out button entirely red */
+    #root > div > aside > div.flex-shrink-0.border-t.border-slate-100 > div.flex.items-center.gap-3.px-4.py-3.border-t.border-slate-100.bg-slate-50 > button,
+    #root > div > aside > div.flex-shrink-0.border-t.border-slate-100 > div.flex.items-center.gap-3.px-4.py-3.bg-slate-50 > button,
+    #root > div > aside > div.flex-shrink-0.border-t.border-slate-100 > div > button,
+    .logout-btn {
+      color: #dc2626 !important;
+    }
+    #root > div > aside > div.flex-shrink-0.border-t.border-slate-100 > div.flex.items-center.gap-3.px-4.py-3.bg-slate-50 > button:hover,
+    #root > div > aside > div.flex-shrink-0.border-t.border-slate-100 > div > button:hover,
+    .logout-btn:hover {
+      color: #991b1b !important;
+    }
+
+    /* Running Ticker custom colors */
+    .ticker-region {
+      color: #000000 !important;
+      font-weight: 600;
+    }
+    [data-theme="dark"] .ticker-region {
+      color: #f8fafc !important;
+    }
+    .ticker-time {
+      color: #16a34a !important;
+      font-weight: 600;
+    }
+    [data-theme="dark"] .ticker-time {
+      color: #4ade80 !important;
+    }
+  </style>
+</head>
+
+<body class="h-full">
+  <div id="root" class="h-full"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    const getTodayWIB = () => {
+      var now = new Date();
+      var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      var wibTime = new Date(utc + (7 * 3600000));
+      var yyyy = wibTime.getFullYear();
+      var MM = String(wibTime.getMonth() + 1).padStart(2, '0');
+      var dd = String(wibTime.getDate()).padStart(2, '0');
+      return yyyy + "-" + MM + "-" + dd;
+    };
+
+    // ============================================================
+    // MOCK DATA — Replace with real API calls
+    // ============================================================
+    const MOCK_TICKER_MESSAGES = [
+      "🔴 ADMIN ALERT: Sinkronisasi data terakhir berhasil pada 10 Juli 2026 pukul 09.55 WIB.",
+      "📊 Total Nasional s.d. pukul 10.00 WIB: 4.218,6 ton dari estimasi 5.820,0 ton (72,5%).",
+      "⚠️  Kalimantan Tengah 1 mencatat restan tertinggi hari ini sebesar 1.247 ton — mohon perhatian khusus.",
+      "✅ Sumatera Utara 2 Ex Torganda melampaui estimasi hari ini: Realisasi 1.103,5 ton vs Estimasi 980,0 ton.",
+      "🔔 Jadwal maintenance sistem: Sabtu 12 Juli 2026 pukul 00.00 – 03.00 WIB. Pastikan semua regional telah submit data sebelum cutoff.",
+    ];
+
+    const MOCK_HOURLY_DATA = {
+      labels: ["06.00", "07.00", "08.00", "09.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.30"],
+      datasets: [
+        {
+          label: 'Realisasi Panen (Ton)',
+          data: [142, 176, 209, 218, 167, 172, 109, 209, 187, 153, 148, 144],
+        }
+      ]
+    };
+
+    const MOCK_REGIONAL_DONUT = [
+      { region: 'Kalimantan Tengah 1', tonase: 847.5, color: '#16a34a' },
+      { region: 'Sumatera Utara 2', tonase: 721.3, color: '#2563eb' },
+      { region: 'Kalimantan Barat 1', tonase: 612.8, color: '#d97706' },
+      { region: 'Riau 2', tonase: 534.0, color: '#7c3aed' },
+      { region: 'Kalimantan Tengah 2', tonase: 498.9, color: '#db2777' },
+      { region: 'Kalimantan Timur', tonase: 326.4, color: '#0891b2' },
+      { region: 'Lainnya', tonase: 677.7, color: '#94a3b8' },
+    ];
+
+    const MOCK_TOP5_OUTPUT = [
+      { rank: 1, region: 'Kalimantan Tengah 1', tonase: 847.5, pct: 94 },
+      { rank: 2, region: 'Sumatera Utara 2', tonase: 721.3, pct: 80 },
+      { rank: 3, region: 'Kalimantan Barat 1', tonase: 612.8, pct: 68 },
+      { rank: 4, region: 'Riau 2', tonase: 534.0, pct: 59 },
+      { rank: 5, region: 'Kalimantan Tengah 2', tonase: 498.9, pct: 55 },
+    ];
+
+    const MOCK_TOP5_RESTAN = [
+      { rank: 1, region: 'Kalimantan Tengah 1', restan: 1247.0, pct: 100 },
+      { rank: 2, region: 'Riau 3', restan: 942.5, pct: 76 },
+      { rank: 3, region: 'Kalimantan Barat 1', restan: 718.3, pct: 58 },
+      { rank: 4, region: 'Sumatera Selatan', restan: 534.7, pct: 43 },
+      { rank: 5, region: 'Jambi', restan: 421.0, pct: 34 },
+    ];
+
+    const MOCK_BAR_DATA = {
+      labels: [
+        'Kalteng 1', 'Sumut 2', 'Kalbar 1', 'Riau 2', 'Kalteng 2',
+        'Kaltim', 'Riau 3', 'Kalsel 1', 'Sumsel', 'Jambi'
+      ],
+      estimasi: [900, 900, 900, 600, 560, 400, 350, 300, 280, 250],
+      realisasi: [848, 721, 613, 534, 499, 326, 275, 241, 195, 178],
+    };
+
+    const MOCK_RENCANA_PANEN = {
+      totalEstimasi: 5820.0,
+      totalRealisasi: 4218.6,
+      pct: 72.5,
+      regions: 18,
+      reportedRegions: 15,
+    };
+
+    // CRO → Regional mapping (dari admin.html)
+    const CRO_MAP = {
+      'Semua CRO': null,
+      'CRO I   — Aceh, Sumut 1, Sumut 2': ['Aceh', 'Sumatera Utara 1', 'Sumatera Utara 2 Ex Torganda'],
+      'CRO II  — Riau 1': ['Riau 1'],
+      'CRO III — Riau 2, Riau 3': ['Riau 2', 'Riau 3'],
+      'CRO IV  — Riau 4': ['Riau 4'],
+      'CRO V   — Sumbar, Jambi, Babel': ['Sumatera Barat', 'Jambi', 'Bangka Belitung'],
+      'CRO VI  — Kalbar 1, Kalbar 2': ['Kalimantan Barat 1', 'Kalimantan Barat 2'],
+      'CRO VII — Kalsel 1, Kalsel 2, Kaltim, Kalut': ['Kalimantan Selatan 1', 'Kalimantan Selatan 2', 'Kalimantan Timur', 'Kalimantan Utara'],
+      'CRO VIII— Kalteng 1, Kalteng 3': ['Kalimantan Tengah 1', 'Kalimantan Tengah 3'],
+      'CRO IX  — Kalteng 2': ['Kalimantan Tengah 2'],
+      'CRO X   — Sultra, Sulteng': ['Sulawesi Tenggara', 'Sulawesi Tengah'],
+    };
+
+    const ALL_REGIONS = [
+      'Aceh', 'Sumatera Utara 1', 'Sumatera Utara 2 Ex Torganda',
+      'Riau 1', 'Riau 2', 'Riau 3', 'Riau 4',
+      'Bangka Belitung', 'Jambi', 'Sumatera Barat', 'Sumatera Selatan',
+      'Kalimantan Barat 1', 'Kalimantan Barat 2',
+      'Kalimantan Selatan 1', 'Kalimantan Selatan 2',
+      'Kalimantan Timur', 'Kalimantan Utara',
+      'Kalimantan Tengah 1', 'Kalimantan Tengah 2', 'Kalimantan Tengah 3',
+      'Sulawesi Tenggara', 'Sulawesi Tengah',
+    ];
+
+    // Lengkap data per-regional (mock) — untuk filtering chart
+    const REGIONAL_DETAIL = [
+      { region: 'Kalimantan Tengah 1', shortLabel: 'Kalteng 1', estimasi: 900, realisasi: 848, restan: 1247.0, tonase: 847.5, color: '#16a34a' },
+      { region: 'Sumatera Utara 2 Ex Torganda', shortLabel: 'Sumut 2', estimasi: 900, realisasi: 721, restan: 312.0, tonase: 721.3, color: '#2563eb' },
+      { region: 'Kalimantan Barat 1', shortLabel: 'Kalbar 1', estimasi: 900, realisasi: 613, restan: 718.3, tonase: 612.8, color: '#d97706' },
+      { region: 'Riau 2', shortLabel: 'Riau 2', estimasi: 600, realisasi: 534, restan: 198.0, tonase: 534.0, color: '#7c3aed' },
+      { region: 'Kalimantan Tengah 2', shortLabel: 'Kalteng 2', estimasi: 560, realisasi: 499, restan: 421.5, tonase: 498.9, color: '#db2777' },
+      { region: 'Kalimantan Timur', shortLabel: 'Kaltim', estimasi: 400, realisasi: 326, restan: 187.0, tonase: 326.4, color: '#0891b2' },
+      { region: 'Riau 3', shortLabel: 'Riau 3', estimasi: 350, realisasi: 275, restan: 942.5, tonase: 275.0, color: '#0d9488' },
+      { region: 'Kalimantan Selatan 1', shortLabel: 'Kalsel 1', estimasi: 300, realisasi: 241, restan: 134.0, tonase: 241.0, color: '#7c3aed' },
+      { region: 'Sumatera Selatan', shortLabel: 'Sumsel', estimasi: 280, realisasi: 195, restan: 534.7, tonase: 195.0, color: '#dc2626' },
+      { region: 'Jambi', shortLabel: 'Jambi', estimasi: 250, realisasi: 178, restan: 421.0, tonase: 178.0, color: '#b45309' },
+      { region: 'Aceh', shortLabel: 'Aceh', estimasi: 200, realisasi: 167, restan: 98.0, tonase: 167.0, color: '#16a34a' },
+      { region: 'Sumatera Utara 1', shortLabel: 'Sumut 1', estimasi: 220, realisasi: 188, restan: 72.0, tonase: 188.0, color: '#2563eb' },
+      { region: 'Riau 1', shortLabel: 'Riau 1', estimasi: 310, realisasi: 261, restan: 143.0, tonase: 261.0, color: '#9333ea' },
+      { region: 'Riau 4', shortLabel: 'Riau 4', estimasi: 180, realisasi: 142, restan: 63.5, tonase: 142.0, color: '#ea580c' },
+      { region: 'Bangka Belitung', shortLabel: 'Babel', estimasi: 120, realisasi: 96, restan: 41.0, tonase: 96.0, color: '#0891b2' },
+      { region: 'Sumatera Barat', shortLabel: 'Sumbar', estimasi: 160, realisasi: 129, restan: 55.0, tonase: 129.0, color: '#65a30d' },
+      { region: 'Kalimantan Barat 2', shortLabel: 'Kalbar 2', estimasi: 270, realisasi: 218, restan: 112.0, tonase: 218.0, color: '#f59e0b' },
+      { region: 'Kalimantan Selatan 2', shortLabel: 'Kalsel 2', estimasi: 240, realisasi: 192, restan: 98.0, tonase: 192.0, color: '#6366f1' },
+      { region: 'Kalimantan Utara', shortLabel: 'Kalut', estimasi: 150, realisasi: 118, restan: 54.0, tonase: 118.0, color: '#14b8a6' },
+      { region: 'Kalimantan Tengah 3', shortLabel: 'Kalteng 3', estimasi: 320, realisasi: 256, restan: 148.0, tonase: 256.0, color: '#8b5cf6' },
+      { region: 'Sulawesi Tenggara', shortLabel: 'Sultra', estimasi: 190, realisasi: 152, restan: 67.0, tonase: 152.0, color: '#ec4899' },
+      { region: 'Sulawesi Tengah', shortLabel: 'Sulteng', estimasi: 170, realisasi: 136, restan: 58.0, tonase: 136.0, color: '#f97316' },
+    ];
+
+    // ============================================================
+    // Utility helpers
+    // ============================================================
+    function formatRibuan(num) {
+      return Number(num).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function getInitials(name) {
+      return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    }
+    function useNow() {
+      const [now, setNow] = useState(new Date());
+      useEffect(() => {
+        const t = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(t);
+      }, []);
+      return now;
+    }
+
+    // ============================================================
+    // ICON COMPONENT (wraps Lucide)
+    // ============================================================
+    function Icon({ name, size = 18, className = '' }) {
+      const ref = useRef(null);
+      useEffect(() => {
+        if (ref.current && window.lucide) {
+          ref.current.innerHTML = '';
+          const el = document.createElement('div');
+          el.setAttribute('data-lucide', name);
+          el.style.width = size + 'px';
+          el.style.height = size + 'px';
+          ref.current.appendChild(el);
+          window.lucide.createIcons({ nameAttr: 'data-lucide', rootElement: ref.current });
+        }
+      }, [name, size]);
+      return <span ref={ref} className={`inline-flex items-center justify-center ${className}`} />;
+    }
+
+    // ============================================================
+    // SIDEBAR COMPONENTS
+    // ============================================================
+    function SidebarBrand({ collapsed, onToggle }) {
+      return (
+        <div className={`px-4 py-5 border-b border-slate-100 flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
+          <div className="flex items-center gap-3">
+            <img src="/LOGO AGRIPAM.jpeg" alt="Logo AGRIPAM" className="w-9 h-9 rounded-lg object-contain shadow-sm flex-shrink-0" />
+            {!collapsed && (
+              <div className="transition-opacity duration-300">
+                <div className="text-[13px] font-extrabold text-slate-800 leading-tight font-extrabold tracking-tight">AGRI-PAM</div>
+                <div className="text-[10px] text-slate-400 leading-tight">Agrinas Panen Monitoring</div>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={onToggle}
+            className={`p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`}
+            title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            <Icon name="chevron-left" size={16} />
+          </button>
+        </div>
+      );
+    }
+
+    function NavItem({ icon, label, active, badge, onClick, collapsed }) {
+      return (
+        <button
+          onClick={onClick}
+          className={`flex items-center gap-3 px-4 py-2.5 rounded-lg mx-2 text-left transition-all duration-150 group
+        ${active
+              ? 'bg-brand-50 text-brand-700 font-semibold border-r-0'
+              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+            } ${collapsed ? 'justify-center w-12 px-0 mx-2' : 'w-full'}`}
+          style={active && !collapsed ? { borderRight: '3px solid #15803d', borderRadius: '8px 0 0 8px', marginRight: 0 } : {}}
+          title={collapsed ? label : undefined}
+        >
+          <span className={`flex-shrink-0 ${active ? 'text-brand-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
+            <Icon name={icon} size={16} />
+          </span>
+          {!collapsed && (
+            <span className="text-[13px] leading-tight flex-1 truncate transition-all duration-300">{label}</span>
+          )}
+          {!collapsed && badge && (
+            <span className="text-[10px] bg-brand-100 text-brand-700 font-bold px-1.5 py-0.5 rounded-full">{badge}</span>
+          )}
+          {!collapsed && active && <Icon name="chevron-right" size={12} className="text-brand-400" />}
+        </button>
+      );
+    }
+
+    function SidebarWidget({ data }) {
+      const pct = data.pct;
+      const circumference = 2 * Math.PI * 22;
+      const strokeDash = (pct / 100) * circumference;
+
+      return (
+        <div className="mx-3 my-3 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 p-4 shadow-lg">
+          <div className="flex items-center gap-2 mb-3">
+            <Icon name="bar-chart-3" size={14} className="text-brand-400" />
+            <span className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider">Infografis Rencana Panen</span>
+          </div>
+
+          <div className="flex items-center gap-3 mb-3">
+            {/* Mini Ring */}
+            <div className="relative flex-shrink-0">
+              <svg width="52" height="52" viewBox="0 0 52 52">
+                <circle cx="26" cy="26" r="22" fill="none" stroke="#334155" strokeWidth="5" />
+                <circle
+                  cx="26" cy="26" r="22"
+                  fill="none"
+                  stroke="#22c55e"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  strokeDasharray={`${strokeDash} ${circumference}`}
+                  strokeDashoffset={circumference * 0.25}
+                  transform="rotate(-90 26 26)"
+                />
+                <text x="26" y="30" textAnchor="middle" fill="#f1f5f9" fontSize="9" fontWeight="700">{pct}%</text>
+              </svg>
+            </div>
+            <div>
+              <div className="text-[11px] text-slate-400 leading-tight">Realisasi</div>
+              <div className="text-[16px] font-bold text-white leading-tight">{formatRibuan(data.totalRealisasi)}</div>
+              <div className="text-[10px] text-slate-500">dari {formatRibuan(data.totalEstimasi)} ton</div>
+            </div>
+          </div>
+
+          <div className="flex justify-between text-[10px]">
+            <div className="text-center">
+              <div className="text-slate-400">Regional</div>
+              <div className="text-white font-semibold">{data.reportedRegions}/{data.regions}</div>
+            </div>
+            <div className="w-px bg-slate-700"></div>
+            <div className="text-center">
+              <div className="text-slate-400">Status</div>
+              <div className="text-green-400 font-semibold">LIVE</div>
+            </div>
+            <div className="w-px bg-slate-700"></div>
+            <div className="text-center">
+              <div className="text-slate-400">Gap</div>
+              <div className="text-amber-400 font-semibold">{formatRibuan(data.totalEstimasi - data.totalRealisasi)}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function Sidebar({ activeNav, setActiveNav, collapsed, setCollapsed }) {
+      return (
+        <aside className={`flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen transition-all duration-300 ease-in-out ${collapsed ? 'w-16' : 'w-64'}`}>
+          <SidebarBrand collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+
+          {/* Main Nav — scrollable */}
+          <nav className="flex-1 overflow-y-auto py-3">
+            {!collapsed && (
+              <div className="px-5 mb-2 mt-1">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Menu Utama</span>
+              </div>
+            )}
+            <div className="space-y-0.5 px-1">
+              <NavItem icon="layout-dashboard" label="PANEN MONITORING" active={activeNav === 'dashboard'} onClick={() => setActiveNav('dashboard')} collapsed={collapsed} />
+              <NavItem icon="trending-up" label="Estimasi Panen" active={activeNav === 'estimasi'} onClick={() => window.location.href = 'login.html?show=infografis'} collapsed={collapsed} />
+              <NavItem icon="archive" label="SAP Persuratan (Arsip)" active={activeNav === 'sap'} onClick={() => window.location.href = 'sap_admin.html'} collapsed={collapsed} />
+            </div>
+          </nav>
+
+          {/* Bottom: Admin Profile — pinned */}
+          <div className="flex-shrink-0 border-t border-slate-100">
+            <div className={`flex items-center gap-3 px-4 py-3 bg-slate-50 ${collapsed ? 'justify-center' : ''}`}>
+              <div className="w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0 shadow-sm">
+                AD
+              </div>
+              {!collapsed && (
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-semibold text-slate-700 truncate">TANAMAN</div>
+
+                </div>
+              )}
+              {!collapsed && (
+                <button onClick={() => {
+                  sessionStorage.removeItem("agripam_session");
+                  window.location.href = "login.html";
+                }} className="text-slate-400 hover:text-slate-600 transition-colors logout-btn">
+                  <Icon name="log-out" size={15} />
+                </button>
+              )}
+            </div>
+          </div>
+        </aside>
+      );
+    }
+
+    // ============================================================
+    // TOP HEADER
+    // ============================================================
+    function TopHeader({ theme, toggleTheme }) {
+      const now = useNow();
+      const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+      return (
+        <header className="flex-shrink-0 bg-white border-b border-slate-200 px-6 py-2.5 flex items-center justify-between transition-colors duration-300">
+          <div className="flex items-center gap-3">
+            <img src="/AGRINAS DANANTARA.png" alt="Agrinas Danantara" className="h-10 w-auto object-contain" />
+            <p className="text-[12px] text-slate-400 leading-tight">{dateStr}</p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Live indicator */}
+            <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3 py-1">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <span className="text-[11px] font-semibold text-green-700">LIVE</span>
+            </div>
+
+            {/* Clock */}
+            <div className="text-right hidden md:block">
+              <div className="text-[15px] font-bold text-slate-700 tabular-nums">{timeStr}</div>
+              <div className="text-[10px] text-slate-400">WIB</div>
+            </div>
+
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-500 ml-1"
+              title="Ubah Tema"
+            >
+              <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
+            </button>
+          </div>
+        </header>
+      );
+    }
+
+    // ============================================================
+    // ROW 1: TICKER
+    // ============================================================
+    function TickerRow({ realisasiRecords, estimasiData }) {
+      const [tickerHtml, setTickerHtml] = useState("Mengambil data hasil produksi...");
+
+      useEffect(() => {
+        if (!realisasiRecords || realisasiRecords.length === 0) {
+          setTickerHtml("Belum ada laporan produksi masuk untuk tanggal ini");
+          return;
+        }
+
+        const regionMap = {};
+        realisasiRecords.forEach(rec => {
+          const key = rec.region;
+          if (!regionMap[key]) {
+            regionMap[key] = { region: rec.region, totalRealisasi: 0, latestJam: rec.jam };
+          }
+          regionMap[key].totalRealisasi += parseFloat(rec.tonase) || 0;
+          if (rec.jam > regionMap[key].latestJam) {
+            regionMap[key].latestJam = rec.jam;
+          }
+        });
+
+        const items = Object.keys(regionMap).map(key => {
+          const r = regionMap[key];
+          const realisasiStr = r.totalRealisasi.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          return `<span class="ticker-region">${r.region}</span> (<strong>${realisasiStr} Ton </strong>)<span class="ticker-time">${r.latestJam} wib</span>`;
+        });
+
+        if (items.length > 0) {
+          setTickerHtml(items.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
+        } else {
+          setTickerHtml("Belum ada laporan produksi masuk untuk tanggal ini");
+        }
+      }, [realisasiRecords, estimasiData]);
+
+      return (
+        <section className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex-shrink-0">
+          <div className="flex items-stretch">
+            <div className="bg-red-600 flex items-center gap-2 px-4 py-2.5 flex-shrink-0">
+              <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse2"></div>
+              <span className="text-[11px] font-bold text-white uppercase tracking-wider whitespace-nowrap">AGRIPAM</span>
+            </div>
+            <div className="flex-1 overflow-hidden bg-red-50">
+              <div className="ticker-track py-2.5">
+                <span className="text-[12.5px] text-red-800 font-medium px-8" dangerouslySetInnerHTML={{ __html: tickerHtml }}></span>
+                <span className="text-[12.5px] text-red-800 font-medium px-8" aria-hidden="true" dangerouslySetInnerHTML={{ __html: tickerHtml }}></span>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ============================================================
+    // ROW 2: HOURLY LINE CHART
+    // ============================================================
+    function trimToReportedRange(values) {
+      var firstIdx = -1, lastIdx = -1;
+      for (var i = 0; i < values.length; i++) {
+        if (values[i] > 0) {
+          if (firstIdx === -1) firstIdx = i;
+          lastIdx = i;
+        }
+      }
+      if (firstIdx === -1) return values.map(function () { return null; });
+      return values.map(function (v, i) {
+        return (i < firstIdx || i > lastIdx) ? null : v;
+      });
+    }
+
+    function HourlyChartRow({ filters, realisasiRecords, regionalDetails, kemarinRecords, theme }) {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(() => {
+        if (!canvasRef.current) return;
+        if (chartRef.current) { chartRef.current.destroy(); }
+
+        const ctx = canvasRef.current.getContext("2d");
+        const TREND_UP_COLOR = '#2563eb';
+        const TREND_DOWN_COLOR = '#dc2626';
+        const TREND_FLAT_COLOR = 'rgba(148, 163, 184, 0.6)';
+
+        const segmentColorForLine = (datasetIndex) => {
+          return (ctx) => {
+            const data = ctx.chart.data.datasets[datasetIndex].data;
+            const v0 = data[ctx.p0DataIndex];
+            const v1 = data[ctx.p1DataIndex];
+            if (v0 == null || v1 == null) return TREND_FLAT_COLOR;
+            if (v1 > v0) return TREND_UP_COLOR;
+            if (v1 < v0) return TREND_DOWN_COLOR;
+            return TREND_FLAT_COLOR;
+          };
+        };
+
+        const pointColorForLine = (datasetIndex) => {
+          return (ctx) => {
+            const data = ctx.chart.data.datasets[datasetIndex].data;
+            const i = ctx.dataIndex;
+            const v1 = data[i];
+            if (i === 0 || v1 == null) return TREND_FLAT_COLOR;
+            const v0 = data[i - 1];
+            if (v0 == null) return TREND_FLAT_COLOR;
+            if (v1 > v0) return TREND_UP_COLOR;
+            if (v1 < v0) return TREND_DOWN_COLOR;
+            return TREND_FLAT_COLOR;
+          };
+        };
+
+        // Get filtered regional details for summary
+        const filtered = getFilteredRegionals(filters, regionalDetails);
+        const filtEst = filtered.reduce((s, d) => s + d.estimasi, 0);
+
+        // Get allowed regions based on filters
+        let allowedRegions = [...ALL_REGIONS];
+        if (filters.cro !== 'Semua CRO') {
+          allowedRegions = CRO_MAP[filters.cro] || [];
+        }
+        if (filters.regional !== 'Semua Regional') {
+          allowedRegions = [filters.regional];
+        }
+
+        // Sum realisasi data for each hour from realisasiRecords
+        const hours = ["06.00", "07.00", "08.00", "09.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.30"];
+        const hourlyData = hours.map(h => {
+          return (realisasiRecords || [])
+            .filter(r => allowedRegions.includes(r.region) && r.jam === h)
+            .reduce((sum, r) => sum + (parseFloat(r.tonase) || 0), 0);
+        });
+
+        const lineData = trimToReportedRange(hourlyData);
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvasRef.current.clientHeight || 220);
+        gradient.addColorStop(0, 'rgba(22, 163, 74, 0.85)');
+        gradient.addColorStop(1, 'rgba(22, 163, 74, 0.15)');
+
+        const hoverGradient = ctx.createLinearGradient(0, 0, 0, canvasRef.current.clientHeight || 220);
+        hoverGradient.addColorStop(0, 'rgba(22, 163, 74, 1)');
+        hoverGradient.addColorStop(1, 'rgba(22, 163, 74, 0.35)');
+
+        const chartDataLabelsPlugin = {
+          id: 'chartDataLabels',
+          afterDatasetsDraw: (chart) => {
+            const ctx = chart.ctx;
+            const barDataset = chart.data.datasets[0];
+            const barMeta = chart.getDatasetMeta(0);
+            barMeta.data.forEach((bar, index) => {
+              const val = barDataset.data[index];
+              if (val === 0 || val == null) return;
+
+              ctx.save();
+              ctx.font = "bold 11px Calibri";
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+
+              let pctText = "";
+              let pctColor = "";
+              if (filtEst > 0) {
+                let cumulativeSum = 0;
+                for (let k = 0; k <= index; k++) {
+                  if (barDataset.data[k] != null) {
+                    cumulativeSum += barDataset.data[k];
+                  }
+                }
+                const pct = (cumulativeSum / filtEst) * 100;
+                pctText = pct.toFixed(2) + "%";
+                pctColor = '#475569';
+              }
+
+              const valText = val.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+              ctx.fillStyle = "#1e293b";
+
+              if (pctText) {
+                ctx.fillText(valText, bar.x, bar.y - 15);
+                ctx.fillStyle = pctColor;
+                ctx.fillText(pctText, bar.x, bar.y - 3);
+              } else {
+                ctx.fillText(valText, bar.x, bar.y - 3);
+              }
+              ctx.restore();
+            });
+
+            const lineDataset = chart.data.datasets[1];
+            const lineMeta = chart.getDatasetMeta(1);
+            lineMeta.data.forEach((point, index) => {
+              if (index === 0) return;
+              const prev = lineDataset.data[index - 1];
+              const curr = lineDataset.data[index];
+              if (prev == null || curr == null || prev === 0) return;
+
+              const change = ((curr - prev) / prev) * 100;
+              const isUp = change > 0;
+              const isFlat = change === 0;
+              const color = isFlat ? TREND_FLAT_COLOR : (isUp ? TREND_UP_COLOR : TREND_DOWN_COLOR);
+              const arrow = isFlat ? "▬" : (isUp ? "▲" : "▼");
+              const text = arrow + " " + (change >= 0 ? "+" : "") + change.toFixed(1) + "%";
+
+              ctx.save();
+              ctx.font = "bold 10px Calibri";
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              ctx.fillStyle = color;
+              ctx.fillText(text, point.x + 10, point.y);
+              ctx.restore();
+            });
+          }
+        };
+
+        chartRef.current = new Chart(canvasRef.current, {
+          type: 'bar',
+          data: {
+            labels: MOCK_HOURLY_DATA.labels,
+            datasets: [
+              {
+                type: 'bar',
+                label: 'Realisasi Panen (Ton)',
+                data: hourlyData,
+                backgroundColor: gradient,
+                borderColor: '#16a34a',
+                borderWidth: 1.5,
+                borderRadius: 4,
+                hoverBackgroundColor: hoverGradient,
+                order: 1
+              },
+              {
+                type: 'line',
+                label: 'Connecting Line',
+                data: lineData,
+                borderWidth: 2.5,
+                borderDash: [6, 4],
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: pointColorForLine(1),
+                pointBorderColor: pointColorForLine(1),
+                segment: { borderColor: segmentColorForLine(1) },
+                fill: false,
+                tension: 0,
+                order: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                grace: '15%',
+                grid: { color: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : '#f1f5f9' },
+                ticks: {
+                  color: '#94a3b8',
+                  font: { family: 'Inter', size: 11, weight: 'bold' },
+                  callback: v => v.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Ton'
+                }
+              },
+              x: {
+                grid: { color: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : '#f1f5f9' },
+                ticks: {
+                  color: '#94a3b8',
+                  font: { family: 'Inter', size: 11, weight: 'bold' }
+                }
+              }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                titleFont: { family: 'Inter', size: 11, weight: 'bold' },
+                bodyFont: { family: 'Inter', size: 11, weight: 'bold' },
+                callbacks: {
+                  label: context => ' ' + context.dataset.label + ': ' + context.parsed.y.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Ton'
+                }
+              }
+            }
+          },
+          plugins: [chartDataLabelsPlugin]
+        });
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [filters, realisasiRecords, regionalDetails, theme]);
+
+      const filtered = getFilteredRegionals(filters, regionalDetails);
+      const filtReal = filtered.reduce((s, d) => s + d.realisasi, 0);
+      const filtEst = filtered.reduce((s, d) => s + d.estimasi, 0);
+      const filterLabel = filters.regional !== 'Semua Regional' ? filters.regional
+        : filters.cro !== 'Semua CRO' ? filters.cro.split('—')[0].trim()
+          : 'Nasional';
+
+      // Allowed regions for filtering kemarinRecords
+      let allowedRegions = [...ALL_REGIONS];
+      if (filters.cro !== 'Semua CRO') {
+        allowedRegions = CRO_MAP[filters.cro] || [];
+      }
+      if (filters.regional !== 'Semua Regional') {
+        allowedRegions = [filters.regional];
+      }
+
+      const totalHariIni = filtReal;
+      const totalKemarin = (kemarinRecords || [])
+        .filter(r => allowedRegions.includes(r.region))
+        .reduce((sum, r) => sum + (parseFloat(r.tonase) || 0), 0);
+
+      const ratio = totalKemarin > 0 ? (totalHariIni / totalKemarin) * 100 : (totalHariIni > 0 ? 100 : 0);
+      const isUp = totalHariIni >= totalKemarin;
+
+      return (
+        <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 dashboard-card">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-[14px] font-bold text-slate-800">Tren Produksi Per Jam</h2>
+              <p className="text-[12px] text-slate-400 mt-0.5">Kumulatif {filterLabel}{filters.tanggal !== 'Semua Tanggal' ? ' — ' + formatIndoDate(filters.tanggal) : ' — data hari ini'}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="text-[13px] font-bold text-brand-600">{formatRibuan(filtReal)} ton</div>
+                <div className="text-[10px] text-slate-400">dari est. {formatRibuan(filtEst)} ton</div>
+              </div>
+              <div className={`flex items-center gap-2 text-[11px] border font-semibold px-2.5 py-1 rounded-lg ${isUp ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                <Icon name={isUp ? "trending-up" : "trending-down"} size={13} />
+                <span className="inline-flex items-center justify-center">{ratio.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% vs kemarin</span>
+              </div>
+            </div>
+          </div>
+          <div style={{ height: '220px' }}>
+            <canvas ref={canvasRef}></canvas>
+          </div>
+        </section>
+      );
+    }
+
+    // ============================================================
+    // ROW 3: DONUT + LEADERBOARD
+    // ============================================================
+    function DonutChart({ filters, regionalDetails }) {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+      const [showAll, setShowAll] = useState(false);
+
+      useEffect(() => {
+        if (!canvasRef.current) return;
+        if (chartRef.current) { chartRef.current.destroy(); }
+
+        const data = getFilteredRegionals(filters, regionalDetails);
+
+        chartRef.current = new Chart(canvasRef.current, {
+          type: 'doughnut',
+          data: {
+            labels: data.map(d => d.region),
+            datasets: [{
+              data: data.map(d => d.tonase),
+              backgroundColor: data.map(d => d.color),
+              borderWidth: 3, borderColor: '#fff', hoverBorderColor: '#fff', hoverOffset: 6,
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, cutout: '68%',
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#f1f5f9',
+                padding: 12, cornerRadius: 8,
+                callbacks: { label: ctx => ` ${formatRibuan(ctx.parsed)} ton` }
+              }
+            }
+          }
+        });
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [filters, regionalDetails]);
+
+      const data = getFilteredRegionals(filters, regionalDetails);
+      const total = data.reduce((s, d) => s + d.tonase, 0);
+
+      const displayedData = showAll ? data : data.slice(0, 3);
+
+      return (
+        <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 dashboard-card flex flex-col justify-between">
+          <div>
+            <div className="mb-4">
+              <h2 className="text-[14px] font-bold text-slate-800">Kontribusi Panen Tiap Regional</h2>
+              <p className="text-[12px] text-slate-400 mt-0.5">Proporsi realisasi {filters.cro !== 'Semua CRO' ? filters.cro.split('—')[0].trim() : 'nasional'} s.d. jam ini</p>
+            </div>
+            <div className="relative flex justify-center" style={{ height: '180px' }}>
+              <canvas ref={canvasRef}></canvas>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <div className="text-[20px] font-bold text-slate-800">{formatRibuan(total)}</div>
+                <div className="text-[10px] text-slate-400 font-medium">TON TOTAL</div>
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-1.5 transition-all duration-300">
+              {displayedData.map((d, i) => {
+                const pct = total > 0 ? ((d.tonase / total) * 100).toFixed(1) : '0.0';
+                return (
+                  <div key={i} className="flex items-center gap-2 animate-fadeIn">
+                    <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: d.color }}></div>
+                    <span className="text-[11px] text-slate-600 flex-1 truncate">{d.region}</span>
+                    <span className="text-[11px] font-semibold text-slate-700">{pct}%</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          {data.length > 3 && (
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="mt-3 text-[11px] text-brand-600 hover:text-brand-700 font-semibold flex items-center justify-center gap-1 w-full py-1.5 border border-slate-100 hover:bg-slate-50 rounded-lg transition-all"
+            >
+              <Icon name={showAll ? "chevron-up" : "chevron-down"} size={12} />
+              {showAll ? "Tampilkan Lebih Sedikit" : `Lihat ${data.length - 3} Regional Lainnya`}
+            </button>
+          )}
+        </section>
+      );
+    }
+
+    function RankBadge({ rank }) {
+      if (rank === 1) return <div className="rank-1 w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0">1</div>;
+      if (rank === 2) return <div className="rank-2 w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0">2</div>;
+      if (rank === 3) return <div className="rank-3 w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0">3</div>;
+      return <div className="rank-other w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0">{rank}</div>;
+    }
+
+    function LeaderboardRow({ item, type }) {
+      const isOutput = type === 'output';
+      return (
+        <div className="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
+          <RankBadge rank={item.rank} />
+          <div className="flex-1 min-w-0">
+            <div className="text-[12px] font-semibold text-slate-700 truncate">{item.region}</div>
+            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-1">
+              <div className={`h-1.5 rounded-full ${isOutput ? 'bg-brand-500' : 'bg-orange-500'}`} style={{ width: `${item.pct}%` }} />
+            </div>
+          </div>
+          <div className="text-right flex-shrink-0">
+            <div className="text-[13px] font-bold text-slate-800">{formatRibuan(isOutput ? item.tonase : item.restan)}</div>
+            <div className="text-[10px] text-slate-400">ton</div>
+          </div>
+        </div>
+      );
+    }
+
+    function LeaderboardCard({ filters, regionalDetails }) {
+      const data = getFilteredRegionals(filters, regionalDetails);
+      const sorted = [...data].sort((a, b) => b.estimasi - a.estimasi);
+      const sortedRest = [...data].sort((a, b) => b.restan - a.restan);
+      const maxTon = sorted[0]?.estimasi || 1;
+      const maxRest = sortedRest[0]?.restan || 1;
+
+      const top5out = sorted.slice(0, 5).map((d, i) => ({ rank: i + 1, region: d.region, tonase: d.estimasi, pct: Math.round((d.estimasi / maxTon) * 100) }));
+      const top5rest = sortedRest.slice(0, 5).map((d, i) => ({ rank: i + 1, region: d.region, restan: d.restan, pct: Math.round((d.restan / maxRest) * 100) }));
+
+      return (
+        <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 dashboard-card">
+          <div className="mb-4">
+            <h2 className="text-[14px] font-bold text-slate-800">Leaderboard Regional</h2>
+            <p className="text-[12px] text-slate-400 mt-0.5">Ranking berdasarkan data s.d. jam saat ini</p>
+          </div>
+          <div className="grid grid-cols-2 gap-5">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 rounded-lg bg-brand-50 flex items-center justify-center"><Icon name="trophy" size={13} className="text-brand-600" /></div>
+                <span className="text-[12px] font-bold text-slate-700">Top 5 Output Panen</span>
+              </div>
+              {top5out.length ? top5out.map(item => <LeaderboardRow key={item.rank} item={item} type="output" />) : <p className="text-[12px] text-slate-400 py-2">Tidak ada data</p>}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 rounded-lg bg-orange-50 flex items-center justify-center"><Icon name="alert-triangle" size={13} className="text-orange-600" /></div>
+                <span className="text-[12px] font-bold text-slate-700">Top 5 Restan Hari Ini</span>
+              </div>
+              {top5rest.length ? top5rest.map(item => <LeaderboardRow key={item.rank} item={item} type="restan" />) : <p className="text-[12px] text-slate-400 py-2">Tidak ada data</p>}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function RegionalRow({ filters, regionalDetails }) {
+      return (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <DonutChart filters={filters} regionalDetails={regionalDetails} />
+          <div className="lg:col-span-2"><LeaderboardCard filters={filters} regionalDetails={regionalDetails} /></div>
+        </div>
+      );
+    }
+
+    // ============================================================
+    // ROW 4: REALISASI VS ESTIMASI BAR CHART
+    // ============================================================
+    function RealisasiEstimasiChart({ filters, regionalDetails, theme }) {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(() => {
+        if (!canvasRef.current) return;
+        if (chartRef.current) { chartRef.current.destroy(); }
+
+        const data = getFilteredRegionals(filters, regionalDetails);
+
+        const chartDataLabelsPlugin = {
+          id: 'chartDataLabels',
+          afterDatasetsDraw: (chart) => {
+            const ctx = chart.ctx;
+            chart.data.datasets.forEach((dataset, datasetIndex) => {
+              const meta = chart.getDatasetMeta(datasetIndex);
+              meta.data.forEach((bar, index) => {
+                const val = dataset.data[index];
+                if (val === 0 || val == null) return;
+
+                ctx.save();
+                ctx.font = "bold 9px Calibri";
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillStyle = datasetIndex === 0 
+                  ? (theme === 'dark' ? '#60a5fa' : '#1e3a8a') 
+                  : (theme === 'dark' ? '#4ade80' : '#16a34a');
+
+                const valText = val.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                ctx.fillText(valText, bar.x, bar.y - 3);
+                ctx.restore();
+              });
+            });
+          }
+        };
+
+        chartRef.current = new Chart(canvasRef.current, {
+          type: 'bar',
+          data: {
+            labels: data.map(d => d.shortLabel),
+            datasets: [
+              { label: 'Estimasi Panen', data: data.map(d => d.estimasi), backgroundColor: 'rgba(37,99,235,0.15)', borderColor: '#2563eb', borderWidth: 2, borderRadius: 5, borderSkipped: false },
+              { label: 'Realisasi Panen', data: data.map(d => d.realisasi), backgroundColor: 'rgba(22,163,74,0.75)', borderColor: '#16a34a', borderWidth: 1, borderRadius: 5, borderSkipped: false },
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'top', align: 'end', labels: { font: { size: 11 }, color: theme === 'dark' ? '#cbd5e1' : '#64748b', boxWidth: 12, boxHeight: 12, borderRadius: 3, useBorderRadius: true, padding: 16 } },
+              tooltip: {
+                backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#f1f5f9', padding: 12, cornerRadius: 8,
+                callbacks: { label: ctx => ` ${ctx.dataset.label}: ${Number(ctx.parsed.y).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton` }
+              }
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: theme === 'dark' ? '#94a3b8' : '#94a3b8', font: { size: 11 } } },
+              y: { grid: { color: theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : '#f1f5f9' }, ticks: { color: theme === 'dark' ? '#94a3b8' : '#94a3b8', font: { size: 11 }, callback: v => v.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }, border: { dash: [4, 4] } }
+            }
+          },
+          plugins: [chartDataLabelsPlugin]
+        });
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [filters, regionalDetails, theme]);
+
+      const data = getFilteredRegionals(filters, regionalDetails);
+      const totalEst = data.reduce((a, d) => a + d.estimasi, 0);
+      const totalReal = data.reduce((a, d) => a + d.realisasi, 0);
+      const pct = totalEst > 0 ? ((totalReal / totalEst) * 100).toFixed(1) : '0.0';
+      const labelScope = filters.regional !== 'Semua Regional' ? filters.regional
+        : filters.cro !== 'Semua CRO' ? filters.cro.split('—')[0].trim() : 'Nasional';
+
+      return (
+        <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 dashboard-card">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h2 className="text-[14px] font-bold text-slate-800">Realisasi vs Estimasi Panen — {labelScope}</h2>
+              <p className="text-[12px] text-slate-400 mt-0.5">Perbandingan pencapaian vs target{filters.tanggal !== 'Semua Tanggal' ? ' — ' + formatIndoDate(filters.tanggal) : ' harian hari ini'}</p>
+            </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="text-right">
+                <div className="text-[20px] font-extrabold text-brand-600">{pct}%</div>
+                <div className="text-[10px] text-slate-400">Pencapaian {labelScope}</div>
+              </div>
+              <div className="w-10 h-10 rounded-full border-4 border-brand-200 flex items-center justify-center bg-brand-50 flex-shrink-0">
+                <Icon name="target" size={16} className="text-brand-600" />
+              </div>
+            </div>
+          </div>
+          <div style={{ height: '260px' }}>
+            <canvas ref={canvasRef}></canvas>
+          </div>
+        </section>
+      );
+    }
+
+    // ============================================================
+    // FILTER BAR (connected to CRO_MAP)
+    // ============================================================
+    function formatIndoDate(dateStr) {
+      if (!dateStr || dateStr === 'Semua Tanggal') return 'Semua Tanggal';
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      const d = parseInt(parts[2], 10);
+      const m = months[parseInt(parts[1], 10) - 1];
+      const y = parts[0];
+      return `${d} ${m} ${y}`;
+    }
+
+    function FilterBar({ filters, setFilters }) {
+      const selectClass = [
+        'w-full h-10 pl-10 pr-4 text-[13px] font-medium text-slate-700',
+        'bg-white border border-slate-200 rounded-xl shadow-sm',
+        'appearance-none cursor-pointer',
+        'focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-400',
+        'hover:border-slate-300 transition-colors',
+      ].join(' ');
+
+      // Regional options cascade from selected CRO
+      const regionalOptions = ['Semua Regional', ...(
+        filters.cro === 'Semua CRO'
+          ? ALL_REGIONS
+          : (CRO_MAP[filters.cro] || ALL_REGIONS)
+      )];
+
+      // When CRO changes, reset regional
+      function handleCROChange(val) {
+        setFilters(prev => ({ ...prev, cro: val, regional: 'Semua Regional' }));
+      }
+
+      const isFiltered = filters.cro !== 'Semua CRO' || filters.regional !== 'Semua Regional' || filters.tanggal !== getTodayWIB();
+
+      return (
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Icon name="sliders-horizontal" size={14} className="text-brand-600" />
+            <span className="text-[12px] font-semibold text-slate-600 uppercase tracking-wider">Filter Tampilan Data</span>
+            {isFiltered && (
+              <button
+                onClick={() => setFilters({ cro: 'Semua CRO', regional: 'Semua Regional', tanggal: getTodayWIB() })}
+                className="ml-auto text-[11px] text-red-500 hover:text-red-700 font-medium flex items-center gap-1 transition-colors"
+              >
+                <Icon name="x" size={12} />
+                Reset Filter
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* CRO */}
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"><Icon name="building-2" size={15} className="text-slate-400" /></div>
+              <select value={filters.cro} onChange={e => handleCROChange(e.target.value)} className={selectClass} aria-label="Filter berdasarkan CRO">
+                {Object.keys(CRO_MAP).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"><Icon name="chevron-down" size={14} className="text-slate-400" /></div>
+              <label className="absolute -top-2 left-3 text-[10px] font-semibold text-slate-400 bg-white px-1 uppercase tracking-wider">CRO</label>
+            </div>
+            {/* Regional — cascades from CRO */}
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"><Icon name="map-pin" size={15} className="text-slate-400" /></div>
+              <select value={filters.regional} onChange={e => setFilters(prev => ({ ...prev, regional: e.target.value }))} className={selectClass} aria-label="Filter berdasarkan Regional">
+                {regionalOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"><Icon name="chevron-down" size={14} className="text-slate-400" /></div>
+              <label className="absolute -top-2 left-3 text-[10px] font-semibold text-slate-400 bg-white px-1 uppercase tracking-wider">Regional</label>
+            </div>
+            {/* Tanggal — Calendar input */}
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"><Icon name="calendar" size={15} className="text-slate-400" /></div>
+              <input
+                type="date"
+                value={filters.tanggal === 'Semua Tanggal' ? '' : filters.tanggal}
+                onChange={e => setFilters(prev => ({ ...prev, tanggal: e.target.value || getTodayWIB() }))}
+                className="w-full h-10 pl-10 pr-4 text-[13px] font-medium text-slate-700 bg-white border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-400 hover:border-slate-300 transition-colors"
+                style={{ colorScheme: 'light' }}
+                aria-label="Filter berdasarkan Tanggal"
+              />
+              <label className="absolute -top-2 left-3 text-[10px] font-semibold text-slate-400 bg-white px-1 uppercase tracking-wider">Tanggal</label>
+            </div>
+          </div>
+          {/* Active filter chips */}
+          {isFiltered && (
+            <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-100">
+              {filters.cro !== 'Semua CRO' && (
+                <span className="inline-flex items-center gap-1 text-[11px] bg-brand-50 text-brand-700 border border-brand-200 rounded-full px-2.5 py-0.5 font-medium">
+                  <Icon name="building-2" size={11} />
+                  {filters.cro.split('—')[0].trim()}
+                  <button onClick={() => setFilters(prev => ({ ...prev, cro: 'Semua CRO', regional: 'Semua Regional' }))} className="ml-1 hover:text-red-500"><Icon name="x" size={10} /></button>
+                </span>
+              )}
+              {filters.regional !== 'Semua Regional' && (
+                <span className="inline-flex items-center gap-1 text-[11px] bg-purple-50 text-purple-700 border border-purple-200 rounded-full px-2.5 py-0.5 font-medium">
+                  <Icon name="map-pin" size={11} />
+                  {filters.regional}
+                  <button onClick={() => setFilters(prev => ({ ...prev, regional: 'Semua Regional' }))} className="ml-1 hover:text-red-500"><Icon name="x" size={10} /></button>
+                </span>
+              )}
+              {filters.tanggal !== 'Semua Tanggal' && (
+                <span className="inline-flex items-center gap-1 text-[11px] bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-0.5 font-medium animate-fadeIn">
+                  <Icon name="calendar" size={11} />
+                  {formatIndoDate(filters.tanggal)}
+                  <button onClick={() => setFilters(prev => ({ ...prev, tanggal: 'Semua Tanggal' }))} className="ml-1 hover:text-red-500"><Icon name="x" size={10} /></button>
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Helper: filter regionalDetails by active filters
+    function getFilteredRegionals(filters, regionalDetails) {
+      let data = [...(regionalDetails || [])];
+      if (filters.cro !== 'Semua CRO') {
+        const allowed = CRO_MAP[filters.cro] || [];
+        data = data.filter(d => allowed.includes(d.region));
+      }
+      if (filters.regional !== 'Semua Regional') {
+        data = data.filter(d => d.region === filters.regional);
+      }
+      return data;
+    }
+
+    const REGION_METADATA = {
+      'Aceh': { shortLabel: 'Aceh', color: '#16a34a' },
+      'Sumatera Utara 1': { shortLabel: 'Sumut 1', color: '#2563eb' },
+      'Sumatera Utara 2 Ex Torganda': { shortLabel: 'Sumut 2', color: '#2563eb' },
+      'Riau 1': { shortLabel: 'Riau 1', color: '#9333ea' },
+      'Riau 2': { shortLabel: 'Riau 2', color: '#7c3aed' },
+      'Riau 3': { shortLabel: 'Riau 3', color: '#0d9488' },
+      'Riau 4': { shortLabel: 'Riau 4', color: '#ea580c' },
+      'Bangka Belitung': { shortLabel: 'Babel', color: '#0891b2' },
+      'Jambi': { shortLabel: 'Jambi', color: '#b45309' },
+      'Sumatera Barat': { shortLabel: 'Sumbar', color: '#65a30d' },
+      'Sumatera Selatan': { shortLabel: 'Sumsel', color: '#dc2626' },
+      'Kalimantan Barat 1': { shortLabel: 'Kalbar 1', color: '#d97706' },
+      'Kalimantan Barat 2': { shortLabel: 'Kalbar 2', color: '#f59e0b' },
+      'Kalimantan Selatan 1': { shortLabel: 'Kalsel 1', color: '#7c3aed' },
+      'Kalimantan Selatan 2': { shortLabel: 'Kalsel 2', color: '#6366f1' },
+      'Kalimantan Timur': { shortLabel: 'Kaltim', color: '#0891b2' },
+      'Kalimantan Utara': { shortLabel: 'Kalut', color: '#14b8a6' },
+      'Kalimantan Tengah 1': { shortLabel: 'Kalteng 1', color: '#16a34a' },
+      'Kalimantan Tengah 2': { shortLabel: 'Kalteng 2', color: '#db2777' },
+      'Kalimantan Tengah 3': { shortLabel: 'Kalteng 3', color: '#8b5cf6' },
+      'Sulawesi Tenggara': { shortLabel: 'Sultra', color: '#ec4899' },
+      'Sulawesi Tengah': { shortLabel: 'Sulteng', color: '#f97316' }
+    };
+
+    const computeRegionalDetails = (realisasiRecords, estimasiData) => {
+      return ALL_REGIONS.map(region => {
+        const meta = REGION_METADATA[region] || { shortLabel: region, color: '#cccccc' };
+        const regionRealisasi = (realisasiRecords || [])
+          .filter(r => r.region === region)
+          .reduce((sum, r) => sum + (parseFloat(r.tonase) || 0), 0);
+        const estRow = (estimasiData || {})[region];
+        const regionEstimasi = estRow ? (parseFloat(estRow.estPanen) || 0) / 1000 : 0;
+        const regionRestan = estRow ? (parseFloat(estRow.estRestan) || 0) / 1000 : 0;
+        return {
+          region,
+          shortLabel: meta.shortLabel,
+          color: meta.color,
+          estimasi: regionEstimasi,
+          realisasi: regionRealisasi,
+          restan: regionRestan,
+          tonase: regionRealisasi
+        };
+      });
+    };
+
+    // ============================================================
+    // ROOT APP
+    // ============================================================
+    function App() {
+      const [activeNav, setActiveNav] = useState('laporan-jam');
+      const [filters, setFilters] = useState({
+        cro: 'Semua CRO',
+        regional: 'Semua Regional',
+        tanggal: getTodayWIB(),
+      });
+      const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+      const [realisasiRecords, setRealisasiRecords] = useState([]);
+      const [estimasiData, setEstimasiData] = useState({});
+      const [kemarinRecords, setKemarinRecords] = useState([]);
+      const [loading, setLoading] = useState(false);
+
+      const [theme, setTheme] = useState(localStorage.getItem("agripam_theme") || "light");
+
+      useEffect(() => {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("agripam_theme", theme);
+      }, [theme]);
+
+      const toggleTheme = () => {
+        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+      };
+
+      const getYesterdayDate = (dateStr) => {
+        if (!dateStr || dateStr === 'Semua Tanggal') return '';
+        const parts = dateStr.split('-');
+        if (parts.length !== 3) return '';
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        d.setDate(d.getDate() - 1);
+        const yyyy = d.getFullYear();
+        const MM = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${MM}-${dd}`;
+      };
+
+      useEffect(() => {
+        if (!filters.tanggal || filters.tanggal === 'Semua Tanggal') return;
+        
+        let active = true;
+        const fetchDashboardData = async () => {
+          setLoading(true);
+          try {
+            const sessionRaw = sessionStorage.getItem("agripam_session");
+            const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+            const token = session ? session.token : "";
+
+            const yesterday = getYesterdayDate(filters.tanggal);
+
+            const [realisasiRes, estimasiRes, kemarinRes] = await Promise.all([
+              fetch(`/api/realisasi?action=getData&tanggal=${filters.tanggal}&region=ALL`),
+              fetch(`/api/estimasi?action=getEstimasi&tanggal=${filters.tanggal}&region=ALL&token=${token}`),
+              fetch(`/api/realisasi?action=getData&tanggal=${yesterday}&region=ALL`)
+            ]);
+
+            const realisasiJson = await realisasiRes.json();
+            const estimasiJson = await estimasiRes.json();
+            const kemarinJson = await kemarinRes.json();
+
+            if (active) {
+              if (realisasiJson.success) {
+                setRealisasiRecords(realisasiJson.allRecords || []);
+              } else {
+                setRealisasiRecords([]);
+              }
+              if (estimasiJson.success) {
+                setEstimasiData(estimasiJson.allEstimasi || {});
+              } else {
+                setEstimasiData({});
+              }
+              if (kemarinJson.success) {
+                setKemarinRecords(kemarinJson.allRecords || []);
+              } else {
+                setKemarinRecords([]);
+              }
+            }
+          } catch (e) {
+            console.error(e);
+            if (active) {
+              setRealisasiRecords([]);
+              setEstimasiData({});
+              setKemarinRecords([]);
+            }
+          } finally {
+            if (active) setLoading(false);
+          }
+        };
+
+        fetchDashboardData();
+        return () => { active = false; };
+      }, [filters.tanggal]);
+
+      const regionalDetails = computeRegionalDetails(realisasiRecords, estimasiData);
+
+      return (
+        <div className="flex h-screen overflow-hidden bg-slate-50">
+          {/* Sidebar */}
+          <Sidebar activeNav={activeNav} setActiveNav={setActiveNav} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+
+          {/* Main */}
+          <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+            <TopHeader theme={theme} toggleTheme={toggleTheme} />
+
+            {/* Scrollable body */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="flex flex-col gap-5 p-6 max-w-screen-2xl mx-auto w-full">
+                <FilterBar filters={filters} setFilters={setFilters} />
+                <HourlyChartRow filters={filters} realisasiRecords={realisasiRecords} regionalDetails={regionalDetails} kemarinRecords={kemarinRecords} theme={theme} />
+                <RegionalRow filters={filters} regionalDetails={regionalDetails} />
+                <RealisasiEstimasiChart filters={filters} regionalDetails={regionalDetails} theme={theme} />
+                <TickerRow realisasiRecords={realisasiRecords} estimasiData={estimasiData} />
+
+                {/* Footer */}
+                <footer className="text-center text-[11px] text-slate-400 py-2">
+                  PATRIOT- LOYAL - PROFESIONAL
+                </footer>
+              </div>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    // Mount
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+
+</html>

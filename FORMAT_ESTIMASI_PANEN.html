@@ -335,9 +335,7 @@
         <!-- Top Navbar -->
         <header
             class="shrink-0 bg-surface/90 dark:bg-slate-900/90 backdrop-blur-md z-40 border-b border-surface-variant dark:border-slate-800 flex items-center justify-between px-6 py-2.5 print:hidden">
-            <div class="flex items-center"><img
-                    src="AGRINAS DANANTARA.png"
-                    alt="Logo APN" class="h-9 w-auto" /></div>
+            <div class="flex items-center"><img src="AGRINAS DANANTARA.png" alt="Logo APN" class="h-9 w-auto" /></div>
             <h3 id="chartTitle" class="text-[20px] font-bold text-on-surface dark:text-white text-center flex-1"></h3>
             <div class="flex items-center gap-6 mr-16">
                 <!-- Back Button -->
@@ -369,12 +367,17 @@
         </header>
 
         <!-- Modal Rekap Rencana vs Realisasi Panen (per CRO) - khusus ADMIN -->
-        <div id="rekapCROModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-            <div class="bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant dark:border-slate-800 max-w-[95vw] w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
-                <div class="px-6 py-4 border-b border-outline-variant dark:border-slate-800 flex items-center justify-between" style="background-color:#1e3a5f;">
+        <div id="rekapCROModal"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+            <div
+                class="bg-surface dark:bg-slate-900 rounded-xl border border-outline-variant dark:border-slate-800 max-w-[95vw] w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+                <div class="px-6 py-4 border-b border-outline-variant dark:border-slate-800 flex items-center justify-between"
+                    style="background-color:#1e3a5f;">
                     <div>
-                        <h2 class="font-bold text-sm md:text-base text-white uppercase tracking-wide">Rencana vs Realisasi Panen PT Agrinas Palma Nusantara</h2>
-                        <div class="flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 mt-1 w-fit">
+                        <h2 class="font-bold text-sm md:text-base text-white uppercase tracking-wide">Rencana vs
+                            Realisasi Panen PT Agrinas Palma Nusantara</h2>
+                        <div
+                            class="flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 mt-1 w-fit">
                             <span class="material-symbols-outlined text-white text-base">calendar_today</span>
                             <label class="text-xs font-bold text-white">Tanggal:</label>
                             <input type="date" id="rekapCRODatePicker"
@@ -383,7 +386,8 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button id="rekapCROFullscreenBtn" onclick="toggleRekapCROFullscreen()" class="text-white/80 hover:text-white transition-colors" title="Fullscreen">
+                        <button id="rekapCROFullscreenBtn" onclick="toggleRekapCROFullscreen()"
+                            class="text-white/80 hover:text-white transition-colors" title="Fullscreen">
                             <span class="material-symbols-outlined text-2xl">fullscreen</span>
                         </button>
                         <button onclick="closeRekapCROModal()" class="text-white/80 hover:text-white transition-colors">
@@ -396,22 +400,44 @@
                         <table class="w-full border-collapse text-[11px] whitespace-nowrap">
                             <thead>
                                 <tr style="background-color:#1e3a5f;" class="text-white font-semibold text-center">
-                                    <th rowspan="2" class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">No</th>
-                                    <th rowspan="2" class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">CRO</th>
-                                    <th rowspan="2" class="border border-outline-variant dark:border-slate-700 px-2 py-1.5 text-left min-w-[160px]">Wilayah</th>
-                                    <th rowspan="2" class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Luas TM<br>Planted (Ha)</th>
-                                    <th colspan="2" class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Produksi Harian (Ton)</th>
-                                    <th colspan="2" class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Tenaga Panen (Hk)</th>
-                                    <th colspan="2" class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Varian Produksi</th>
-                                    <th colspan="2" class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Varian HK</th>
-                                    <th rowspan="2" class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Restan<br>(Ton)</th>
-                                    <th rowspan="2" class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Est Kirim<br>(Ton)</th>
+                                    <th rowspan="2"
+                                        class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">No</th>
+                                    <th rowspan="2"
+                                        class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">CRO</th>
+                                    <th rowspan="2"
+                                        class="border border-outline-variant dark:border-slate-700 px-2 py-1.5 text-left min-w-[160px]">
+                                        Wilayah</th>
+                                    <th rowspan="2"
+                                        class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Luas
+                                        TM<br>Planted (Ha)</th>
+                                    <th colspan="2"
+                                        class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Produksi
+                                        Harian (Ton)</th>
+                                    <th colspan="2"
+                                        class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Tenaga
+                                        Panen (Hk)</th>
+                                    <th colspan="2"
+                                        class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Varian
+                                        Produksi</th>
+                                    <th colspan="2"
+                                        class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Varian
+                                        HK</th>
+                                    <th rowspan="2"
+                                        class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">
+                                        Restan<br>(Ton)</th>
+                                    <th rowspan="2"
+                                        class="border border-outline-variant dark:border-slate-700 px-2 py-1.5">Est
+                                        Kirim<br>(Ton)</th>
                                 </tr>
                                 <tr style="background-color:#28618f;" class="text-white font-semibold text-center">
-                                    <th class="border border-outline-variant dark:border-slate-700 px-2 py-1">Prognosa<br>(Target)</th>
-                                    <th class="border border-outline-variant dark:border-slate-700 px-2 py-1">Renc/Real</th>
-                                    <th class="border border-outline-variant dark:border-slate-700 px-2 py-1">Kebutuhan</th>
-                                    <th class="border border-outline-variant dark:border-slate-700 px-2 py-1">Renc/Real</th>
+                                    <th class="border border-outline-variant dark:border-slate-700 px-2 py-1">
+                                        Prognosa<br>(Target)</th>
+                                    <th class="border border-outline-variant dark:border-slate-700 px-2 py-1">Renc/Real
+                                    </th>
+                                    <th class="border border-outline-variant dark:border-slate-700 px-2 py-1">Kebutuhan
+                                    </th>
+                                    <th class="border border-outline-variant dark:border-slate-700 px-2 py-1">Renc/Real
+                                    </th>
                                     <th class="border border-outline-variant dark:border-slate-700 px-2 py-1">+/-</th>
                                     <th class="border border-outline-variant dark:border-slate-700 px-2 py-1">%</th>
                                     <th class="border border-outline-variant dark:border-slate-700 px-2 py-1">+/-</th>
@@ -420,7 +446,8 @@
                             </thead>
                             <tbody id="rekapCROBody" class="text-on-surface dark:text-slate-200"></tbody>
                             <tfoot>
-                                <tr id="rekapCROTotalRow" style="background-color:#1e3a5f;" class="text-white font-bold"></tr>
+                                <tr id="rekapCROTotalRow" style="background-color:#1e3a5f;"
+                                    class="text-white font-bold"></tr>
                             </tfoot>
                         </table>
                     </div>
@@ -595,7 +622,8 @@
                 class="px-6 py-4 border-b border-outline-variant dark:border-slate-800 flex items-center justify-between bg-primary text-white">
                 <h3 class="font-bold text-lg">Tabel Rencana &amp; Estimasi Panen</h3>
                 <div class="flex items-center gap-2">
-                    <button id="tableModalFullscreenBtn" onclick="toggleTableModalFullscreen()" class="text-white/80 hover:text-white transition-colors" title="Fullscreen">
+                    <button id="tableModalFullscreenBtn" onclick="toggleTableModalFullscreen()"
+                        class="text-white/80 hover:text-white transition-colors" title="Fullscreen">
                         <span class="material-symbols-outlined text-2xl">fullscreen</span>
                     </button>
                     <button onclick="closeTableModal()" class="text-white/80 hover:text-white transition-colors">

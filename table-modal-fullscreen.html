@@ -1,3 +1,4 @@
+x
 <!DOCTYPE html>
 <html lang="id" class="dark" data-theme="dark">
 
@@ -8,8 +9,11 @@
     <link rel="icon" type="image/jpeg" href="LOGO AGRIPAM.jpeg">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -36,7 +40,8 @@
             color: #cbd5e1;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* No scroll on body */
+            overflow: hidden;
+            /* No scroll on body */
             height: 100vh;
             width: 100vw;
             display: flex;
@@ -56,30 +61,36 @@
 <body class="bg-slate-900 text-slate-200">
     <div class="flex-1 flex flex-col h-full w-full overflow-hidden">
         <!-- Header -->
-        <div class="px-1.5 py-1 flex flex-col md:flex-row md:items-center justify-between gap-2" style="background-color:#1e3a5f;">
+        <div class="px-1.5 py-1 flex flex-col md:flex-row md:items-center justify-between gap-2"
+            style="background-color:#1e3a5f;">
             <div class="flex items-center gap-2">
                 <img src="AGRINAS DANANTARA.png" alt="Logo APN" class="h-8 bg-white/90 p-1 rounded" />
                 <div>
-                    <h2 class="font-bold text-base md:text-lg text-white uppercase tracking-wide">Tabel Rencana & Estimasi Panen</h2>
+                    <h2 class="font-bold text-base md:text-lg text-white uppercase tracking-wide">Tabel Rencana &
+                        Estimasi Panen</h2>
                     <p class="text-xs text-white/70 mt-0">Data Real-time (Auto Refresh)</p>
                 </div>
             </div>
-            
+
             <div class="flex flex-wrap items-center gap-3">
                 <div class="flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-1.5 py-1 w-fit">
                     <span class="material-symbols-outlined text-white text-lg">calendar_today</span>
                     <label class="text-[10px] font-bold text-white">Tanggal:</label>
-                    <input type="date" id="modalDatePicker" class="bg-transparent border-none text-[10px] font-bold text-white outline-none cursor-pointer focus:ring-0 p-0" style="color-scheme: dark;" />
+                    <input type="date" id="modalDatePicker"
+                        class="bg-transparent border-none text-[10px] font-bold text-white outline-none cursor-pointer focus:ring-0 p-0"
+                        style="color-scheme: dark;" />
                 </div>
-                
+
                 <div class="flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-1.5 py-1 w-fit">
                     <span class="material-symbols-outlined text-white text-lg">location_on</span>
                     <label class="text-[10px] font-bold text-white">Regional:</label>
-                    <select id="modalRegionSelect" class="bg-transparent border-none text-[10px] font-bold text-white outline-none cursor-pointer focus:ring-0 p-0 pr-6">
+                    <select id="modalRegionSelect"
+                        class="bg-transparent border-none text-[10px] font-bold text-white outline-none cursor-pointer focus:ring-0 p-0 pr-6">
                         <option value="ALL" class="text-slate-900">-- Semua Regional --</option>
                         <option value="Aceh" class="text-slate-900">Aceh</option>
                         <option value="Sumatera Utara 1" class="text-slate-900">Sumatera Utara 1</option>
-                        <option value="Sumatera Utara 2 Ex Torganda" class="text-slate-900">Sumatera Utara 2 Ex Torganda</option>
+                        <option value="Sumatera Utara 2 Ex Torganda" class="text-slate-900">Sumatera Utara 2 Ex Torganda
+                        </option>
                         <option value="Riau 1" class="text-slate-900">Riau 1</option>
                         <option value="Riau 2" class="text-slate-900">Riau 2</option>
                         <option value="Riau 3" class="text-slate-900">Riau 3</option>
@@ -116,8 +127,10 @@
                     <thead class="sticky top-0 z-10">
                         <tr class="bg-sky-700 text-white font-bold text-center">
                             <th rowspan="2" class="border border-slate-600 px-1.5 py-1">NO.</th>
-                            <th rowspan="2" class="border border-slate-600 px-1.5 py-1 min-w-[200px] text-left">NAMA REGIONAL</th>
-                            <th colspan="9" class="border border-slate-600 px-1.5 py-1">RENCANA PANEN DAN ESTIMASI PANEN</th>
+                            <th rowspan="2" class="border border-slate-600 px-1.5 py-1 min-w-[200px] text-left">NAMA
+                                REGIONAL</th>
+                            <th colspan="9" class="border border-slate-600 px-1.5 py-1">RENCANA PANEN DAN ESTIMASI PANEN
+                            </th>
                         </tr>
                         <tr class="bg-sky-600 text-white font-semibold text-center text-xs">
                             <th class="border border-slate-600 px-1.5 py-1">Luas Lahan<br>Planted (Ha)</th>
@@ -132,7 +145,9 @@
                         </tr>
                     </thead>
                     <tbody id="modalTableBody" class="text-slate-200">
-                        <tr><td colspan="11" class="text-center py-4">Memuat data...</td></tr>
+                        <tr>
+                            <td colspan="11" class="text-center py-4">Memuat data...</td>
+                        </tr>
                     </tbody>
                     <tfoot class="sticky bottom-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.2)]">
                         <tr id="modalTableFooter" class="bg-sky-900 font-bold text-right text-white">
@@ -180,7 +195,7 @@
         document.addEventListener("DOMContentLoaded", function () {
             const dateInput = document.getElementById("modalDatePicker");
             const regionSelect = document.getElementById("modalRegionSelect");
-            
+
             const today = getWIBDateStr();
             dateInput.value = today;
             globalSelectedDate = today;
@@ -330,4 +345,5 @@
         }
     </script>
 </body>
+
 </html>

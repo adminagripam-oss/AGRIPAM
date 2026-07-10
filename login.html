@@ -1579,10 +1579,8 @@
 <body>
 
   <div class="bg-slider">
-    <div class="bg-slide active" style="background-image: url('PAGE%205.jpeg');"></div>
-    <div class="bg-slide" style="background-image: url('PAGE%206.jpeg');"></div>
-    <div class="bg-slide" style="background-image: url('PAGE%202.jpg');"></div>
-    <div class="bg-slide" style="background-image: url('BACKGROUNDHARVESTING.jpeg');"></div>
+    <div class="bg-slide active" style="background-image: url('BACKGROUNDHARVESTING.jpeg');"></div>
+    <div class="bg-slide" style="background-image: url('PAGE 2.jpg');"></div>
   </div>
 
   <div class="bg-overlay"></div>
@@ -2151,6 +2149,7 @@
     var deleteBtn = document.getElementById("deleteBtn");
     var akumulasiEl = document.getElementById("akumulasi");
     var currentEstimasiExists = false;
+    var isInternalNavigation = false;
 
     // Tombol di estimasi section — diambil saat dibutuhkan agar tidak null saat load
     function getEstimasiBtn() { return document.getElementById("submitEstimasiBtn"); }
@@ -2605,6 +2604,11 @@
             }
 
             setTimeout(function () {
+              if (region === "ADMIN") {
+                isInternalNavigation = true;
+                window.location.href = "laporan_produksi.html";
+                return;
+              }
               document.getElementById("loginSection").style.display = "none";
               document.getElementById("mainSection").style.display = "flex";
               document.body.classList.add("dashboard-active");
@@ -3539,6 +3543,7 @@
       statusText.style.color = color;
     }
     window.addEventListener("beforeunload", function () {
+      if (isInternalNavigation) return;
       var s = loadSession();
       if (!s) return;
 
@@ -3642,6 +3647,12 @@
     }
 
     function bukaRealisasi() {
+      var s = loadSession();
+      if (s && s.region === "ADMIN") {
+        isInternalNavigation = true;
+        window.location.href = "laporan_produksi.html";
+        return;
+      }
       var infografisSec = document.getElementById("infografisSection");
       var estimasiSec = document.getElementById("estimasiSection");
 
@@ -4017,8 +4028,24 @@
     // INIT — pulihkan sesi jika halaman di-refresh
     // =========================================================================
     (function init() {
+      var params = new URLSearchParams(window.location.search);
+      var showInfografis = params.get('show') === 'infografis';
+
       var s = loadSession();
       if (s) {
+        if (s.region === "ADMIN" && !showInfografis) {
+          isInternalNavigation = true;
+          window.location.href = "laporan_produksi.html";
+          return;
+        }
+
+        if (showInfografis) {
+          document.getElementById("loginSection").style.display = "none";
+          document.getElementById("mainSection").style.display = "none";
+          bukaInfografis();
+          return;
+        }
+
         document.getElementById("loginSection").style.display = "none";
         document.getElementById("mainSection").style.display = "flex";
         document.body.classList.add("dashboard-active");
@@ -4482,6 +4509,25 @@
         var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
         window.history.replaceState({ path: newUrl }, '', newUrl);
       }
+    })();
+
+    // ---------- Auto-hide Background Slider outside Login Section ----------
+    (function observeLoginVisibility() {
+      var loginSec = document.getElementById("loginSection");
+      if (!loginSec) return;
+      var updateBgVisibility = function () {
+        var isLoginVisible = (loginSec.style.display !== "none");
+        var slider = document.querySelector(".bg-slider");
+        var overlay = document.querySelector(".bg-overlay");
+        if (slider) slider.style.display = isLoginVisible ? "block" : "none";
+        if (overlay) overlay.style.display = isLoginVisible ? "block" : "none";
+      };
+      
+      // Run once immediately
+      updateBgVisibility();
+      
+      var observer = new MutationObserver(updateBgVisibility);
+      observer.observe(loginSec, { attributes: true, attributeFilter: ["style"] });
     })();
 
   </script>

@@ -43,6 +43,11 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
+app.get('/laporan-produksi', (req, res) => {
+  res.sendFile(path.join(__dirname, 'laporan_produksi.html'));
+});
+
+
 app.listen(port, () => {
   console.log(`============================================================`);
   console.log(`  AGRI-PAM Local Dev Server started at:`);
