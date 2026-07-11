@@ -3836,7 +3836,8 @@
         return;
       }
 
-      // Lock jam pengisian: Maksimal H-1 jam 22.00 WIB
+      // Lock jam pengisian: Maksimal H-1 jam 22.00 WIB (DINONAKTIFKAN SEMENTARA)
+      /*
       var now = new Date();
       var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
       var wibNow = new Date(utc + (7 * 3600000));
@@ -3860,6 +3861,7 @@
           " telah berakhir pada tanggal " + deadlineDateStr + " pukul 22.00 WIB.");
         return;
       }
+      */
 
       // Validasi numerik — masing-masing field divalidasi sendiri
       var luasPanenNum = parseFloat(luasPanen);
