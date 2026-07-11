@@ -64,9 +64,8 @@
             <div class="flex items-center gap-2">
                 <img src="AGRINAS DANANTARA.png" alt="Logo APN" class="h-8 bg-white/90 p-1 rounded" />
                 <div>
-                    <h2 class="font-bold text-base md:text-lg text-white uppercase tracking-wide">Rencana vs Realisasi
-                        Panen PT Agrinas Palma Nusantara</h2>
-                    <p class="text-xs text-white/70 mt-0">Data Real-time (Auto Refresh)</p>
+                    <h2 class="font-bold text-base md:text-lg text-white uppercase tracking-wide">MONITORING PRODUKSI PANEN TBS 06.00 S/D 17.30</h2>
+                    <p class="text-xs text-white/90 mt-0 font-semibold" id="headerDateText">Memuat tanggal...</p>
                 </div>
             </div>
             <div class="flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-1.5 py-1 w-fit">
@@ -83,37 +82,35 @@
             <div class="overflow-x-auto border border-slate-800 rounded-lg h-full">
                 <table class="w-full border-collapse text-[10px] whitespace-nowrap">
                     <thead class="sticky top-0 z-10">
-                        <tr style="background-color:#1e3a5f;" class="text-white font-semibold text-center">
-                            <th rowspan="2" class="border border-slate-700 px-1.5 py-1">No</th>
-                            <th rowspan="2" class="border border-slate-700 px-1.5 py-1">CRO</th>
-                            <th rowspan="2" class="border border-slate-700 px-1.5 py-1 text-left min-w-[180px]">Wilayah
-                            </th>
-                            <th rowspan="2" class="border border-slate-700 px-1.5 py-1">Luas TM<br>Planted (Ha)</th>
-                            <th colspan="2" class="border border-slate-700 px-1.5 py-1">Produksi Harian (Ton)</th>
-                            <th colspan="2" class="border border-slate-700 px-1.5 py-1">Tenaga Panen (Hk)</th>
-                            <th colspan="2" class="border border-slate-700 px-1.5 py-1">Varian Produksi</th>
-                            <th colspan="2" class="border border-slate-700 px-1.5 py-1">Varian HK</th>
-                            <th rowspan="2" class="border border-slate-700 px-1.5 py-1">Restan<br>(Ton)</th>
-                            <th rowspan="2" class="border border-slate-700 px-1.5 py-1">Est Kirim<br>(Ton)</th>
+                        <tr style="background-color:#000000;" class="text-white font-semibold text-center border-b border-slate-700">
+                            <th rowspan="2" class="border border-slate-700 px-1.5 py-2 w-8">No</th>
+                            <th rowspan="2" class="border border-slate-700 px-1.5 py-2 w-16">CRO</th>
+                            <th rowspan="2" class="border border-slate-700 px-2 py-2 text-center min-w-[200px]">RH Oprasional/PKH</th>
+                            <th colspan="12" class="border border-slate-700 px-1.5 py-1">Monitoring Produksi Pukul 06.00 WIB s.d 17.30 WIB (Ton)</th>
+                            <th rowspan="2" class="border border-slate-700 px-2 py-2 w-20">Jumlah</th>
                         </tr>
-                        <tr style="background-color:#28618f;" class="text-white font-semibold text-center">
-                            <th class="border border-slate-700 px-1.5 py-1">Prognosa<br>(Target)</th>
-                            <th class="border border-slate-700 px-1.5 py-1">Renc/Real</th>
-                            <th class="border border-slate-700 px-1.5 py-1">Kebutuhan</th>
-                            <th class="border border-slate-700 px-1.5 py-1">Renc/Real</th>
-                            <th class="border border-slate-700 px-1.5 py-1">+/-</th>
-                            <th class="border border-slate-700 px-1.5 py-1">%</th>
-                            <th class="border border-slate-700 px-1.5 py-1">+/-</th>
-                            <th class="border border-slate-700 px-1.5 py-1">%</th>
+                        <tr style="background-color:#000000;" class="text-white font-semibold text-center">
+                            <th class="border border-slate-700 px-1.5 py-1 w-12">06.00</th>
+                            <th class="border border-slate-700 px-1.5 py-1 w-12">07.00</th>
+                            <th class="border border-slate-700 px-1.5 py-1 w-12">08.00</th>
+                            <th class="border border-slate-700 px-1.5 py-1 w-12">09.00</th>
+                            <th class="border border-slate-700 px-1.5 py-1 w-12">10.00</th>
+                            <th class="border border-slate-700 px-1.5 py-1 w-12">11.00</th>
+                            <th class="border border-slate-700 px-1.5 py-1 w-12">12.00</th>
+                            <th class="border border-slate-700 px-1.5 py-1 w-12">13.00</th>
+                            <th class="border border-slate-700 px-1.5 py-1 w-12">14.00</th>
+                            <th class="border border-slate-700 px-1.5 py-1 w-12">15.00</th>
+                            <th class="border border-slate-700 px-1.5 py-1 w-12">16.00</th>
+                            <th class="border border-slate-700 px-1.5 py-1 w-12">17.30</th>
                         </tr>
                     </thead>
                     <tbody id="rekapCROBody" class="text-slate-200">
                         <tr>
-                            <td colspan="14" class="text-center py-4">Memuat data...</td>
+                            <td colspan="16" class="text-center py-4 bg-white text-black">Memuat data...</td>
                         </tr>
                     </tbody>
                     <tfoot class="sticky bottom-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-                        <tr id="rekapCROTotalRow" style="background-color:#1e3a5f;" class="text-white font-bold"></tr>
+                        <tr id="rekapCROTotalRow" style="background-color:#000000;" class="text-white font-bold"></tr>
                     </tfoot>
                 </table>
             </div>
@@ -121,48 +118,61 @@
     </div>
 
     <script>
-        let globalAllEstimasi = {};
+        let globalAllRecords = [];
         let globalSelectedDate = "";
 
-        const luasPlantedMap = {
-            "Aceh": 1257, "Sumatera Utara 1": 6498, "Sumatera Utara 2 Ex Torganda": 46678,
-            "Riau 1": 65723, "Riau 2": 48102, "Riau 3": 4703, "Riau 4": 38121,
-            "Bangka Belitung": 568, "Jambi": 566, "Sumatera Barat": 2742, "Sumatera Selatan": 8713,
-            "Kalimantan Barat 1": 77956, "Kalimantan Barat 2": 12993, "Kalimantan Selatan 1": 4772,
-            "Kalimantan Selatan 2": 2850, "Kalimantan Utara": 3562, "Kalimantan Timur": 1145,
-            "Kalimantan Tengah 1": 63248, "Kalimantan Tengah 2": 31222, "Kalimantan Tengah 3": 17355,
-            "Sulawesi Tengah": 3231, "Sulawesi Tenggara": 2117
-        };
-
-        const produksiHarianTargetMap = {
-            "Aceh": 10, "Sumatera Utara 1": 70, "Sumatera Utara 2 Ex Torganda": 900,
-            "Riau 1": 5000, "Riau 2": 1000, "Riau 3": 75, "Riau 4": 400,
-            "Bangka Belitung": 25, "Jambi": 10, "Sumatera Barat": 150, "Sumatera Selatan": 70,
-            "Kalimantan Barat 1": 2800, "Kalimantan Barat 2": 70, "Kalimantan Selatan 1": 120,
-            "Kalimantan Selatan 2": 80, "Kalimantan Timur": 7, "Kalimantan Utara": 120,
-            "Kalimantan Tengah 1": 1300, "Kalimantan Tengah 3": 150, "Kalimantan Tengah 2": 900,
-            "Sulawesi Tenggara": 58, "Sulawesi Tengah": 65
-        };
-
         const CRO_GROUPS_REKAP = {
-            "CRO 1": ["Aceh", "Sumatera Utara 1", "Sumatera Utara 2 Ex Torganda"],
-            "CRO 2": ["Riau 1"], "CRO 3": ["Riau 2", "Riau 3"], "CRO 4": ["Riau 4"],
-            "CRO 5": ["Bangka Belitung", "Jambi", "Sumatera Barat", "Sumatera Selatan"],
-            "CRO 6": ["Kalimantan Barat 1", "Kalimantan Barat 2"],
-            "CRO 7": ["Kalimantan Selatan 1", "Kalimantan Selatan 2", "Kalimantan Timur", "Kalimantan Utara"],
-            "CRO 8": ["Kalimantan Tengah 1", "Kalimantan Tengah 3"],
-            "CRO 9": ["Kalimantan Tengah 2"], "CRO 10": ["Sulawesi Tenggara", "Sulawesi Tengah"]
+            "CRO I": ["Aceh", "Sumatera Utara 1", "Sumatera Utara 2 Ex Torganda"],
+            "CRO II": ["Riau 1"],
+            "CRO III": ["Riau 2", "Riau 3"],
+            "CRO IV": ["Riau 4"],
+            "CRO V": ["Bangka Belitung", "Jambi", "Sumatera Barat", "Sumatera Selatan"],
+            "CRO VI": ["Kalimantan Barat 1", "Kalimantan Barat 2"],
+            "CRO VII": ["Kalimantan Selatan 1", "Kalimantan Selatan 2", "Kalimantan Timur", "Kalimantan Utara"],
+            "CRO VIII": ["Kalimantan Tengah 1", "Kalimantan Tengah 3"],
+            "CRO IX": ["Kalimantan Tengah 2"],
+            "CRO X": ["Sulawesi Tenggara", "Sulawesi Tengah"]
         };
+
+        const jamHeaders = ["06.00", "07.00", "08.00", "09.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.30"];
 
         function getWIBDateStr() {
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            // H+1: Tambahkan 24 jam (24 * 3600000 ms) ke waktu WIB
             const wibTime = new Date(utc + (7 * 3600000));
             const yyyy = wibTime.getFullYear();
             const MM = String(wibTime.getMonth() + 1).padStart(2, '0');
             const dd = String(wibTime.getDate()).padStart(2, '0');
             return yyyy + "-" + MM + "-" + dd;
+        }
+
+        function getCurrentJamStr() {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const wibTime = new Date(utc + (7 * 3600000));
+            const hour = wibTime.getHours();
+            
+            if (hour === 6) return "06.00";
+            if (hour === 7) return "07.00";
+            if (hour === 8) return "08.00";
+            if (hour === 9) return "09.00";
+            if (hour === 10) return "10.00";
+            if (hour === 11) return "11.00";
+            if (hour === 12) return "12.00";
+            if (hour === 13) return "13.00";
+            if (hour === 14) return "14.00";
+            if (hour === 15) return "15.00";
+            if (hour === 16) return "16.00";
+            if (hour === 17) return "17.30";
+            return null;
+        }
+
+        function formatTanggalIndo(dateStr) {
+            if (!dateStr) return "";
+            const d = new Date(dateStr);
+            const namaHari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+            const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            return `${namaHari[d.getDay()]}, ${d.getDate()} ${namaBulan[d.getMonth()]} ${d.getFullYear()}`;
         }
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -180,139 +190,132 @@
                 }
             });
 
-            // Auto refresh every 5 minutes
             setInterval(() => {
                 loadData(globalSelectedDate);
             }, 5 * 60 * 1000);
         });
 
         function loadData(tanggal) {
-            // Using ALL to get data for all regions. No token needed for read-only.
-            const urlEstimasi = `/api/estimasi?action=getEstimasi&tanggal=${tanggal}&region=ALL`;
+            document.getElementById("headerDateText").innerText = formatTanggalIndo(tanggal);
+            const urlData = `/api/realisasi?action=getData&tanggal=${tanggal}&region=ALL`;
 
-            fetch(urlEstimasi)
+            fetch(urlData)
                 .then(res => res.json())
-                .then(resEstimasi => {
-                    if (resEstimasi.success && resEstimasi.exists) {
-                        globalAllEstimasi = resEstimasi.allEstimasi || {};
+                .then(res => {
+                    if (res.success && res.allRecords) {
+                        globalAllRecords = res.allRecords;
                     } else {
-                        globalAllEstimasi = {};
+                        globalAllRecords = [];
                     }
                     renderRekapCROTable();
                 })
                 .catch(err => {
                     console.error("Error loading data:", err);
-                    globalAllEstimasi = {};
+                    globalAllRecords = [];
                     renderRekapCROTable();
                 });
         }
 
         function renderRekapCROTable() {
-            const fmt0 = (num) => new Intl.NumberFormat('id-ID').format(Math.round(num));
-            const fmt2 = (num) => new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+            const fmt = (num) => num === 0 ? "-" : new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num);
+
+            // Group data by region and jam
+            const dataByRegion = {};
+            globalAllRecords.forEach(record => {
+                if (!dataByRegion[record.region]) dataByRegion[record.region] = {};
+                // If it is recorded, it's defined (even if tonase is 0)
+                dataByRegion[record.region][record.jam] = parseFloat(record.tonase) || 0;
+            });
 
             let bodyHtml = "";
             let groupNo = 1;
-            const grand = { planted: 0, prognosa: 0, real: 0, kebutuhan: 0, realHk: 0, restan: 0, kirim: 0 };
+
+            const isToday = (globalSelectedDate === getWIBDateStr());
+            const currentJamStr = isToday ? getCurrentJamStr() : null;
+
+            // Initialize grand total
+            const grandTotal = { total: 0 };
+            jamHeaders.forEach(j => grandTotal[j] = 0);
 
             Object.keys(CRO_GROUPS_REKAP).forEach(croLabel => {
                 const regions = CRO_GROUPS_REKAP[croLabel];
-                const g = { planted: 0, prognosa: 0, real: 0, kebutuhan: 0, realHk: 0, restan: 0, kirim: 0 };
+                
+                // Initialize subtotal for this CRO
+                const croTotal = { total: 0 };
+                jamHeaders.forEach(j => croTotal[j] = 0);
+
+                let isFirstRegionInCRO = true;
 
                 regions.forEach((regionName, idx) => {
-                    const est = globalAllEstimasi[regionName] || {};
-                    const planted = luasPlantedMap[regionName] || 0;
-                    const prognosa = produksiHarianTargetMap[regionName] || 0;
+                    const rData = dataByRegion[regionName] || {};
+                    let regionTotal = 0;
 
-                    let estPanen = parseFloat(est.estPanen) || 0;
-                    const estKirimRaw = parseFloat(est.estKirim) || 0;
-                    if (estPanen === 0 && estKirimRaw > 0) estPanen = estKirimRaw;
-
-                    const real = estPanen / 1000;
-                    const kebutuhan = prognosa / 1.5;
-                    const realHk = parseFloat(est.tkPanen) || 0;
-                    const restan = (parseFloat(est.estRestan) || 0) / 1000;
-                    const kirim = (parseFloat(est.estKirim) || 0) / 1000;
-
-                    g.planted += planted; g.prognosa += prognosa; g.real += real;
-                    g.kebutuhan += kebutuhan; g.realHk += realHk; g.restan += restan; g.kirim += kirim;
-
-                    const varProdAbs = prognosa - real;
-                    const varProdPct = prognosa > 0 ? (real / prognosa * 100) : 0;
-                    const varHkAbs = kebutuhan - realHk;
-                    const varHkPct = kebutuhan > 0 ? (realHk / kebutuhan * 100) : 0;
-
-                    bodyHtml += `<tr class="hover:bg-slate-800/50">`;
-                    if (idx === 0) {
-                        bodyHtml += `<td rowspan="${regions.length}" class="border border-slate-700 px-1.5 py-1 text-center font-bold align-middle">${groupNo}</td>`;
-                        bodyHtml += `<td rowspan="${regions.length}" class="border border-slate-700 px-1.5 py-1 text-center font-bold align-middle">${croLabel}</td>`;
+                    let rowHtml = `<tr class="bg-white text-black border-b border-slate-400">`;
+                    
+                    if (isFirstRegionInCRO) {
+                        rowHtml += `<td rowspan="${regions.length}" class="border border-slate-400 px-1.5 py-1 text-center font-bold align-middle">${groupNo}</td>`;
+                        rowHtml += `<td rowspan="${regions.length}" class="border border-slate-400 px-1.5 py-1 text-center font-bold align-middle">${croLabel}</td>`;
+                        isFirstRegionInCRO = false;
                     }
-                    bodyHtml += `
-                        <td class="border border-slate-700 px-1.5 py-1 text-left">${regionName}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right">${fmt0(planted)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right">${fmt0(prognosa)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-emerald-400 font-semibold">${fmt0(real)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right">${fmt0(kebutuhan)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-emerald-400 font-semibold">${fmt0(realHk)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-red-400 font-semibold">${fmt0(varProdAbs)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right">${fmt2(varProdPct)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-red-400 font-semibold">${fmt0(varHkAbs)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right">${fmt2(varHkPct)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right">${fmt0(restan)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right font-bold text-sky-400">${fmt0(kirim)}</td>
-                    </tr>`;
+
+                    let isLate = false;
+                    if (currentJamStr && rData[currentJamStr] === undefined) {
+                        isLate = true;
+                    }
+
+                    let regionClass = "border border-slate-400 px-2 py-1 text-center";
+                    if (isLate) {
+                        regionClass += " bg-red-500 text-white font-bold";
+                    }
+
+                    rowHtml += `<td class="${regionClass}">${regionName}</td>`;
+
+                    // Columns for each jam
+                    jamHeaders.forEach(j => {
+                        const val = rData[j] || 0;
+                        regionTotal += val;
+                        croTotal[j] += val;
+                        grandTotal[j] += val;
+                        rowHtml += `<td class="border border-slate-400 px-1.5 py-1 text-center">${fmt(val)}</td>`;
+                    });
+
+                    croTotal.total += regionTotal;
+                    grandTotal.total += regionTotal;
+
+                    // Jumlah column for the region
+                    rowHtml += `<td class="border border-slate-400 px-2 py-1 text-center font-bold" style="background-color:#59b6c7;">${fmt(regionTotal)}</td>`;
+                    rowHtml += `</tr>`;
+                    
+                    bodyHtml += rowHtml;
                 });
 
-                const gVarProdAbs = g.prognosa - g.real;
-                const gVarProdPct = g.prognosa > 0 ? (g.real / g.prognosa * 100) : 0;
-                const gVarHkAbs = g.kebutuhan - g.realHk;
-                const gVarHkPct = g.kebutuhan > 0 ? (g.realHk / g.kebutuhan * 100) : 0;
-
+                // CRO Subtotal Row
                 bodyHtml += `
-                    <tr class="bg-slate-800 font-bold text-slate-100">
-                        <td colspan="3" class="border border-slate-700 px-1.5 py-1 text-center text-sky-300">Subtotal</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.planted)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.prognosa)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.real)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.kebutuhan)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.realHk)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-red-400">${fmt0(gVarProdAbs)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt2(gVarProdPct)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-red-400">${fmt0(gVarHkAbs)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt2(gVarHkPct)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.restan)}</td>
-                        <td class="border border-slate-700 px-1.5 py-1 text-right text-sky-300">${fmt0(g.kirim)}</td>
+                    <tr class="bg-gray-200 text-black font-bold border-b border-slate-400">
+                        <td colspan="3" class="border border-slate-400 px-2 py-1 text-center">Jumlah ${croLabel}</td>`;
+                
+                jamHeaders.forEach(j => {
+                    bodyHtml += `<td class="border border-slate-400 px-1.5 py-1 text-center">${fmt(croTotal[j])}</td>`;
+                });
+
+                bodyHtml += `<td class="border border-slate-400 px-2 py-1 text-center" style="background-color:#59b6c7;">${fmt(croTotal.total)}</td>
                     </tr>`;
 
-                grand.planted += g.planted; grand.prognosa += g.prognosa; grand.real += g.real;
-                grand.kebutuhan += g.kebutuhan; grand.realHk += g.realHk; grand.restan += g.restan; grand.kirim += g.kirim;
                 groupNo++;
             });
 
             const bodyEl = document.getElementById("rekapCROBody");
             if (bodyEl) bodyEl.innerHTML = bodyHtml;
 
-            const grandVarProdAbs = grand.prognosa - grand.real;
-            const grandVarProdPct = grand.prognosa > 0 ? (grand.real / grand.prognosa * 100) : 0;
-            const grandVarHkAbs = grand.kebutuhan - grand.realHk;
-            const grandVarHkPct = grand.kebutuhan > 0 ? (grand.realHk / grand.kebutuhan * 100) : 0;
-
+            // Grand Total Row
             const totalRowEl = document.getElementById("rekapCROTotalRow");
             if (totalRowEl) {
-                totalRowEl.innerHTML = `
-                    <td colspan="3" class="border border-slate-700 px-1.5 py-1 text-center text-[10px]">TOTAL ALL WILAYAH</td>
-                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px]">${fmt0(grand.planted)}</td>
-                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px]">${fmt0(grand.prognosa)}</td>
-                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px] text-emerald-300">${fmt0(grand.real)}</td>
-                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px]">${fmt0(grand.kebutuhan)}</td>
-                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px] text-emerald-300">${fmt0(grand.realHk)}</td>
-                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px] text-red-300">${fmt0(grandVarProdAbs)}</td>
-                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px]">${fmt2(grandVarProdPct)}</td>
-                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px] text-red-300">${fmt0(grandVarHkAbs)}</td>
-                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px]">${fmt2(grandVarHkPct)}</td>
-                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px]">${fmt0(grand.restan)}</td>
-                    <td class="border border-slate-700 px-1.5 py-1 text-right text-[10px] text-sky-300">${fmt0(grand.kirim)}</td>
-                `;
+                let footHtml = `<td colspan="3" class="border border-slate-700 px-2 py-2 text-center text-sm">Total PT Agrinas Palma Nusantara</td>`;
+                jamHeaders.forEach(j => {
+                    footHtml += `<td class="border border-slate-700 px-1.5 py-2 text-center">${fmt(grandTotal[j])}</td>`;
+                });
+                footHtml += `<td class="border border-slate-700 px-2 py-2 text-center" style="background-color:#59b6c7; color:black;">${fmt(grandTotal.total)}</td>`;
+                totalRowEl.innerHTML = footHtml;
             }
         }
     </script>
