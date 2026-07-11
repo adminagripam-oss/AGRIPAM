@@ -64,7 +64,8 @@
             <div class="flex items-center gap-2">
                 <img src="AGRINAS DANANTARA.png" alt="Logo APN" class="h-8 bg-white/90 p-1 rounded" />
                 <div>
-                    <h2 class="font-bold text-base md:text-lg text-white uppercase tracking-wide">MONITORING PRODUKSI PANEN TBS 06.00 S/D 17.30</h2>
+                    <h2 class="font-bold text-base md:text-lg text-white uppercase tracking-wide">MONITORING PRODUKSI
+                        PANEN TBS 06.00 S/D 17.30</h2>
                     <p class="text-xs text-white/90 mt-0 font-semibold" id="headerDateText">Memuat tanggal...</p>
                 </div>
             </div>
@@ -80,13 +81,15 @@
         <!-- Table Container -->
         <div class="p-1 overflow-auto flex-1 bg-slate-900">
             <div class="overflow-x-auto border border-slate-800 rounded-lg h-full">
-                <table class="w-full border-collapse text-[10px] whitespace-nowrap">
+                <table class="w-full border-collapse text-[12px] whitespace-nowrap">
                     <thead class="sticky top-0 z-10">
-                        <tr style="background-color:#000000;" class="text-white font-semibold text-center border-b border-slate-700">
+                        <tr style="background-color:#000000;"
+                            class="text-white font-semibold text-center border-b border-slate-700">
                             <th rowspan="2" class="border border-slate-700 px-1.5 py-2 w-8">No</th>
                             <th rowspan="2" class="border border-slate-700 px-1.5 py-2 w-16">CRO</th>
-                            <th rowspan="2" class="border border-slate-700 px-2 py-2 text-center min-w-[200px]">RH Oprasional/PKH</th>
-                            <th colspan="12" class="border border-slate-700 px-1.5 py-1">Monitoring Produksi Pukul 06.00 WIB s.d 17.30 WIB (Ton)</th>
+                            <th rowspan="2" class="border border-slate-700 px-1 py-1 text-center" style="width:100px; white-space:normal;">RH Oprasional/PKH</th>
+                            <th colspan="12" class="border border-slate-700 px-1.5 py-1">Monitoring Produksi Pukul 06.00
+                                WIB s.d 17.30 WIB (Ton)</th>
                             <th rowspan="2" class="border border-slate-700 px-2 py-2 w-20">Jumlah</th>
                         </tr>
                         <tr style="background-color:#000000;" class="text-white font-semibold text-center">
@@ -151,7 +154,7 @@
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             const wibTime = new Date(utc + (7 * 3600000));
             const hour = wibTime.getHours();
-            
+
             if (hour === 6) return "06.00";
             if (hour === 7) return "07.00";
             if (hour === 8) return "08.00";
@@ -239,7 +242,7 @@
 
             Object.keys(CRO_GROUPS_REKAP).forEach(croLabel => {
                 const regions = CRO_GROUPS_REKAP[croLabel];
-                
+
                 // Initialize subtotal for this CRO
                 const croTotal = { total: 0 };
                 jamHeaders.forEach(j => croTotal[j] = 0);
@@ -251,7 +254,7 @@
                     let regionTotal = 0;
 
                     let rowHtml = `<tr class="bg-white text-black border-b border-slate-400">`;
-                    
+
                     if (isFirstRegionInCRO) {
                         rowHtml += `<td rowspan="${regions.length}" class="border border-slate-400 px-1.5 py-1 text-center font-bold align-middle">${groupNo}</td>`;
                         rowHtml += `<td rowspan="${regions.length}" class="border border-slate-400 px-1.5 py-1 text-center font-bold align-middle">${croLabel}</td>`;
@@ -263,7 +266,7 @@
                         isLate = true;
                     }
 
-                    let regionClass = "border border-slate-400 px-2 py-1 text-center";
+                    let regionClass = "border border-slate-400 px-1 py-1 text-left" + " " + "whitespace-normal";
                     if (isLate) {
                         regionClass += " bg-red-500 text-white font-bold";
                     }
@@ -285,7 +288,7 @@
                     // Jumlah column for the region
                     rowHtml += `<td class="border border-slate-400 px-2 py-1 text-center font-bold" style="background-color:#59b6c7;">${fmt(regionTotal)}</td>`;
                     rowHtml += `</tr>`;
-                    
+
                     bodyHtml += rowHtml;
                 });
 
@@ -293,7 +296,7 @@
                 bodyHtml += `
                     <tr class="bg-gray-200 text-black font-bold border-b border-slate-400">
                         <td colspan="3" class="border border-slate-400 px-2 py-1 text-center">Jumlah ${croLabel}</td>`;
-                
+
                 jamHeaders.forEach(j => {
                     bodyHtml += `<td class="border border-slate-400 px-1.5 py-1 text-center">${fmt(croTotal[j])}</td>`;
                 });
