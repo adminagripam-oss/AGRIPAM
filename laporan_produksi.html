@@ -1710,10 +1710,11 @@
               }
             }
 
-            // Validasi — pastikan ada minimal 1 regional yang terbaca
-            const hasData = Object.values(parsedTotals).some(v => v > 0);
-            if (!hasData) {
-              alert("Tidak ada data produksi yang terbaca dari file Excel ini. Pastikan file yang diunggah adalah Export LHP PalmOps yang valid.");
+            // Validasi ringan — pastikan ada minimal 1 regional yang terdeteksi
+            // (tidak blokir jika ada regional yang kebetulan 0 pada hari tersebut)
+            const regionCount = Object.keys(parsedTotals).length;
+            if (regionCount === 0) {
+              alert("Tidak ada regional yang terdeteksi dari file Excel ini. Pastikan file yang diunggah adalah Export LHP PalmOps yang valid.");
               return;
             }
 
@@ -1752,6 +1753,9 @@
       const handleInputChange = (e) => {
         if (e.target.files && e.target.files[0]) {
           handleFile(e.target.files[0]);
+          // Reset value supaya file yang SAMA bisa dipilih ulang
+          // (tanpa ini, onChange tidak trigger jika filename identik)
+          e.target.value = '';
         }
       };
 
@@ -1788,6 +1792,8 @@
             setExcelData(null);
             setExcelDate("");
             setFileName("");
+            // Reset file input agar file yang sama bisa diupload ulang
+            if (fileInputRef.current) fileInputRef.current.value = '';
           } else {
             alert(json.message);
           }
@@ -1825,6 +1831,8 @@
             setExcelData(null);
             setExcelDate("");
             setFileName("");
+            // Reset file input agar file yang sama LANGSUNG bisa diupload kembali
+            if (fileInputRef.current) fileInputRef.current.value = '';
           } else {
             alert(json.message);
           }
