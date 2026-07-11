@@ -1487,6 +1487,7 @@
       'sumbar': 'Sumatera Barat',
       'sumsel': 'Sumatera Selatan',
       'kalut': 'Kalimantan Utara',
+      'kaltara': 'Kalimantan Utara',
       'kaltim': 'Kalimantan Timur'
     };
 
@@ -1513,12 +1514,42 @@
     // ============================================================
     // VALIDATION PANEL COMPONENT
     // ============================================================
-    function ValidationPanel({ realisasiRecords, regionalDetails, selectedDate }) {
+    function ValidationPanel({ realisasiRecords, regionalDetails, selectedDate, onDateChange }) {
       const [excelData, setExcelData] = useState(null);
+      const [excelDate, setExcelDate] = useState("");
+      const [dbPalmopsData, setDbPalmopsData] = useState(null);
       const [fileName, setFileName] = useState("");
       const [showOnlyMismatch, setShowOnlyMismatch] = useState(false);
       const [dragActive, setDragActive] = useState(false);
+      const [dbLoading, setDbLoading] = useState(false);
+      const [saving, setSaving] = useState(false);
       const fileInputRef = useRef(null);
+
+      // Fetch saved PalmOps data from DB on date change
+      useEffect(() => {
+        let active = true;
+        const fetchDbPalmops = async () => {
+          setDbLoading(true);
+          try {
+            const res = await fetch(`/api/palmops?action=get&tanggal=${selectedDate}`);
+            const json = await res.json();
+            if (active) {
+              if (json.success && json.data && Object.keys(json.data).length > 0) {
+                setDbPalmopsData(json.data);
+              } else {
+                setDbPalmopsData(null);
+              }
+            }
+          } catch (e) {
+            console.error(e);
+            if (active) setDbPalmopsData(null);
+          } finally {
+            if (active) setDbLoading(false);
+          }
+        };
+        fetchDbPalmops();
+        return () => { active = false; };
+      }, [selectedDate]);
 
       const handleFile = (file) => {
         if (!file) return;
@@ -1531,83 +1562,146 @@
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
             const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-            
-            let regionColIdx = -1;
-            let tonaseColIdx = -1;
-            let startRowIdx = 0;
-            
-            for (let r = 0; r < Math.min(rows.length, 15); r++) {
-              const row = rows[r];
-              if (!row || !Array.isArray(row)) continue;
-              for (let c = 0; c < row.length; c++) {
-                const val = (row[c] || '').toString().toLowerCase().trim();
-                if (val.includes('regional') || val.includes('wilayah') || val.includes('area') || val.includes('nama regional') || val.includes('pkh')) {
-                  regionColIdx = c;
-                }
-                if (val.includes('realisasi') || val.includes('tonase') || val.includes('ton') || val.includes('kg') || val.includes('hasil panen') || val.includes('total') || val.includes('jumlah')) {
-                  tonaseColIdx = c;
-                }
-              }
-              if (regionColIdx !== -1 && tonaseColIdx !== -1) {
-                startRowIdx = r + 1;
-                break;
+
+            // Extract Date from row 1 (Periode: Tanggal DD/MM/YYYY)
+            let parsedDateStr = "";
+            const row1 = rows[1] ? rows[1][0] : "";
+            if (row1 && typeof row1 === 'string') {
+              const match = row1.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+              if (match) {
+                parsedDateStr = `${match[3]}-${match[2]}-${match[1]}`;
               }
             }
+            setExcelDate(parsedDateStr);
             
-            if (regionColIdx === -1 || tonaseColIdx === -1) {
-              for (let r = 0; r < rows.length; r++) {
+            // Detect if this is the PalmOps LHP Excel sheet format
+            let isLHP = false;
+            if (rows[0] && rows[0][0] && rows[0][0].toString().includes("LAPORAN PRODUKSI HARIAN")) {
+              isLHP = true;
+            }
+
+            const parsedTotals = {};
+
+            if (isLHP) {
+              // Direct cell coordinate mapping from PalmOps LHP Excel export (G is index 6)
+              const cellMapping = {
+                'Aceh': 14,
+                'Sumatera Utara 1': 38,
+                'Sumatera Utara 2 Ex Torganda': 49,
+                'Riau 1': 72,
+                'Riau 2': 183,
+                'Riau 3': 212,
+                'Riau 4': 219,
+                'Bangka Belitung': 222,
+                'Jambi': 249,
+                'Sumatera Barat': 255,
+                'Sumatera Selatan': 310,
+                'Kalimantan Barat 1': 373,
+                'Kalimantan Barat 2': 423,
+                'Kalimantan Selatan 1': 431,
+                'Kalimantan Selatan 2': 444,
+                'Kalimantan Timur': 499,
+                'Kalimantan Utara': 448,
+                'Kalimantan Tengah 1': 604,
+                'Kalimantan Tengah 2': 726,
+                'Kalimantan Tengah 3': 659,
+                'Sulawesi Tenggara': 758,
+                'Sulawesi Tengah': 747
+              };
+
+              for (const [region, rowIdx] of Object.entries(cellMapping)) {
+                if (rows[rowIdx] && rows[rowIdx][6] !== undefined) {
+                  let val = parseFloat(rows[rowIdx][6]);
+                  if (isNaN(val)) val = 0;
+                  // LHP values are in Kg, convert to Tons
+                  parsedTotals[region] = val / 1000;
+                } else {
+                  parsedTotals[region] = 0;
+                }
+              }
+            } else {
+              // Fallback dynamic detection
+              let regionColIdx = -1;
+              let tonaseColIdx = -1;
+              let startRowIdx = 0;
+
+              for (let r = 0; r < Math.min(rows.length, 15); r++) {
                 const row = rows[r];
                 if (!row || !Array.isArray(row)) continue;
                 for (let c = 0; c < row.length; c++) {
-                  const val = row[c];
-                  if (val && findRegionMatch(val)) {
+                  const val = (row[c] || '').toString().toLowerCase().trim();
+                  if (val === 'regional' || val === 'nama regional') {
                     regionColIdx = c;
-                    for (let nc = c + 1; nc < row.length; nc++) {
-                      if (typeof row[nc] === 'number' || !isNaN(parseFloat(row[nc]))) {
-                        tonaseColIdx = nc;
-                        startRowIdx = r;
-                        break;
-                      }
-                    }
-                    break;
+                  }
+                  if ((val.includes('realisasi') || val.includes('tonase') || val.includes('ton') || val.includes('kg') || val.includes('produksi')) && val.includes('hari ini')) {
+                    tonaseColIdx = c;
                   }
                 }
-                if (regionColIdx !== -1 && tonaseColIdx !== -1) break;
+                if (regionColIdx !== -1 && tonaseColIdx !== -1) {
+                  startRowIdx = r + 1;
+                  break;
+                }
               }
-            }
-            
-            if (regionColIdx === -1 || tonaseColIdx === -1) {
-              alert("Gagal mendeteksi kolom Regional atau Realisasi Tonase dalam file Excel. Silakan periksa format file.");
-              return;
-            }
-            
-            const parsedTotals = {};
-            for (let r = startRowIdx; r < rows.length; r++) {
-              const row = rows[r];
-              if (!row || !Array.isArray(row)) continue;
-              const rawReg = row[regionColIdx];
-              const rawVal = row[tonaseColIdx];
-              if (!rawReg) continue;
               
-              const matchedRegion = findRegionMatch(rawReg);
-              if (matchedRegion) {
-                let valNum = parseFloat(rawVal);
-                if (isNaN(valNum)) valNum = 0;
-                
-                if (!parsedTotals[matchedRegion]) parsedTotals[matchedRegion] = 0;
-                parsedTotals[matchedRegion] += valNum;
+              if (regionColIdx === -1 || tonaseColIdx === -1) {
+                for (let r = 0; r < rows.length; r++) {
+                  const row = rows[r];
+                  if (!row || !Array.isArray(row)) continue;
+                  for (let c = 0; c < row.length; c++) {
+                    const val = row[c];
+                    if (val && findRegionMatch(val)) {
+                      regionColIdx = c;
+                      for (let nc = c + 1; nc < row.length; nc++) {
+                        if (typeof row[nc] === 'number' || !isNaN(parseFloat(row[nc]))) {
+                          tonaseColIdx = nc;
+                          startRowIdx = r;
+                          break;
+                        }
+                      }
+                      break;
+                    }
+                  }
+                  if (regionColIdx !== -1 && tonaseColIdx !== -1) break;
+                }
               }
-            }
-            
-            let isKg = false;
-            const values = Object.values(parsedTotals);
-            if (values.some(v => v > 5000) || values.reduce((sum, v) => sum + v, 0) > 10000) {
-              isKg = true;
-            }
-            
-            if (isKg) {
-              for (const reg in parsedTotals) {
-                parsedTotals[reg] = parsedTotals[reg] / 1000;
+              
+              if (regionColIdx === -1 || tonaseColIdx === -1) {
+                alert("Gagal mendeteksi kolom Regional atau Realisasi Tonase dalam file Excel. Silakan periksa format file.");
+                return;
+              }
+              
+              for (let r = startRowIdx; r < rows.length; r++) {
+                const row = rows[r];
+                if (!row || !Array.isArray(row)) continue;
+                const rawReg = row[regionColIdx];
+                const rawVal = row[tonaseColIdx];
+                if (!rawReg) continue;
+
+                const col0 = (row[0] || '').toString().trim();
+                if (col0.toLowerCase().startsWith('subtotal') || col0.toLowerCase().startsWith('total')) {
+                  continue;
+                }
+                
+                const matchedRegion = findRegionMatch(rawReg);
+                if (matchedRegion) {
+                  let valNum = parseFloat(rawVal);
+                  if (isNaN(valNum)) valNum = 0;
+                  
+                  if (!parsedTotals[matchedRegion]) parsedTotals[matchedRegion] = 0;
+                  parsedTotals[matchedRegion] += valNum;
+                }
+              }
+              
+              let isKg = false;
+              const values = Object.values(parsedTotals);
+              if (values.some(v => v > 5000) || values.reduce((sum, v) => sum + v, 0) > 10000) {
+                isKg = true;
+              }
+              
+              if (isKg) {
+                for (const reg in parsedTotals) {
+                  parsedTotals[reg] = parsedTotals[reg] / 1000;
+                }
               }
             }
             
@@ -1649,12 +1743,96 @@
         }
       };
 
+      const handleSaveToDb = async () => {
+        const dataToSave = excelData;
+        if (!dataToSave) return;
+        
+        setSaving(true);
+        try {
+          const sessionRaw = sessionStorage.getItem("agripam_session");
+          const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+          const token = session ? session.token : "";
+
+          const records = Object.keys(dataToSave).map(region => ({
+            region,
+            tonase: dataToSave[region]
+          }));
+
+          const res = await fetch('/api/palmops', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'save',
+              tanggal: selectedDate,
+              token,
+              records
+            })
+          });
+
+          const json = await res.json();
+          if (json.success) {
+            alert(json.message);
+            setDbPalmopsData(dataToSave);
+            setExcelData(null);
+            setExcelDate("");
+            setFileName("");
+          } else {
+            alert(json.message);
+          }
+        } catch (e) {
+          console.error(e);
+          alert("Gagal menyimpan ke database: " + e.message);
+        } finally {
+          setSaving(false);
+        }
+      };
+
+      const handleDeleteFromDb = async () => {
+        if (!confirm("Apakah Anda yakin ingin menghapus data PalmOps tanggal ini dari database?")) return;
+        
+        setSaving(true);
+        try {
+          const sessionRaw = sessionStorage.getItem("agripam_session");
+          const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+          const token = session ? session.token : "";
+
+          const res = await fetch('/api/palmops', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'delete',
+              tanggal: selectedDate,
+              token
+            })
+          });
+
+          const json = await res.json();
+          if (json.success) {
+            alert(json.message);
+            setDbPalmopsData(null);
+            setExcelData(null);
+            setExcelDate("");
+            setFileName("");
+          } else {
+            alert(json.message);
+          }
+        } catch (e) {
+          console.error(e);
+          alert("Gagal menghapus dari database: " + e.message);
+        } finally {
+          setSaving(false);
+        }
+      };
+
+      const activePalmopsSource = excelData || dbPalmopsData;
+      const isFromDb = !excelData && !!dbPalmopsData;
+
       const comparisonList = ALL_REGIONS.map(region => {
         const agripamTotal = (realisasiRecords || [])
           .filter(r => r.region === region)
           .reduce((sum, r) => sum + (parseFloat(r.tonase) || 0), 0);
         
-        const palmopsTotal = excelData ? (excelData[region] || 0) : null;
+        const palmopsTotal = activePalmopsSource ? (activePalmopsSource[region] || 0) : null;
         const hasExcelVal = palmopsTotal !== null;
         
         let selisih = null;
@@ -1676,8 +1854,8 @@
       });
 
       const totalAgripam = comparisonList.reduce((sum, r) => sum + r.agripam, 0);
-      const totalPalmops = excelData ? comparisonList.reduce((sum, r) => sum + r.palmops, 0) : 0;
-      const totalSelisih = excelData ? (totalAgripam - totalPalmops) : 0;
+      const totalPalmops = activePalmopsSource ? comparisonList.reduce((sum, r) => sum + r.palmops, 0) : 0;
+      const totalSelisih = activePalmopsSource ? (totalAgripam - totalPalmops) : 0;
 
       const filteredList = showOnlyMismatch 
         ? comparisonList.filter(r => r.status === 'MISMATCH') 
@@ -1686,71 +1864,158 @@
       const totalMismatch = comparisonList.filter(r => r.status === 'MISMATCH').length;
       const matchCount = comparisonList.filter(r => r.status === 'MATCH').length;
       
-      const overallStatus = !excelData ? 'AWAITING_UPLOAD' 
+      const overallStatus = !activePalmopsSource ? 'AWAITING_UPLOAD' 
         : totalMismatch === 0 ? 'ALL_MATCH' 
         : 'MISMATCH_FOUND';
 
       return (
         <div className="space-y-5 animate-fadeIn">
+          {/* Header Card */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
             <div>
               <h2 className="text-lg font-bold text-slate-800 dark:text-white">Validasi Data Produksi Harian</h2>
               <p className="text-xs text-slate-450 dark:text-slate-400">Membandingkan realisasi database AGRI-PAM vs Excel LHP PalmOps</p>
             </div>
+            
+            {/* Interactive Date Picker */}
             <div className="flex items-center gap-2 bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-900 rounded-lg px-3 py-1.5 w-fit">
               <Icon name="calendar" size={14} className="text-brand-600 dark:text-brand-400" />
-              <span className="text-[12px] font-bold text-brand-800 dark:text-brand-200">Tanggal Evaluasi: {formatIndoDate(selectedDate)}</span>
+              <label className="text-[12px] font-bold text-brand-850 dark:text-brand-200 cursor-pointer flex items-center gap-1.5">
+                Tanggal Evaluasi:
+                <input 
+                  type="date" 
+                  value={selectedDate}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      onDateChange(e.target.value);
+                      setExcelData(null);
+                      setExcelDate("");
+                      setFileName("");
+                    }
+                  }}
+                  className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer"
+                  style={{ colorScheme: 'light' }}
+                />
+              </label>
             </div>
           </div>
 
-          <div 
-            onDragEnter={handleDrag} 
-            onDragOver={handleDrag} 
-            onDragLeave={handleDrag} 
-            onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-xl p-8 text-center bg-white dark:bg-slate-800 transition-all shadow-sm relative ${
-              dragActive ? 'border-brand-500 bg-brand-50/20' : 'border-slate-300 dark:border-slate-700 hover:border-brand-400'
-            }`}
-          >
-            <input 
-              ref={fileInputRef}
-              type="file" 
-              accept=".xlsx, .xls" 
-              onChange={handleInputChange} 
-              className="hidden"
-            />
-            
-            <div className="flex flex-col items-center justify-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center text-brand-600 dark:text-brand-400 shadow-sm border border-brand-100 dark:border-brand-900">
-                <Icon name={excelData ? "file-check" : "file-up"} size={22} />
-              </div>
-              <div>
-                <p className="text-[14px] font-bold text-slate-700 dark:text-white">
-                  {excelData ? `File aktif: ${fileName}` : "Tarik dan lepas file Excel PalmOps di sini"}
-                </p>
-                <p className="text-[11px] text-slate-400 mt-1">Format file harus berupa Excel LHP (.xlsx / .xls) dari dashboard PalmOps</p>
-              </div>
-              <div className="flex gap-2">
-                <button 
-                  onClick={onButtonClick}
-                  className="bg-brand-600 hover:bg-brand-700 text-white text-[12px] font-semibold px-4 py-2 rounded-lg shadow transition-colors flex items-center gap-1.5"
-                >
-                  <Icon name="folder-open" size={13} />
-                  Pilih File Excel
-                </button>
-                {excelData && (
+          {/* Upload / Source Status Area */}
+          {dbLoading ? (
+            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-8 bg-white dark:bg-slate-800 text-center shadow-sm">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mx-auto"></div>
+              <p className="text-[12px] text-slate-500 mt-2">Memeriksa database...</p>
+            </div>
+          ) : isFromDb ? (
+            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-6 bg-white dark:bg-slate-800 shadow-sm">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-50 dark:bg-green-950/50 flex items-center justify-center text-green-600 dark:text-green-400 border border-green-200 dark:border-green-900">
+                    <Icon name="database" size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-white">Data PalmOps Terpenuhi dari Database</h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Menampilkan perbandingan data yang sudah tersimpan di database.</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
                   <button 
-                    onClick={() => { setExcelData(null); setFileName(""); }}
-                    className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-white text-[12px] font-semibold px-4 py-2 rounded-lg transition-colors"
+                    onClick={onButtonClick}
+                    className="bg-brand-600 hover:bg-brand-700 text-white text-[12px] font-semibold px-4 py-2 rounded-lg shadow transition-colors flex items-center gap-1.5"
                   >
-                    Hapus
+                    <Icon name="refresh-cw" size={13} />
+                    Perbarui dengan Excel
                   </button>
-                )}
+                  <button 
+                    onClick={handleDeleteFromDb}
+                    disabled={saving}
+                    className="bg-red-650 hover:bg-red-750 text-white text-[12px] font-semibold px-4 py-2 rounded-lg shadow transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    <Icon name="trash-2" size={13} />
+                    {saving ? "Menghapus..." : "Hapus Data Database"}
+                  </button>
+                  <input 
+                    ref={fileInputRef}
+                    type="file" 
+                    accept=".xlsx, .xls" 
+                    onChange={handleInputChange} 
+                    className="hidden"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div 
+              onDragEnter={handleDrag} 
+              onDragOver={handleDrag} 
+              onDragLeave={handleDrag} 
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-xl p-8 text-center bg-white dark:bg-slate-800 transition-all shadow-sm relative ${
+                dragActive ? 'border-brand-500 bg-brand-50/20' : 'border-slate-300 dark:border-slate-700 hover:border-brand-400'
+              }`}
+            >
+              <input 
+                ref={fileInputRef}
+                type="file" 
+                accept=".xlsx, .xls" 
+                onChange={handleInputChange} 
+                className="hidden"
+              />
+              
+              <div className="flex flex-col items-center justify-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center text-brand-600 dark:text-brand-400 shadow-sm border border-brand-100 dark:border-brand-900">
+                  <Icon name={excelData ? "file-check" : "file-up"} size={22} />
+                </div>
+                <div>
+                  <p className="text-[14px] font-bold text-slate-700 dark:text-white">
+                    {excelData ? `File aktif: ${fileName}` : "Tarik dan lepas file Excel LHP PalmOps di sini"}
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-1">Format file harus berupa Excel LHP (.xlsx / .xls) dari dashboard PalmOps</p>
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={onButtonClick}
+                    className="bg-brand-600 hover:bg-brand-700 text-white text-[12px] font-semibold px-4 py-2 rounded-lg shadow transition-colors flex items-center gap-1.5"
+                  >
+                    <Icon name="folder-open" size={13} />
+                    Pilih File Excel
+                  </button>
+                  {excelData && (
+                    <>
+                      <button 
+                        onClick={handleSaveToDb}
+                        disabled={saving}
+                        className="bg-green-600 hover:bg-green-700 text-white text-[12px] font-semibold px-4 py-2 rounded-lg shadow transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        <Icon name="save" size={13} />
+                        {saving ? "Menyimpan..." : "Simpan ke Database"}
+                      </button>
+                      <button 
+                        onClick={() => { setExcelData(null); setExcelDate(""); setFileName(""); }}
+                        className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-white text-[12px] font-semibold px-4 py-2 rounded-lg transition-colors"
+                      >
+                        Batal
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
-          {excelData && (
+          {/* Date Mismatch Warning Banner */}
+          {excelData && excelDate && excelDate !== selectedDate && (
+            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-xl p-4 flex items-start gap-3 text-amber-800 dark:text-amber-300 animate-fadeIn">
+              <Icon name="alert-triangle" size={18} className="flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-[13px] font-bold">Peringatan: Perbedaan Tanggal Laporan!</h4>
+                <p className="text-[11px] mt-1">Tanggal laporan pada file Excel yang diunggah (<b>{formatIndoDate(excelDate)}</b>) berbeda dengan Tanggal Evaluasi aktif (<b>{formatIndoDate(selectedDate)}</b>).</p>
+                <p className="text-[11px] mt-0.5">Pastikan Anda mengunggah file laporan yang sesuai atau ubah Tanggal Evaluasi di atas sebelum menyimpan data.</p>
+              </div>
+            </div>
+          )}
+
+          {activePalmopsSource && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
                 <div className="w-10 h-10 rounded-lg bg-green-50 dark:bg-green-950/30 flex items-center justify-center text-green-600 dark:text-green-400">
@@ -1804,7 +2069,7 @@
                 <Icon name="list" size={14} className="text-slate-500" />
                 <span className="text-[13px] font-bold text-slate-700 dark:text-white">Rincian Perbandingan Regional</span>
               </div>
-              {excelData && (
+              {activePalmopsSource && (
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => setShowOnlyMismatch(!showOnlyMismatch)}
@@ -1865,9 +2130,9 @@
                         <td className="px-4 py-2.5 text-center font-medium text-slate-400">{idx + 1}</td>
                         <td className="px-4 py-2.5 font-bold text-slate-700 dark:text-slate-200 text-left">{row.region}</td>
                         <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-slate-800 dark:text-white">{formatRibuan(row.agripam)}</td>
-                        <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-slate-850 dark:text-slate-100">{excelData ? formatRibuan(row.palmops) : "-"}</td>
+                        <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-slate-850 dark:text-slate-100">{activePalmopsSource ? formatRibuan(row.palmops) : "-"}</td>
                         <td className={`px-4 py-2.5 text-right font-bold tabular-nums ${hasDiff ? 'text-red-600 dark:text-red-400' : 'text-green-600'}`}>
-                          {excelData ? (row.selisih > 0 ? `+${formatRibuan(row.selisih)}` : formatRibuan(row.selisih)) : "-"}
+                          {activePalmopsSource ? (row.selisih > 0 ? `+${formatRibuan(row.selisih)}` : formatRibuan(row.selisih)) : "-"}
                         </td>
                         <td className="px-4 py-2.5 text-center">{statusBadge}</td>
                       </tr>
@@ -1877,12 +2142,12 @@
                   <tr className="bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 font-bold">
                     <td colSpan={2} className="px-4 py-3 text-center text-[13px] text-slate-700 dark:text-white uppercase tracking-wider">Total Nasional</td>
                     <td className="px-4 py-3 text-right text-[13px] tabular-nums text-slate-800 dark:text-white">{formatRibuan(totalAgripam)}</td>
-                    <td className="px-4 py-3 text-right text-[13px] tabular-nums text-slate-850 dark:text-slate-100">{excelData ? formatRibuan(totalPalmops) : "-"}</td>
-                    <td className={`px-4 py-3 text-right text-[13px] tabular-nums ${excelData && Math.abs(totalSelisih) >= 0.1 ? 'text-red-650 dark:text-red-400' : 'text-green-600'}`}>
-                      {excelData ? (totalSelisih > 0 ? `+${formatRibuan(totalSelisih)}` : formatRibuan(totalSelisih)) : "-"}
+                    <td className="px-4 py-3 text-right text-[13px] tabular-nums text-slate-850 dark:text-slate-100">{activePalmopsSource ? formatRibuan(totalPalmops) : "-"}</td>
+                    <td className={`px-4 py-3 text-right text-[13px] tabular-nums ${activePalmopsSource && Math.abs(totalSelisih) >= 0.1 ? 'text-red-650 dark:text-red-400' : 'text-green-600'}`}>
+                      {activePalmopsSource ? (totalSelisih > 0 ? `+${formatRibuan(totalSelisih)}` : formatRibuan(totalSelisih)) : "-"}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {excelData ? (
+                      {activePalmopsSource ? (
                         Math.abs(totalSelisih) < 0.1 ? (
                           <span className="text-[11px] text-green-600 font-bold flex items-center justify-center gap-1 w-fit mx-auto"><Icon name="check-check" size={13} /> Pas</span>
                         ) : (
@@ -2020,6 +2285,7 @@
                     realisasiRecords={realisasiRecords}
                     regionalDetails={regionalDetails}
                     selectedDate={filters.tanggal}
+                    onDateChange={(newDate) => setFilters(prev => ({ ...prev, tanggal: newDate }))}
                   />
                 ) : (
                   <>

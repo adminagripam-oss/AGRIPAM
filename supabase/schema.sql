@@ -219,3 +219,32 @@ CREATE TABLE IF NOT EXISTS delete_requests (
 CREATE INDEX IF NOT EXISTS idx_delete_req_status ON delete_requests(status);
 CREATE INDEX IF NOT EXISTS idx_delete_req_region ON delete_requests(region);
 
+-- ============================================================
+-- 12. TABEL: database_palmops (Data realisasi dari PalmOps)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS database_palmops (
+  id          BIGSERIAL PRIMARY KEY,
+  tanggal     DATE NOT NULL,
+  region      VARCHAR(100) NOT NULL,
+  tonase      NUMERIC(10,2) NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT unique_palmops_tanggal_region UNIQUE (tanggal, region)
+);
+
+ALTER TABLE database_palmops ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE tablename = 'database_palmops' AND policyname = 'block_public'
+    ) THEN
+        CREATE POLICY "block_public" ON database_palmops FOR ALL USING (false);
+    END IF;
+END
+$$;
+
+CREATE INDEX IF NOT EXISTS idx_palmops_tanggal ON database_palmops(tanggal);
+CREATE INDEX IF NOT EXISTS idx_palmops_region ON database_palmops(region);
+
+
