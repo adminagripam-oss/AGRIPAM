@@ -125,6 +125,9 @@
   <!-- Lucide Icons (via unpkg) -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- SheetJS for client-side Excel Parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <style>
     html,
     body,
@@ -636,7 +639,8 @@
               </div>
             )}
             <div className="space-y-0.5 px-1">
-              <NavItem icon="layout-dashboard" label="PANEN MONITORING" active={activeNav === 'dashboard'} onClick={() => setActiveNav('dashboard')} collapsed={collapsed} />
+              <NavItem icon="layout-dashboard" label="PANEN MONITORING" active={activeNav === 'dashboard' || activeNav === 'laporan-jam'} onClick={() => setActiveNav('dashboard')} collapsed={collapsed} />
+              <NavItem icon="check-square" label="VALIDASI DATA" active={activeNav === 'validasi'} onClick={() => setActiveNav('validasi')} collapsed={collapsed} />
               <NavItem icon="trending-up" label="Estimasi Panen" active={activeNav === 'estimasi'} onClick={() => window.location.href = 'login.html?show=infografis'} collapsed={collapsed} />
               <NavItem icon="archive" label="SAP Persuratan (Arsip)" active={activeNav === 'sap'} onClick={() => window.location.href = 'sap_admin.html'} collapsed={collapsed} />
             </div>
@@ -1467,6 +1471,441 @@
       });
     };
 
+    const REGION_ALIASES = {
+      'sumut 1': 'Sumatera Utara 1',
+      'sumut 2': 'Sumatera Utara 2 Ex Torganda',
+      'kalbar 1': 'Kalimantan Barat 1',
+      'kalbar 2': 'Kalimantan Barat 2',
+      'kalsel 1': 'Kalimantan Selatan 1',
+      'kalsel 2': 'Kalimantan Selatan 2',
+      'kalteng 1': 'Kalimantan Tengah 1',
+      'kalteng 2': 'Kalimantan Tengah 2',
+      'kalteng 3': 'Kalimantan Tengah 3',
+      'sulteng': 'Sulawesi Tengah',
+      'sultra': 'Sulawesi Tenggara',
+      'babel': 'Bangka Belitung',
+      'sumbar': 'Sumatera Barat',
+      'sumsel': 'Sumatera Selatan',
+      'kalut': 'Kalimantan Utara',
+      'kaltim': 'Kalimantan Timur'
+    };
+
+    function findRegionMatch(rawName) {
+      if (!rawName) return null;
+      const cleanRaw = rawName.toString().toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+      for (const [alias, official] of Object.entries(REGION_ALIASES)) {
+        const cleanAlias = alias.replace(/[^a-z0-9]/g, '');
+        if (cleanRaw === cleanAlias) return official;
+      }
+      for (const official of ALL_REGIONS) {
+        const cleanOfficial = official.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+        const cleanOfficialNoTorganda = official.toLowerCase().replace(/\bex torganda\b/g, '').replace(/[^a-z0-9]/g, '').trim();
+        if (cleanRaw === cleanOfficial || 
+            cleanRaw === cleanOfficialNoTorganda ||
+            cleanRaw.includes(cleanOfficialNoTorganda) || 
+            cleanOfficialNoTorganda.includes(cleanRaw)) {
+          return official;
+        }
+      }
+      return null;
+    }
+
+    // ============================================================
+    // VALIDATION PANEL COMPONENT
+    // ============================================================
+    function ValidationPanel({ realisasiRecords, regionalDetails, selectedDate }) {
+      const [excelData, setExcelData] = useState(null);
+      const [fileName, setFileName] = useState("");
+      const [showOnlyMismatch, setShowOnlyMismatch] = useState(false);
+      const [dragActive, setDragActive] = useState(false);
+      const fileInputRef = useRef(null);
+
+      const handleFile = (file) => {
+        if (!file) return;
+        setFileName(file.name);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            let regionColIdx = -1;
+            let tonaseColIdx = -1;
+            let startRowIdx = 0;
+            
+            for (let r = 0; r < Math.min(rows.length, 15); r++) {
+              const row = rows[r];
+              if (!row || !Array.isArray(row)) continue;
+              for (let c = 0; c < row.length; c++) {
+                const val = (row[c] || '').toString().toLowerCase().trim();
+                if (val.includes('regional') || val.includes('wilayah') || val.includes('area') || val.includes('nama regional') || val.includes('pkh')) {
+                  regionColIdx = c;
+                }
+                if (val.includes('realisasi') || val.includes('tonase') || val.includes('ton') || val.includes('kg') || val.includes('hasil panen') || val.includes('total') || val.includes('jumlah')) {
+                  tonaseColIdx = c;
+                }
+              }
+              if (regionColIdx !== -1 && tonaseColIdx !== -1) {
+                startRowIdx = r + 1;
+                break;
+              }
+            }
+            
+            if (regionColIdx === -1 || tonaseColIdx === -1) {
+              for (let r = 0; r < rows.length; r++) {
+                const row = rows[r];
+                if (!row || !Array.isArray(row)) continue;
+                for (let c = 0; c < row.length; c++) {
+                  const val = row[c];
+                  if (val && findRegionMatch(val)) {
+                    regionColIdx = c;
+                    for (let nc = c + 1; nc < row.length; nc++) {
+                      if (typeof row[nc] === 'number' || !isNaN(parseFloat(row[nc]))) {
+                        tonaseColIdx = nc;
+                        startRowIdx = r;
+                        break;
+                      }
+                    }
+                    break;
+                  }
+                }
+                if (regionColIdx !== -1 && tonaseColIdx !== -1) break;
+              }
+            }
+            
+            if (regionColIdx === -1 || tonaseColIdx === -1) {
+              alert("Gagal mendeteksi kolom Regional atau Realisasi Tonase dalam file Excel. Silakan periksa format file.");
+              return;
+            }
+            
+            const parsedTotals = {};
+            for (let r = startRowIdx; r < rows.length; r++) {
+              const row = rows[r];
+              if (!row || !Array.isArray(row)) continue;
+              const rawReg = row[regionColIdx];
+              const rawVal = row[tonaseColIdx];
+              if (!rawReg) continue;
+              
+              const matchedRegion = findRegionMatch(rawReg);
+              if (matchedRegion) {
+                let valNum = parseFloat(rawVal);
+                if (isNaN(valNum)) valNum = 0;
+                
+                if (!parsedTotals[matchedRegion]) parsedTotals[matchedRegion] = 0;
+                parsedTotals[matchedRegion] += valNum;
+              }
+            }
+            
+            let isKg = false;
+            const values = Object.values(parsedTotals);
+            if (values.some(v => v > 5000) || values.reduce((sum, v) => sum + v, 0) > 10000) {
+              isKg = true;
+            }
+            
+            if (isKg) {
+              for (const reg in parsedTotals) {
+                parsedTotals[reg] = parsedTotals[reg] / 1000;
+              }
+            }
+            
+            setExcelData(parsedTotals);
+          } catch (err) {
+            console.error(err);
+            alert("Terjadi kesalahan saat membaca file Excel: " + err.message);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      };
+
+      const handleDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+          setDragActive(true);
+        } else if (e.type === "dragleave") {
+          setDragActive(false);
+        }
+      };
+
+      const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handleFile(e.dataTransfer.files[0]);
+        }
+      };
+
+      const onButtonClick = () => {
+        fileInputRef.current.click();
+      };
+
+      const handleInputChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handleFile(e.target.files[0]);
+        }
+      };
+
+      const comparisonList = ALL_REGIONS.map(region => {
+        const agripamTotal = (realisasiRecords || [])
+          .filter(r => r.region === region)
+          .reduce((sum, r) => sum + (parseFloat(r.tonase) || 0), 0);
+        
+        const palmopsTotal = excelData ? (excelData[region] || 0) : null;
+        const hasExcelVal = palmopsTotal !== null;
+        
+        let selisih = null;
+        let status = 'NO_DATA';
+        
+        if (hasExcelVal) {
+          selisih = agripamTotal - palmopsTotal;
+          status = Math.abs(selisih) < 0.05 ? 'MATCH' : 'MISMATCH';
+        }
+        
+        return {
+          region,
+          agripam: Math.round(agripamTotal * 100) / 100,
+          palmops: hasExcelVal ? Math.round(palmopsTotal * 100) / 100 : 0,
+          selisih: hasExcelVal ? Math.round(selisih * 100) / 100 : 0,
+          status,
+          hasExcelVal
+        };
+      });
+
+      const totalAgripam = comparisonList.reduce((sum, r) => sum + r.agripam, 0);
+      const totalPalmops = excelData ? comparisonList.reduce((sum, r) => sum + r.palmops, 0) : 0;
+      const totalSelisih = excelData ? (totalAgripam - totalPalmops) : 0;
+
+      const filteredList = showOnlyMismatch 
+        ? comparisonList.filter(r => r.status === 'MISMATCH') 
+        : comparisonList;
+
+      const totalMismatch = comparisonList.filter(r => r.status === 'MISMATCH').length;
+      const matchCount = comparisonList.filter(r => r.status === 'MATCH').length;
+      
+      const overallStatus = !excelData ? 'AWAITING_UPLOAD' 
+        : totalMismatch === 0 ? 'ALL_MATCH' 
+        : 'MISMATCH_FOUND';
+
+      return (
+        <div className="space-y-5 animate-fadeIn">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
+            <div>
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Validasi Data Produksi Harian</h2>
+              <p className="text-xs text-slate-450 dark:text-slate-400">Membandingkan realisasi database AGRI-PAM vs Excel LHP PalmOps</p>
+            </div>
+            <div className="flex items-center gap-2 bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-900 rounded-lg px-3 py-1.5 w-fit">
+              <Icon name="calendar" size={14} className="text-brand-600 dark:text-brand-400" />
+              <span className="text-[12px] font-bold text-brand-800 dark:text-brand-200">Tanggal Evaluasi: {formatIndoDate(selectedDate)}</span>
+            </div>
+          </div>
+
+          <div 
+            onDragEnter={handleDrag} 
+            onDragOver={handleDrag} 
+            onDragLeave={handleDrag} 
+            onDrop={handleDrop}
+            className={`border-2 border-dashed rounded-xl p-8 text-center bg-white dark:bg-slate-800 transition-all shadow-sm relative ${
+              dragActive ? 'border-brand-500 bg-brand-50/20' : 'border-slate-300 dark:border-slate-700 hover:border-brand-400'
+            }`}
+          >
+            <input 
+              ref={fileInputRef}
+              type="file" 
+              accept=".xlsx, .xls" 
+              onChange={handleInputChange} 
+              className="hidden"
+            />
+            
+            <div className="flex flex-col items-center justify-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center text-brand-600 dark:text-brand-400 shadow-sm border border-brand-100 dark:border-brand-900">
+                <Icon name={excelData ? "file-check" : "file-up"} size={22} />
+              </div>
+              <div>
+                <p className="text-[14px] font-bold text-slate-700 dark:text-white">
+                  {excelData ? `File aktif: ${fileName}` : "Tarik dan lepas file Excel PalmOps di sini"}
+                </p>
+                <p className="text-[11px] text-slate-400 mt-1">Format file harus berupa Excel LHP (.xlsx / .xls) dari dashboard PalmOps</p>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={onButtonClick}
+                  className="bg-brand-600 hover:bg-brand-700 text-white text-[12px] font-semibold px-4 py-2 rounded-lg shadow transition-colors flex items-center gap-1.5"
+                >
+                  <Icon name="folder-open" size={13} />
+                  Pilih File Excel
+                </button>
+                {excelData && (
+                  <button 
+                    onClick={() => { setExcelData(null); setFileName(""); }}
+                    className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-white text-[12px] font-semibold px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Hapus
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {excelData && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-lg bg-green-50 dark:bg-green-950/30 flex items-center justify-center text-green-600 dark:text-green-400">
+                  <Icon name="database" size={20} />
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total AGRI-PAM</div>
+                  <div className="text-lg font-bold text-slate-800 dark:text-white tabular-nums">{formatRibuan(totalAgripam)} <span className="text-[11px] font-semibold text-slate-400">Ton</span></div>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                  <Icon name="file-spreadsheet" size={20} />
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total PalmOps</div>
+                  <div className="text-lg font-bold text-slate-800 dark:text-white tabular-nums">{formatRibuan(totalPalmops)} <span className="text-[11px] font-semibold text-slate-400">Ton</span></div>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${Math.abs(totalSelisih) < 0.1 ? 'bg-green-55 bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400' : 'bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400'}`}>
+                  <Icon name="percent" size={20} />
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Selisih Kumulatif</div>
+                  <div className={`text-lg font-bold tabular-nums ${Math.abs(totalSelisih) < 0.1 ? 'text-green-600' : 'text-red-600'}`}>
+                    {totalSelisih > 0 ? "+" : ""}{formatRibuan(totalSelisih)} <span className="text-[11px] font-semibold">Ton</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${overallStatus === 'ALL_MATCH' ? 'bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400'}`}>
+                  <Icon name={overallStatus === 'ALL_MATCH' ? "check-circle-2" : "alert-triangle"} size={20} />
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status Validasi</div>
+                  <div className={`text-[13px] font-bold ${overallStatus === 'ALL_MATCH' ? 'text-green-600' : 'text-amber-600'}`}>
+                    {overallStatus === 'ALL_MATCH' ? 'Data 100% Sesuai' : `${totalMismatch} Regional Selisih`}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-800/50">
+              <div className="flex items-center gap-2">
+                <Icon name="list" size={14} className="text-slate-500" />
+                <span className="text-[13px] font-bold text-slate-700 dark:text-white">Rincian Perbandingan Regional</span>
+              </div>
+              {excelData && (
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => setShowOnlyMismatch(!showOnlyMismatch)}
+                    className={`text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-colors flex items-center gap-1 ${
+                      showOnlyMismatch 
+                        ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:border-red-900' 
+                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:hover:bg-slate-650'
+                    }`}
+                  >
+                    <Icon name="filter" size={11} />
+                    {showOnlyMismatch ? "Tampilkan Semua" : "Hanya Selisih"}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-[12px] whitespace-nowrap">
+                <thead>
+                  <tr className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 text-slate-500 font-semibold text-center uppercase tracking-wider">
+                    <th className="px-4 py-3 w-12 text-center">No</th>
+                    <th className="px-4 py-3 text-left">Nama Regional</th>
+                    <th className="px-4 py-3 text-right">Realisasi AGRI-PAM (Ton)</th>
+                    <th className="px-4 py-3 text-right">Realisasi PalmOps (Ton)</th>
+                    <th className="px-4 py-3 text-right">Selisih (Ton)</th>
+                    <th className="px-4 py-3 w-32 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-150 dark:divide-slate-750">
+                  {filteredList.map((row, idx) => {
+                    const hasDiff = row.status === 'MISMATCH';
+                    const isMatched = row.status === 'MATCH';
+                    
+                    let statusBadge = (
+                      <span className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold px-2 py-0.5 rounded-full uppercase">Belum Ada Data</span>
+                    );
+                    if (isMatched) {
+                      statusBadge = (
+                        <span className="text-[10px] bg-green-500 text-white font-bold px-2.5 py-0.5 rounded-full uppercase flex items-center justify-center gap-1 w-fit mx-auto shadow-sm">
+                          <Icon name="check" size={10} /> Sesuai
+                        </span>
+                      );
+                    } else if (hasDiff) {
+                      statusBadge = (
+                        <span className="text-[10px] bg-red-500 text-white font-bold px-2.5 py-0.5 rounded-full uppercase flex items-center justify-center gap-1 w-fit mx-auto shadow-sm animate-pulse">
+                          <Icon name="x" size={10} /> Selisih
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <tr 
+                        key={row.region} 
+                        className={`hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${
+                          hasDiff ? 'bg-red-500/5 dark:bg-red-950/10' : ''
+                        }`}
+                      >
+                        <td className="px-4 py-2.5 text-center font-medium text-slate-400">{idx + 1}</td>
+                        <td className="px-4 py-2.5 font-bold text-slate-700 dark:text-slate-200 text-left">{row.region}</td>
+                        <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-slate-800 dark:text-white">{formatRibuan(row.agripam)}</td>
+                        <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-slate-850 dark:text-slate-100">{excelData ? formatRibuan(row.palmops) : "-"}</td>
+                        <td className={`px-4 py-2.5 text-right font-bold tabular-nums ${hasDiff ? 'text-red-600 dark:text-red-400' : 'text-green-600'}`}>
+                          {excelData ? (row.selisih > 0 ? `+${formatRibuan(row.selisih)}` : formatRibuan(row.selisih)) : "-"}
+                        </td>
+                        <td className="px-4 py-2.5 text-center">{statusBadge}</td>
+                      </tr>
+                    );
+                  })}
+                  
+                  <tr className="bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 font-bold">
+                    <td colSpan={2} className="px-4 py-3 text-center text-[13px] text-slate-700 dark:text-white uppercase tracking-wider">Total Nasional</td>
+                    <td className="px-4 py-3 text-right text-[13px] tabular-nums text-slate-800 dark:text-white">{formatRibuan(totalAgripam)}</td>
+                    <td className="px-4 py-3 text-right text-[13px] tabular-nums text-slate-850 dark:text-slate-100">{excelData ? formatRibuan(totalPalmops) : "-"}</td>
+                    <td className={`px-4 py-3 text-right text-[13px] tabular-nums ${excelData && Math.abs(totalSelisih) >= 0.1 ? 'text-red-650 dark:text-red-400' : 'text-green-600'}`}>
+                      {excelData ? (totalSelisih > 0 ? `+${formatRibuan(totalSelisih)}` : formatRibuan(totalSelisih)) : "-"}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {excelData ? (
+                        Math.abs(totalSelisih) < 0.1 ? (
+                          <span className="text-[11px] text-green-600 font-bold flex items-center justify-center gap-1 w-fit mx-auto"><Icon name="check-check" size={13} /> Pas</span>
+                        ) : (
+                          <span className="text-[11px] text-red-600 font-bold flex items-center justify-center gap-1 w-fit mx-auto"><Icon name="alert-circle" size={13} /> Selisih</span>
+                        )
+                      ) : "-"}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            {filteredList.length === 0 && (
+              <div className="text-center py-10 bg-slate-50/20 dark:bg-slate-800/10">
+                <Icon name="info" size={24} className="text-slate-400 mx-auto mb-2" />
+                <p className="text-[13px] text-slate-500 font-medium">Tidak ada perbedaan data regional. Semua data cocok!</p>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     // ============================================================
     // ROOT APP
     // ============================================================
@@ -1576,11 +2015,21 @@
             {/* Scrollable body */}
             <div className="flex-1 overflow-y-auto">
               <div className="flex flex-col gap-5 p-6 max-w-screen-2xl mx-auto w-full">
-                <FilterBar filters={filters} setFilters={setFilters} />
-                <HourlyChartRow filters={filters} realisasiRecords={realisasiRecords} regionalDetails={regionalDetails} kemarinRecords={kemarinRecords} theme={theme} />
-                <RegionalRow filters={filters} regionalDetails={regionalDetails} />
-                <RealisasiEstimasiChart filters={filters} regionalDetails={regionalDetails} theme={theme} />
-                <TickerRow realisasiRecords={realisasiRecords} estimasiData={estimasiData} />
+                {activeNav === 'validasi' ? (
+                  <ValidationPanel 
+                    realisasiRecords={realisasiRecords}
+                    regionalDetails={regionalDetails}
+                    selectedDate={filters.tanggal}
+                  />
+                ) : (
+                  <>
+                    <FilterBar filters={filters} setFilters={setFilters} />
+                    <HourlyChartRow filters={filters} realisasiRecords={realisasiRecords} regionalDetails={regionalDetails} kemarinRecords={kemarinRecords} theme={theme} />
+                    <RegionalRow filters={filters} regionalDetails={regionalDetails} />
+                    <RealisasiEstimasiChart filters={filters} regionalDetails={regionalDetails} theme={theme} />
+                    <TickerRow realisasiRecords={realisasiRecords} estimasiData={estimasiData} />
+                  </>
+                )}
 
                 {/* Footer */}
                 <footer className="text-center text-[11px] text-slate-400 py-2">
