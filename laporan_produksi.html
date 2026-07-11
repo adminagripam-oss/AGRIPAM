@@ -1561,80 +1561,92 @@
             const workbook = XLSX.read(data, { type: 'array' });
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
-            const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-            // Extract Date from row 1 (Periode: Tanggal DD/MM/YYYY)
+            // ── Helper: baca nilai sel langsung via alamat Excel (A1, G15, dst.)
+            // PENTING: rows array dari sheet_to_json TIDAK bisa dipakai untuk
+            // koordinat tetap karena baris kosong dilewati & indeks bergeser.
+            // Metode ini membaca sel persis seperti di Excel.
+            const getCellValue = (col, row) => {
+              const addr = `${col}${row}`;
+              const cell = worksheet[addr];
+              if (!cell) return null;
+              // Tipe cell: n=number, s=string, b=boolean
+              return cell.v !== undefined ? cell.v : null;
+            };
+
+            // ── Deteksi header LHP (A1)
+            const a1Val = getCellValue('A', 1);
+            const isLHP = a1Val && a1Val.toString().includes("LAPORAN PRODUKSI HARIAN");
+
+            // ── Ekstrak tanggal dari A2 (Periode: Tanggal DD/MM/YYYY)
             let parsedDateStr = "";
-            const row1 = rows[1] ? rows[1][0] : "";
-            if (row1 && typeof row1 === 'string') {
-              const match = row1.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+            const a2Val = getCellValue('A', 2);
+            if (a2Val && typeof a2Val === 'string') {
+              const match = a2Val.match(/(\d{2})\/(\d{2})\/(\d{4})/);
               if (match) {
                 parsedDateStr = `${match[3]}-${match[2]}-${match[1]}`;
               }
             }
             setExcelDate(parsedDateStr);
-            
-            // Detect if this is the PalmOps LHP Excel sheet format
-            let isLHP = false;
-            if (rows[0] && rows[0][0] && rows[0][0].toString().includes("LAPORAN PRODUKSI HARIAN")) {
-              isLHP = true;
-            }
 
             const parsedTotals = {};
 
             if (isLHP) {
-              // Direct cell coordinate mapping from PalmOps LHP Excel export (G is index 6)
-              const cellMapping = {
-                'Aceh': 14,
-                'Sumatera Utara 1': 38,
-                'Sumatera Utara 2 Ex Torganda': 49,
-                'Riau 1': 72,
-                'Riau 2': 183,
-                'Riau 3': 212,
-                'Riau 4': 219,
-                'Bangka Belitung': 222,
-                'Jambi': 249,
-                'Sumatera Barat': 255,
-                'Sumatera Selatan': 310,
-                'Kalimantan Barat 1': 373,
-                'Kalimantan Barat 2': 423,
-                'Kalimantan Selatan 1': 431,
-                'Kalimantan Selatan 2': 444,
-                'Kalimantan Timur': 499,
-                'Kalimantan Utara': 448,
-                'Kalimantan Tengah 1': 604,
-                'Kalimantan Tengah 2': 726,
-                'Kalimantan Tengah 3': 659,
-                'Sulawesi Tenggara': 758,
-                'Sulawesi Tengah': 747
-              };
+              // ── PEMETAAN SEL LANGSUNG — nomor baris 1-indexed sesuai Excel asli
+              // Nilai di kolom G (produksi hari ini realisasi) dalam satuan Kg → dikonversi ke Ton
+              // getCellValue('G', 15) = sel G15 di Excel — tidak terpengaruh baris kosong
+              const cellMapping = [
+                { region: 'Aceh',                       excelRow: 15  },
+                { region: 'Sumatera Utara 1',           excelRow: 39  },
+                { region: 'Sumatera Utara 2 Ex Torganda', excelRow: 50 },
+                { region: 'Riau 1',                     excelRow: 73  },
+                { region: 'Riau 2',                     excelRow: 184 },
+                { region: 'Riau 3',                     excelRow: 213 },
+                { region: 'Riau 4',                     excelRow: 220 },
+                { region: 'Bangka Belitung',            excelRow: 223 },
+                { region: 'Jambi',                      excelRow: 250 },
+                { region: 'Sumatera Barat',             excelRow: 256 },
+                { region: 'Sumatera Selatan',           excelRow: 311 },
+                { region: 'Kalimantan Barat 1',         excelRow: 374 },
+                { region: 'Kalimantan Barat 2',         excelRow: 424 },
+                { region: 'Kalimantan Selatan 1',       excelRow: 432 },
+                { region: 'Kalimantan Selatan 2',       excelRow: 445 },
+                { region: 'Kalimantan Timur',           excelRow: 500 },
+                { region: 'Kalimantan Utara',           excelRow: 449 },
+                { region: 'Kalimantan Tengah 1',        excelRow: 605 },
+                { region: 'Kalimantan Tengah 3',        excelRow: 660 },
+                { region: 'Kalimantan Tengah 2',        excelRow: 727 },
+                { region: 'Sulawesi Tengah',            excelRow: 748 },
+                { region: 'Sulawesi Tenggara',          excelRow: 759 },
+              ];
 
-              for (const [region, rowIdx] of Object.entries(cellMapping)) {
-                if (rows[rowIdx] && rows[rowIdx][6] !== undefined) {
-                  let val = parseFloat(rows[rowIdx][6]);
-                  if (isNaN(val)) val = 0;
-                  // LHP values are in Kg, convert to Tons
-                  parsedTotals[region] = val / 1000;
-                } else {
-                  parsedTotals[region] = 0;
-                }
+              for (const { region, excelRow } of cellMapping) {
+                // getCellValue pakai nomor baris Excel 1-indexed persis
+                const rawVal = getCellValue('G', excelRow);
+                const numVal = rawVal !== null ? parseFloat(rawVal) : 0;
+                // Nilai LHP dalam Kg → bagi 1000 → Ton
+                parsedTotals[region] = isNaN(numVal) ? 0 : Math.round((numVal / 1000) * 100) / 100;
               }
+
             } else {
-              // Fallback dynamic detection
+              // ── FALLBACK: deteksi dinamis untuk file Excel non-LHP
+              // Gunakan sheet_to_json hanya di sini (format lain umumnya tidak punya baris kosong banyak)
+              const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
               let regionColIdx = -1;
               let tonaseColIdx = -1;
-              let startRowIdx = 0;
+              let startRowIdx   = 0;
 
-              for (let r = 0; r < Math.min(rows.length, 15); r++) {
+              for (let r = 0; r < Math.min(rows.length, 20); r++) {
                 const row = rows[r];
                 if (!row || !Array.isArray(row)) continue;
                 for (let c = 0; c < row.length; c++) {
                   const val = (row[c] || '').toString().toLowerCase().trim();
-                  if (val === 'regional' || val === 'nama regional') {
+                  if (val === 'regional' || val === 'nama regional' || val === 'wilayah') {
                     regionColIdx = c;
                   }
-                  if ((val.includes('realisasi') || val.includes('tonase') || val.includes('ton') || val.includes('kg') || val.includes('produksi')) && val.includes('hari ini')) {
-                    tonaseColIdx = c;
+                  if (val.includes('realisasi') || val.includes('tonase') || val.includes('produksi')) {
+                    if (tonaseColIdx === -1) tonaseColIdx = c;
                   }
                 }
                 if (regionColIdx !== -1 && tonaseColIdx !== -1) {
@@ -1642,19 +1654,19 @@
                   break;
                 }
               }
-              
-              if (regionColIdx === -1 || tonaseColIdx === -1) {
+
+              // Fallback 2: cari baris pertama yang isinya nama regional
+              if (regionColIdx === -1) {
                 for (let r = 0; r < rows.length; r++) {
                   const row = rows[r];
-                  if (!row || !Array.isArray(row)) continue;
+                  if (!row) continue;
                   for (let c = 0; c < row.length; c++) {
-                    const val = row[c];
-                    if (val && findRegionMatch(val)) {
+                    if (row[c] && findRegionMatch(row[c])) {
                       regionColIdx = c;
                       for (let nc = c + 1; nc < row.length; nc++) {
-                        if (typeof row[nc] === 'number' || !isNaN(parseFloat(row[nc]))) {
+                        if (typeof row[nc] === 'number' || (row[nc] && !isNaN(parseFloat(row[nc])))) {
                           tonaseColIdx = nc;
-                          startRowIdx = r;
+                          startRowIdx  = r;
                           break;
                         }
                       }
@@ -1664,47 +1676,47 @@
                   if (regionColIdx !== -1 && tonaseColIdx !== -1) break;
                 }
               }
-              
+
               if (regionColIdx === -1 || tonaseColIdx === -1) {
-                alert("Gagal mendeteksi kolom Regional atau Realisasi Tonase dalam file Excel. Silakan periksa format file.");
+                alert("Gagal mendeteksi kolom Regional atau Tonase dalam file Excel. Pastikan format sesuai template LHP PalmOps.");
                 return;
               }
-              
+
               for (let r = startRowIdx; r < rows.length; r++) {
                 const row = rows[r];
-                if (!row || !Array.isArray(row)) continue;
+                if (!row) continue;
                 const rawReg = row[regionColIdx];
                 const rawVal = row[tonaseColIdx];
                 if (!rawReg) continue;
 
-                const col0 = (row[0] || '').toString().trim();
-                if (col0.toLowerCase().startsWith('subtotal') || col0.toLowerCase().startsWith('total')) {
-                  continue;
-                }
-                
-                const matchedRegion = findRegionMatch(rawReg);
-                if (matchedRegion) {
-                  let valNum = parseFloat(rawVal);
-                  if (isNaN(valNum)) valNum = 0;
-                  
-                  if (!parsedTotals[matchedRegion]) parsedTotals[matchedRegion] = 0;
-                  parsedTotals[matchedRegion] += valNum;
+                const firstCell = (row[0] || '').toString().toLowerCase();
+                if (firstCell.startsWith('subtotal') || firstCell.startsWith('total')) continue;
+
+                const matched = findRegionMatch(rawReg);
+                if (matched) {
+                  const numVal = parseFloat(rawVal) || 0;
+                  if (!parsedTotals[matched]) parsedTotals[matched] = 0;
+                  parsedTotals[matched] += numVal;
                 }
               }
-              
-              let isKg = false;
-              const values = Object.values(parsedTotals);
-              if (values.some(v => v > 5000) || values.reduce((sum, v) => sum + v, 0) > 10000) {
-                isKg = true;
-              }
-              
+
+              // Auto-konversi Kg → Ton jika nilai besar
+              const vals = Object.values(parsedTotals);
+              const isKg = vals.some(v => v > 5000) || vals.reduce((s, v) => s + v, 0) > 10000;
               if (isKg) {
                 for (const reg in parsedTotals) {
-                  parsedTotals[reg] = parsedTotals[reg] / 1000;
+                  parsedTotals[reg] = Math.round((parsedTotals[reg] / 1000) * 100) / 100;
                 }
               }
             }
-            
+
+            // Validasi — pastikan ada minimal 1 regional yang terbaca
+            const hasData = Object.values(parsedTotals).some(v => v > 0);
+            if (!hasData) {
+              alert("Tidak ada data produksi yang terbaca dari file Excel ini. Pastikan file yang diunggah adalah Export LHP PalmOps yang valid.");
+              return;
+            }
+
             setExcelData(parsedTotals);
           } catch (err) {
             console.error(err);
