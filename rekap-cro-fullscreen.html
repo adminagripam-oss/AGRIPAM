@@ -53,6 +53,20 @@
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
+
+        /* Fit table to screen height dynamically */
+        table {
+            height: 100% !important;
+        }
+
+        table th, table td {
+            padding-top: clamp(1px, 0.25vh, 5px) !important;
+            padding-bottom: clamp(1px, 0.25vh, 5px) !important;
+            padding-left: clamp(3px, 0.4vw, 8px) !important;
+            padding-right: clamp(3px, 0.4vw, 8px) !important;
+            font-size: clamp(10px, 1.5vh, 15px) !important;
+            line-height: 1.15 !important;
+        }
     </style>
 </head>
 
@@ -79,15 +93,16 @@
         </div>
 
         <!-- Table Container -->
-        <div class="p-1 overflow-auto flex-1 bg-slate-900">
-            <div class="overflow-x-auto border border-slate-800 rounded-lg h-full">
-                <table class="w-full border-collapse text-[12px] whitespace-nowrap">
+        <div class="p-1 overflow-hidden flex-1 bg-slate-900">
+            <div class="overflow-x-auto overflow-y-hidden border border-slate-800 rounded-lg h-full">
+                <table class="w-full h-full border-collapse text-[12px] whitespace-nowrap">
                     <thead class="sticky top-0 z-10">
                         <tr style="background-color:#000000;"
                             class="text-white font-semibold text-center border-b border-slate-700">
                             <th rowspan="2" class="border border-slate-700 px-1.5 py-2 w-8">No</th>
                             <th rowspan="2" class="border border-slate-700 px-1.5 py-2 w-16">CRO</th>
-                            <th rowspan="2" class="border border-slate-700 px-1 py-1 text-center" style="width:100px; white-space:normal;">RH Oprasional/PKH</th>
+                            <th rowspan="2" class="border border-slate-700 px-1 py-1 text-center"
+                                style="width:100px; white-space:normal;">RH Oprasional/PKH</th>
                             <th colspan="12" class="border border-slate-700 px-1.5 py-1">Monitoring Produksi Pukul 06.00
                                 WIB s.d 17.30 WIB (Ton)</th>
                             <th rowspan="2" class="border border-slate-700 px-2 py-2 w-20">Jumlah</th>
@@ -142,7 +157,8 @@
         function getWIBDateStr() {
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            const wibTime = new Date(utc + (7 * 3600000));
+            // H+1: Tambahkan 24 jam (24 * 3600000 ms) ke waktu WIB
+            const wibTime = new Date(utc + (7 * 3600000) + (24 * 3600000));
             const yyyy = wibTime.getFullYear();
             const MM = String(wibTime.getMonth() + 1).padStart(2, '0');
             const dd = String(wibTime.getDate()).padStart(2, '0');
@@ -266,7 +282,7 @@
                         isLate = true;
                     }
 
-                    let regionClass = "border border-slate-400 px-1 py-1 text-left" + " " + "whitespace-normal";
+                    let regionClass = "border border-slate-400 px-1 py-1 text-left" + " " + "whitespace-nowrap";
                     if (isLate) {
                         regionClass += " bg-red-500 text-white font-bold";
                     }
