@@ -1570,7 +1570,11 @@
               const addr = `${col}${row}`;
               const cell = worksheet[addr];
               if (!cell) return null;
-              // Tipe cell: n=number, s=string, b=boolean
+              // Kembalikan cell.v, tapi jika cell.v adalah number (serial date excel) dan cell.w ada,
+              // utamakan cell.w (formatted string) untuk parsing tanggal yang lebih mudah
+              if (typeof cell.v === 'number' && cell.w) {
+                return cell.w;
+              }
               return cell.v !== undefined ? cell.v : null;
             };
 
@@ -1581,10 +1585,15 @@
             // ── Ekstrak tanggal dari A2 (Periode: Tanggal DD/MM/YYYY)
             let parsedDateStr = "";
             const a2Val = getCellValue('A', 2);
-            if (a2Val && typeof a2Val === 'string') {
-              const match = a2Val.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+            if (a2Val) {
+              const a2Str = a2Val.toString();
+              // Regex lebih fleksibel: mendukung DD/MM/YYYY, D/M/YYYY, atau pakai strip (-)
+              const match = a2Str.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
               if (match) {
-                parsedDateStr = `${match[3]}-${match[2]}-${match[1]}`;
+                const dd = match[1].padStart(2, '0');
+                const mm = match[2].padStart(2, '0');
+                const yyyy = match[3];
+                parsedDateStr = `${yyyy}-${mm}-${dd}`;
               }
             }
             setExcelDate(parsedDateStr);
@@ -2005,7 +2014,7 @@
                       <button 
                         onClick={handleSaveToDb}
                         disabled={saving}
-                        className="bg-green-600 hover:bg-green-700 text-white text-[12px] font-semibold px-4 py-2 rounded-lg shadow transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                        className="bg-green-600 hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-[12px] font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5 transition-colors"
                       >
                         <Icon name="save" size={13} />
                         {saving ? "Menyimpan..." : "Simpan ke Database"}
@@ -2024,12 +2033,16 @@
           )}
 
           {/* Date Mismatch Warning Banner */}
-          {excelData && excelDate && excelDate !== selectedDate && (
+          {excelData && excelDate !== selectedDate && (
             <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-xl p-4 flex items-start gap-3 text-amber-800 dark:text-amber-300 animate-fadeIn">
               <Icon name="alert-triangle" size={18} className="flex-shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-[13px] font-bold">Peringatan: Perbedaan Tanggal Laporan!</h4>
-                <p className="text-[11px] mt-1">Tanggal laporan pada file Excel yang diunggah (<b>{formatIndoDate(excelDate)}</b>) berbeda dengan Tanggal Evaluasi aktif (<b>{formatIndoDate(selectedDate)}</b>).</p>
+                {excelDate ? (
+                  <p className="text-[11px] mt-1">Tanggal laporan pada file Excel yang diunggah (<b>{formatIndoDate(excelDate)}</b>) berbeda dengan Tanggal Evaluasi aktif (<b>{formatIndoDate(selectedDate)}</b>).</p>
+                ) : (
+                  <p className="text-[11px] mt-1">Sistem tidak dapat membaca tanggal dari sel A2 pada file Excel yang diunggah. Pastikan Anda menyimpan ke Tanggal Evaluasi yang benar (<b>{formatIndoDate(selectedDate)}</b>).</p>
+                )}
                 <p className="text-[11px] mt-0.5">Pastikan Anda mengunggah file laporan yang sesuai atau ubah Tanggal Evaluasi di atas sebelum menyimpan data.</p>
               </div>
             </div>
