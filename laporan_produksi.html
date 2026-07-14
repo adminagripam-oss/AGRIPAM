@@ -1986,15 +1986,26 @@
           if (row.status === 'MATCH') statusText = "Sesuai";
           else if (row.status === 'MISMATCH') statusText = "Selisih";
 
+          let pct = "-";
+          if (activePalmopsSource && row.palmops > 0) {
+            pct = ((row.agripam / row.palmops) * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%";
+          }
+
           return {
             "No": idx + 1,
             "Nama Regional": row.region,
             "Realisasi AGRI-PAM (Ton)": row.agripam,
             "Realisasi PalmOps (Ton)": activePalmopsSource ? row.palmops : "-",
             "Selisih (Ton)": activePalmopsSource ? row.selisih : "-",
+            "Persentase": pct,
             "Status": statusText
           };
         });
+
+        let totalPct = "-";
+        if (activePalmopsSource && totalPalmops > 0) {
+          totalPct = ((totalAgripam / totalPalmops) * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%";
+        }
 
         // Add a total row
         excelRows.push({
@@ -2003,11 +2014,25 @@
           "Realisasi AGRI-PAM (Ton)": Math.round(totalAgripam * 100) / 100,
           "Realisasi PalmOps (Ton)": activePalmopsSource ? Math.round(totalPalmops * 100) / 100 : "-",
           "Selisih (Ton)": activePalmopsSource ? Math.round(totalSelisih * 100) / 100 : "-",
+          "Persentase": totalPct,
           "Status": Math.abs(totalSelisih) < 0.1 ? "Pas" : "Selisih"
         });
 
         // Create workbook and worksheet
         const worksheet = XLSX.utils.json_to_sheet(excelRows);
+        
+        // Inject custom styling for Calibri 12
+        if (worksheet['!ref']) {
+          const range = XLSX.utils.decode_range(worksheet['!ref']);
+          for (let R = range.s.r; R <= range.e.r; ++R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+              const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+              if (!worksheet[cellAddress]) continue;
+              worksheet[cellAddress].s = { font: { name: "Calibri", sz: 12 } };
+            }
+          }
+        }
+
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Perbandingan Regional");
 
@@ -2311,6 +2336,7 @@
                     <th className="px-4 py-3 text-right">Realisasi AGRI-PAM (Ton)</th>
                     <th className="px-4 py-3 text-right">Realisasi PalmOps (Ton)</th>
                     <th className="px-4 py-3 text-right">Selisih (Ton)</th>
+                    <th className="px-4 py-3 text-right">Persentase</th>
                     <th className="px-4 py-3 w-32 text-center">Status</th>
                   </tr>
                 </thead>
@@ -2350,6 +2376,9 @@
                         <td className={`px-4 py-2.5 text-right font-bold tabular-nums ${hasDiff ? 'text-red-600 dark:text-red-400' : 'text-green-600'}`}>
                           {activePalmopsSource ? (row.selisih > 0 ? `+${formatRibuan(row.selisih)}` : formatRibuan(row.selisih)) : "-"}
                         </td>
+                        <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-slate-800 dark:text-white">
+                          {activePalmopsSource && row.palmops > 0 ? ((row.agripam / row.palmops) * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%" : "-"}
+                        </td>
                         <td className="px-4 py-2.5 text-center">{statusBadge}</td>
                       </tr>
                     );
@@ -2361,6 +2390,9 @@
                     <td className="px-4 py-3 text-right text-[13px] tabular-nums text-slate-850 dark:text-slate-100">{activePalmopsSource ? formatRibuan(totalPalmops) : "-"}</td>
                     <td className={`px-4 py-3 text-right text-[13px] tabular-nums ${activePalmopsSource && Math.abs(totalSelisih) >= 0.1 ? 'text-red-600 dark:text-red-400' : 'text-green-600'}`}>
                       {activePalmopsSource ? (totalSelisih > 0 ? `+${formatRibuan(totalSelisih)}` : formatRibuan(totalSelisih)) : "-"}
+                    </td>
+                    <td className="px-4 py-3 text-right text-[13px] tabular-nums text-slate-800 dark:text-white">
+                      {activePalmopsSource && totalPalmops > 0 ? ((totalAgripam / totalPalmops) * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%" : "-"}
                     </td>
                     <td className="px-4 py-3 text-center">
                       {activePalmopsSource ? (
