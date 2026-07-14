@@ -1528,14 +1528,25 @@
       const fileInputRef = useRef(null);
 
       // Date Range States
+      const [dateMode, setDateMode] = useState("TUNGGAL");
       const [startDate, setStartDate] = useState(selectedDate);
       const [endDate, setEndDate] = useState(selectedDate);
 
-      // Sync local range states when parent selectedDate changes
+      // Sync local range states based on dateMode
       useEffect(() => {
-        setStartDate(selectedDate);
-        setEndDate(selectedDate);
-      }, [selectedDate]);
+        if (dateMode === "TUNGGAL") {
+          setStartDate(selectedDate);
+          setEndDate(selectedDate);
+        } else if (dateMode === "SD_BULAN_INI") {
+          const d = new Date(selectedDate);
+          setStartDate(`${d.getFullYear()}-01-01`);
+          setEndDate(selectedDate);
+        } else if (dateMode === "SD_HARI_INI") {
+          const d = new Date(selectedDate);
+          setStartDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`);
+          setEndDate(selectedDate);
+        }
+      }, [selectedDate, dateMode]);
 
       // Fetch saved PalmOps and Realisasi data from DB on date range change
       useEffect(() => {
@@ -1994,42 +2005,54 @@
             </div>
             
             <div className="flex flex-wrap items-center gap-2">
-              {/* Custom Date Range Picker */}
+              {/* Date Mode Dropdown */}
               <div className="flex items-center gap-2 bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-900 rounded-lg px-3 py-1.5 w-fit">
                 <Icon name="calendar" size={14} className="text-brand-600 dark:text-brand-400" />
-                <div className="flex items-center gap-1 text-[12px] font-bold text-brand-850 dark:text-brand-200">
-                  <span>Dari:</span>
-                  <input 
-                    type="date" 
-                    value={startDate}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setStartDate(e.target.value);
-                        setExcelData(null);
-                        setExcelDate("");
-                        setFileName("");
-                      }
-                    }}
-                    className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer"
-                    style={{ colorScheme: 'light' }}
-                  />
-                  <span className="mx-1">s.d.</span>
-                  <span>Sampai:</span>
-                  <input 
-                    type="date" 
-                    value={endDate}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setEndDate(e.target.value);
-                        setExcelData(null);
-                        setExcelDate("");
-                        setFileName("");
-                      }
-                    }}
-                    className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer"
-                    style={{ colorScheme: 'light' }}
-                  />
-                </div>
+                <select 
+                  value={dateMode}
+                  onChange={(e) => setDateMode(e.target.value)}
+                  className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer pr-1"
+                >
+                  <option value="TUNGGAL">Tanggal Tunggal</option>
+                  <option value="SD_HARI_INI">s.d. Hari Ini (Bulan Berjalan)</option>
+                  <option value="SD_BULAN_INI">s.d. Bulan Ini (Tahun Berjalan)</option>
+                  <option value="KUSTOM">Rentang Kustom</option>
+                </select>
+                
+                {dateMode === "KUSTOM" && (
+                  <div className="flex items-center gap-1 text-[12px] font-bold text-brand-850 dark:text-brand-200 border-l border-brand-200 dark:border-brand-700 pl-2 ml-1">
+                    <span>Dari:</span>
+                    <input 
+                      type="date" 
+                      value={startDate}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setStartDate(e.target.value);
+                          setExcelData(null);
+                          setExcelDate("");
+                          setFileName("");
+                        }
+                      }}
+                      className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer"
+                      style={{ colorScheme: 'light' }}
+                    />
+                    <span className="mx-1">s.d.</span>
+                    <input 
+                      type="date" 
+                      value={endDate}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setEndDate(e.target.value);
+                          setExcelData(null);
+                          setExcelDate("");
+                          setFileName("");
+                        }
+                      }}
+                      className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer"
+                      style={{ colorScheme: 'light' }}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Export to Excel Button */}
