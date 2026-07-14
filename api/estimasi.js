@@ -15,7 +15,14 @@ module.exports = async (req, res) => {
   if (action === 'getEstimasi') {
     if (!tanggal) return res.json({ success: false, message: 'Tanggal wajib diisi.' });
 
-    let query = supabase.from('data_estimasi').select('*').eq('tanggal', tanggal);
+    const tanggal_akhir = (p.tanggal_akhir || '').trim();
+
+    let query = supabase.from('data_estimasi').select('*').gte('tanggal', tanggal);
+    if (tanggal_akhir) {
+      query = query.lte('tanggal', tanggal_akhir);
+    } else {
+      query = query.lte('tanggal', tanggal);
+    }
     if (region && region.toUpperCase() !== 'ALL') query = query.eq('region', region);
 
     const { data, error } = await query;
@@ -36,10 +43,20 @@ module.exports = async (req, res) => {
         totalRestanLalu += restanLalu; totalLuasPanen += luasPanen; totalTkPanen += tkPanen;
         totalEstimasiPanen += estimasiPanen; totalEstimasiKirim += estimasiKirim; totalEstimasiRestan += estimasiRestan;
 
-        allEstimasi[r.region] = {
-          restanLalu, luasPanen, tkPanen, estPanen: estimasiPanen,
-          outPanen: parseFloat(r.output_panen) || 0, estKirim: estimasiKirim, estRestan: estimasiRestan
-        };
+        if (!allEstimasi[r.region]) {
+          allEstimasi[r.region] = { restanLalu: 0, luasPanen: 0, tkPanen: 0, estPanen: 0, outPanen: 0, estKirim: 0, estRestan: 0 };
+        }
+        allEstimasi[r.region].restanLalu += restanLalu;
+        allEstimasi[r.region].luasPanen += luasPanen;
+        allEstimasi[r.region].tkPanen += tkPanen;
+        allEstimasi[r.region].estPanen += estimasiPanen;
+        allEstimasi[r.region].estKirim += estimasiKirim;
+        allEstimasi[r.region].estRestan += estimasiRestan;
+      });
+
+      Object.keys(allEstimasi).forEach(reg => {
+        const d = allEstimasi[reg];
+        d.outPanen = d.tkPanen > 0 ? Math.round(d.estPanen / d.tkPanen) : 0;
       });
 
       const avgOutputPanen = totalTkPanen > 0 ? Math.round(totalEstimasiPanen / totalTkPanen) : 0;

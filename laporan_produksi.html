@@ -1023,17 +1023,19 @@
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-[14px] font-bold text-slate-800">Tren Produksi Per Jam</h2>
-              <p className="text-[12px] text-slate-400 mt-0.5">Kumulatif {filterLabel}{filters.tanggal !== 'Semua Tanggal' ? ' — ' + formatIndoDate(filters.tanggal) : ' — data hari ini'}</p>
+              <p className="text-[12px] text-slate-400 mt-0.5">Kumulatif {filterLabel} — {(filters.dateMode !== 'TUNGGAL' && filters.tanggal !== filters.tanggal_akhir) ? `${formatIndoDate(filters.tanggal)} - ${formatIndoDate(filters.tanggal_akhir || filters.tanggal)}` : formatIndoDate(filters.tanggal)}</p>
             </div>
             <div className="flex items-center gap-3">
               <div className="text-right">
                 <div className="text-[13px] font-bold text-brand-600">{formatRibuan(filtReal)} ton</div>
                 <div className="text-[10px] text-slate-400">dari est. {formatRibuan(filtEst)} ton</div>
               </div>
-              <div className={`flex items-center gap-2 text-[11px] border font-semibold px-2.5 py-1 rounded-lg ${isUp ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
-                <Icon name={isUp ? "trending-up" : "trending-down"} size={13} />
-                <span className="inline-flex items-center justify-center">{ratio.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% vs kemarin</span>
-              </div>
+              {(!filters.dateMode || filters.dateMode === 'TUNGGAL') && (
+                <div className={`flex items-center gap-2 text-[11px] border font-semibold px-2.5 py-1 rounded-lg ${isUp ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                  <Icon name={isUp ? "trending-up" : "trending-down"} size={13} />
+                  <span className="inline-flex items-center justify-center">{ratio.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% vs kemarin</span>
+                </div>
+              )}
             </div>
           </div>
           <div style={{ height: '220px' }}>
@@ -1350,7 +1352,7 @@
               </button>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className={`grid grid-cols-1 md:grid-cols-${filters.dateMode === 'KUSTOM' ? '5' : '4'} gap-3`}>
             {/* CRO */}
             <div className="relative">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"><Icon name="building-2" size={15} className="text-slate-400" /></div>
@@ -1369,19 +1371,53 @@
               <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"><Icon name="chevron-down" size={14} className="text-slate-400" /></div>
               <label className="absolute -top-2 left-3 text-[10px] font-semibold text-slate-400 bg-white px-1 uppercase tracking-wider">Regional</label>
             </div>
-            {/* Tanggal — Calendar input */}
+            {/* Mode Tanggal */}
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"><Icon name="calendar-range" size={15} className="text-slate-400" /></div>
+              <select 
+                value={filters.dateMode || 'TUNGGAL'} 
+                onChange={e => setFilters(prev => ({ ...prev, dateMode: e.target.value }))} 
+                className={selectClass} 
+                aria-label="Filter berdasarkan Mode Tanggal"
+              >
+                <option value="TUNGGAL">Tanggal Tunggal</option>
+                <option value="SD_HARI_INI">s.d. Hari Ini</option>
+                <option value="SD_BULAN_INI">s.d. Bulan Ini</option>
+                <option value="KUSTOM">Rentang Kustom</option>
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"><Icon name="chevron-down" size={14} className="text-slate-400" /></div>
+              <label className="absolute -top-2 left-3 text-[10px] font-semibold text-slate-400 bg-white px-1 uppercase tracking-wider">Rentang Waktu</label>
+            </div>
+            {/* Tanggal (Dari) */}
             <div className="relative">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"><Icon name="calendar" size={15} className="text-slate-400" /></div>
               <input
                 type="date"
                 value={filters.tanggal === 'Semua Tanggal' ? '' : filters.tanggal}
-                onChange={e => setFilters(prev => ({ ...prev, tanggal: e.target.value || getTodayWIB() }))}
+                onChange={e => setFilters(prev => ({ ...prev, tanggal: e.target.value || getTodayWIB(), _referenceDate: e.target.value || getTodayWIB() }))}
                 className="w-full h-10 pl-10 pr-4 text-[13px] font-medium text-slate-700 bg-white border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-400 hover:border-slate-300 transition-colors"
                 style={{ colorScheme: 'light' }}
-                aria-label="Filter berdasarkan Tanggal"
+                aria-label={filters.dateMode === 'KUSTOM' ? "Dari Tanggal" : "Tanggal"}
               />
-              <label className="absolute -top-2 left-3 text-[10px] font-semibold text-slate-400 bg-white px-1 uppercase tracking-wider">Tanggal</label>
+              <label className="absolute -top-2 left-3 text-[10px] font-semibold text-slate-400 bg-white px-1 uppercase tracking-wider">
+                {filters.dateMode === 'KUSTOM' ? 'Dari' : 'Tanggal'}
+              </label>
             </div>
+            {/* Tanggal Akhir (Sampai) - KUSTOM ONLY */}
+            {filters.dateMode === 'KUSTOM' && (
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"><Icon name="calendar" size={15} className="text-slate-400" /></div>
+                <input
+                  type="date"
+                  value={filters.tanggal_akhir || filters.tanggal}
+                  onChange={e => setFilters(prev => ({ ...prev, tanggal_akhir: e.target.value || getTodayWIB() }))}
+                  className="w-full h-10 pl-10 pr-4 text-[13px] font-medium text-slate-700 bg-white border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-400 hover:border-slate-300 transition-colors"
+                  style={{ colorScheme: 'light' }}
+                  aria-label="Sampai Tanggal"
+                />
+                <label className="absolute -top-2 left-3 text-[10px] font-semibold text-slate-400 bg-white px-1 uppercase tracking-wider">Sampai</label>
+              </div>
+            )}
           </div>
           {/* Active filter chips */}
           {isFiltered && (
@@ -1403,8 +1439,7 @@
               {filters.tanggal !== 'Semua Tanggal' && (
                 <span className="inline-flex items-center gap-1 text-[11px] bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-0.5 font-medium animate-fadeIn">
                   <Icon name="calendar" size={11} />
-                  {formatIndoDate(filters.tanggal)}
-                  <button onClick={() => setFilters(prev => ({ ...prev, tanggal: 'Semua Tanggal' }))} className="ml-1 hover:text-red-500"><Icon name="x" size={10} /></button>
+                  {filters.dateMode !== 'TUNGGAL' && filters.tanggal !== filters.tanggal_akhir ? `${formatIndoDate(filters.tanggal)} - ${formatIndoDate(filters.tanggal_akhir || filters.tanggal)}` : formatIndoDate(filters.tanggal)}
                 </span>
               )}
             </div>
@@ -2360,7 +2395,10 @@
       const [filters, setFilters] = useState({
         cro: 'Semua CRO',
         regional: 'Semua Regional',
+        dateMode: 'TUNGGAL',
         tanggal: getTodayWIB(),
+        tanggal_akhir: getTodayWIB(),
+        _referenceDate: getTodayWIB()
       });
       const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
       const [realisasiRecords, setRealisasiRecords] = useState([]);
@@ -2391,6 +2429,37 @@
         return `${yyyy}-${MM}-${dd}`;
       };
 
+      // Sync dates when dateMode or _referenceDate changes
+      useEffect(() => {
+        setFilters(prev => {
+          const mode = prev.dateMode || 'TUNGGAL';
+          const ref = prev._referenceDate || getTodayWIB();
+          let start = ref;
+          let end = ref;
+
+          if (mode === 'TUNGGAL') {
+            start = ref;
+            end = ref;
+          } else if (mode === 'SD_BULAN_INI') {
+            const d = new Date(ref);
+            start = `${d.getFullYear()}-01-01`;
+            end = ref;
+          } else if (mode === 'SD_HARI_INI') {
+            const d = new Date(ref);
+            start = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+            end = ref;
+          } else if (mode === 'KUSTOM') {
+            start = prev.tanggal;
+            end = prev.tanggal_akhir;
+          }
+          
+          if (prev.tanggal !== start || prev.tanggal_akhir !== end) {
+            return { ...prev, tanggal: start, tanggal_akhir: end };
+          }
+          return prev;
+        });
+      }, [filters.dateMode, filters._referenceDate]);
+
       useEffect(() => {
         if (!filters.tanggal || filters.tanggal === 'Semua Tanggal') return;
 
@@ -2403,16 +2472,27 @@
             const token = session ? session.token : "";
 
             const yesterday = getYesterdayDate(filters.tanggal);
+            const isRange = filters.tanggal !== filters.tanggal_akhir;
 
-            const [realisasiRes, estimasiRes, kemarinRes] = await Promise.all([
-              fetch(`/api/realisasi?action=getData&tanggal=${filters.tanggal}&region=ALL`),
-              fetch(`/api/estimasi?action=getEstimasi&tanggal=${filters.tanggal}&region=ALL&token=${token}`),
-              fetch(`/api/realisasi?action=getData&tanggal=${yesterday}&region=ALL`)
-            ]);
+            // Prepare API calls
+            const promises = [
+              fetch(`/api/realisasi?action=getData&tanggal=${filters.tanggal}&tanggal_akhir=${filters.tanggal_akhir || filters.tanggal}&region=ALL`),
+              fetch(`/api/estimasi?action=getEstimasi&tanggal=${filters.tanggal}&tanggal_akhir=${filters.tanggal_akhir || filters.tanggal}&region=ALL&token=${token}`),
+            ];
+
+            // Only fetch yesterday's data if NOT in range mode
+            if (!isRange) {
+              promises.push(fetch(`/api/realisasi?action=getData&tanggal=${yesterday}&region=ALL`));
+            }
+
+            const results = await Promise.all(promises);
+            const realisasiRes = results[0];
+            const estimasiRes = results[1];
+            const kemarinRes = isRange ? null : results[2];
 
             const realisasiJson = await realisasiRes.json();
             const estimasiJson = await estimasiRes.json();
-            const kemarinJson = await kemarinRes.json();
+            const kemarinJson = kemarinRes ? await kemarinRes.json() : { success: true, allRecords: [] };
 
             if (active) {
               if (realisasiJson.success) {
@@ -2425,7 +2505,7 @@
               } else {
                 setEstimasiData({});
               }
-              if (kemarinJson.success) {
+              if (kemarinJson && kemarinJson.success) {
                 setKemarinRecords(kemarinJson.allRecords || []);
               } else {
                 setKemarinRecords([]);
