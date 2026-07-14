@@ -10,6 +10,8 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@600&amp;display=swap"
         rel="stylesheet" />
@@ -386,6 +388,10 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
+                        <button id="rekapCROExportBtn" onclick="exportRekapToExcel()"
+                            class="text-white/80 hover:text-white transition-colors" title="Ekspor ke Excel">
+                            <span class="material-symbols-outlined text-2xl">download</span>
+                        </button>
                         <button id="rekapCROFullscreenBtn" onclick="toggleRekapCROFullscreen()"
                             class="text-white/80 hover:text-white transition-colors" title="Fullscreen">
                             <span class="material-symbols-outlined text-2xl">fullscreen</span>
@@ -1432,6 +1438,40 @@
             if (inner) inner.classList.remove('modal-fullscreen');
             const btn = document.getElementById('rekapCROFullscreenBtn');
             if (btn) btn.querySelector('.material-symbols-outlined').textContent = 'fullscreen';
+        }
+
+        function exportRekapToExcel() {
+            const table = document.querySelector("#rekapCROModal table");
+            if (!table) {
+                alert("Tabel rekap tidak ditemukan.");
+                return;
+            }
+            
+            const datePicker = document.getElementById("rekapCRODatePicker");
+            const dateStr = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
+            
+            const wb = XLSX.utils.table_to_book(table, { raw: true });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            
+            // Adjust column widths automatically
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            const colWidths = [];
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                let max = 10;
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+                    const cell_ref = XLSX.utils.encode_cell({ c: C, r: R });
+                    if (!ws[cell_ref]) continue;
+                    const val = ws[cell_ref].v;
+                    if (val) {
+                        const len = val.toString().length;
+                        if (len > max) max = len;
+                    }
+                }
+                colWidths.push({ wch: max + 3 });
+            }
+            ws['!cols'] = colWidths;
+            
+            XLSX.writeFile(wb, `Rekap_Rencana_vs_Realisasi_CRO_${dateStr}.xlsx`);
         }
 
         function renderRekapCROTable() {
