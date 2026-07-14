@@ -1108,6 +1108,7 @@
                   <div key={i} className="flex items-center gap-2 animate-fadeIn">
                     <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: d.color }}></div>
                     <span className="text-[11px] text-slate-600 flex-1 truncate">{d.region}</span>
+                    <span className="text-[11px] text-slate-450 dark:text-slate-400 tabular-nums mr-1.5">{formatRibuan(d.tonase)} ton</span>
                     <span className="text-[11px] font-semibold text-slate-700">{pct}%</span>
                   </div>
                 );
