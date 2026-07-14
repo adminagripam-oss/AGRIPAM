@@ -1589,9 +1589,13 @@
         const fetchDataForRange = async () => {
           setDbLoading(true);
           try {
+            const isRange = startDate !== endDate;
+            const palmopsUrl = `/api/palmops?action=get&tanggal=${startDate}${isRange ? `&tanggal_akhir=${endDate}` : ''}`;
+            const realisasiUrl = `/api/realisasi?action=getData&tanggal=${startDate}${isRange ? `&tanggal_akhir=${endDate}` : ''}&region=ALL`;
+
             const [palmopsRes, realisasiRes] = await Promise.all([
-              fetch(`/api/palmops?action=get&tanggal=${startDate}&tanggal_akhir=${endDate}`),
-              fetch(`/api/realisasi?action=getData&tanggal=${startDate}&tanggal_akhir=${endDate}&region=ALL`)
+              fetch(palmopsUrl),
+              fetch(realisasiUrl)
             ]);
 
             const palmopsJson = await palmopsRes.json();
@@ -2078,6 +2082,26 @@
                   <option value="SD_BULAN_INI">s.d. Bulan Ini (Tahun Berjalan)</option>
                   <option value="KUSTOM">Rentang Kustom</option>
                 </select>
+                
+                {dateMode === "TUNGGAL" && (
+                  <div className="flex items-center gap-1 text-[12px] font-bold text-brand-850 dark:text-brand-200 border-l border-brand-200 dark:border-brand-700 pl-2 ml-1">
+                    <span>Tanggal:</span>
+                    <input 
+                      type="date" 
+                      value={selectedDate}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          onDateChange(e.target.value);
+                          setExcelData(null);
+                          setExcelDate("");
+                          setFileName("");
+                        }
+                      }}
+                      className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer"
+                      style={{ colorScheme: 'light' }}
+                    />
+                  </div>
+                )}
                 
                 {dateMode === "KUSTOM" && (
                   <div className="flex items-center gap-1 text-[12px] font-bold text-brand-850 dark:text-brand-200 border-l border-brand-200 dark:border-brand-700 pl-2 ml-1">
