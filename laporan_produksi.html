@@ -1158,12 +1158,12 @@
 
     function LeaderboardCard({ filters, regionalDetails }) {
       const data = getFilteredRegionals(filters, regionalDetails);
-      const sorted = [...data].sort((a, b) => b.estimasi - a.estimasi);
+      const sorted = [...data].sort((a, b) => b.realisasi - a.realisasi);
       const sortedRest = [...data].sort((a, b) => b.restan - a.restan);
-      const maxTon = sorted[0]?.estimasi || 1;
+      const maxTon = sorted[0]?.realisasi || 1;
       const maxRest = sortedRest[0]?.restan || 1;
 
-      const top5out = sorted.slice(0, 5).map((d, i) => ({ rank: i + 1, region: d.region, tonase: d.estimasi, pct: Math.round((d.estimasi / maxTon) * 100) }));
+      const top5out = sorted.slice(0, 5).map((d, i) => ({ rank: i + 1, region: d.region, tonase: d.realisasi, pct: Math.round((d.realisasi / maxTon) * 100) }));
       const top5rest = sortedRest.slice(0, 5).map((d, i) => ({ rank: i + 1, region: d.region, restan: d.restan, pct: Math.round((d.restan / maxRest) * 100) }));
 
       return (
@@ -1552,7 +1552,7 @@
     // ============================================================
     // VALIDATION PANEL COMPONENT
     // ============================================================
-    function ValidationPanel({ realisasiRecords, regionalDetails, selectedDate, onDateChange }) {
+    function ValidationPanel({ realisasiRecords, regionalDetails, filters, setFilters }) {
       const [excelData, setExcelData] = useState(null);
       const [excelDate, setExcelDate] = useState("");
       const [dbPalmopsData, setDbPalmopsData] = useState(null);
@@ -1564,36 +1564,15 @@
       const [saving, setSaving] = useState(false);
       const fileInputRef = useRef(null);
 
-      // Date Range States
-      const [dateMode, setDateMode] = useState("TUNGGAL");
-      const [startDate, setStartDate] = useState(selectedDate);
-      const [endDate, setEndDate] = useState(selectedDate);
-
-      // Sync local range states based on dateMode
-      useEffect(() => {
-        if (dateMode === "TUNGGAL") {
-          setStartDate(selectedDate);
-          setEndDate(selectedDate);
-        } else if (dateMode === "SD_BULAN_INI") {
-          const d = new Date(selectedDate);
-          setStartDate(`${d.getFullYear()}-01-01`);
-          setEndDate(selectedDate);
-        } else if (dateMode === "SD_HARI_INI") {
-          const d = new Date(selectedDate);
-          setStartDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`);
-          setEndDate(selectedDate);
-        }
-      }, [selectedDate, dateMode]);
-
       // Fetch saved PalmOps and Realisasi data from DB on date range change
       useEffect(() => {
         let active = true;
         const fetchDataForRange = async () => {
           setDbLoading(true);
           try {
-            const isRange = startDate !== endDate;
-            const palmopsUrl = `/api/palmops?action=get&tanggal=${startDate}${isRange ? `&tanggal_akhir=${endDate}` : ''}`;
-            const realisasiUrl = `/api/realisasi?action=getData&tanggal=${startDate}${isRange ? `&tanggal_akhir=${endDate}` : ''}&region=ALL`;
+            const isRange = filters.tanggal !== filters.tanggal_akhir;
+            const palmopsUrl = `/api/palmops?action=get&tanggal=${filters.tanggal}${isRange ? `&tanggal_akhir=${filters.tanggal_akhir}` : ''}`;
+            const realisasiUrl = `/api/realisasi?action=getData&tanggal=${filters.tanggal}${isRange ? `&tanggal_akhir=${filters.tanggal_akhir}` : ''}&region=ALL`;
 
             const [palmopsRes, realisasiRes] = await Promise.all([
               fetch(palmopsUrl),
@@ -1628,7 +1607,7 @@
         };
         fetchDataForRange();
         return () => { active = false; };
-      }, [startDate, endDate]);
+      }, [filters.tanggal, filters.tanggal_akhir]);
 
       const handleFile = (file) => {
         if (!file) return;
@@ -1867,7 +1846,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               action: 'save',
-              tanggal: selectedDate,
+              tanggal: filters.tanggal,
               token,
               records
             })
@@ -1907,7 +1886,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               action: 'delete',
-              tanggal: selectedDate,
+              tanggal: filters.tanggal,
               token
             })
           });
@@ -1935,9 +1914,7 @@
       const activePalmopsSource = excelData || dbPalmopsData;
       const isFromDb = !excelData && !!dbPalmopsData;
 
-      const activeRealisasi = (startDate === selectedDate && endDate === selectedDate && dbRealisasiData.length === 0)
-        ? (realisasiRecords || [])
-        : dbRealisasiData;
+      const activeRealisasi = dbRealisasiData.length > 0 ? dbRealisasiData : (realisasiRecords || []);
 
       const comparisonList = ALL_REGIONS.map(region => {
         const agripamTotal = activeRealisasi
@@ -2060,9 +2037,9 @@
         worksheet['!cols'] = colWidths;
 
         // Generate Excel file and download
-        const filename = startDate === endDate 
-          ? `Rincian_Perbandingan_Regional_${startDate}.xlsx`
-          : `Rincian_Perbandingan_Regional_${startDate}_to_${endDate}.xlsx`;
+        const filename = filters.tanggal === filters.tanggal_akhir 
+          ? `Rincian_Perbandingan_Regional_${filters.tanggal}.xlsx`
+          : `Rincian_Perbandingan_Regional_${filters.tanggal}_to_${filters.tanggal_akhir}.xlsx`;
         XLSX.writeFile(workbook, filename);
       };
 
@@ -2080,8 +2057,8 @@
               <div className="flex items-center gap-2 bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-900 rounded-lg px-3 py-1.5 w-fit">
                 <Icon name="calendar" size={14} className="text-brand-600 dark:text-brand-400" />
                 <select 
-                  value={dateMode}
-                  onChange={(e) => setDateMode(e.target.value)}
+                  value={filters.dateMode}
+                  onChange={(e) => setFilters(prev => ({ ...prev, dateMode: e.target.value }))}
                   className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer pr-1"
                 >
                   <option value="TUNGGAL">Tanggal Tunggal</option>
@@ -2090,15 +2067,15 @@
                   <option value="KUSTOM">Rentang Kustom</option>
                 </select>
                 
-                {dateMode === "TUNGGAL" && (
+                {filters.dateMode === "TUNGGAL" && (
                   <div className="flex items-center gap-1 text-[12px] font-bold text-brand-850 dark:text-brand-200 border-l border-brand-200 dark:border-brand-700 pl-2 ml-1">
                     <span>Tanggal:</span>
                     <input 
                       type="date" 
-                      value={selectedDate}
+                      value={filters.tanggal}
                       onChange={(e) => {
                         if (e.target.value) {
-                          onDateChange(e.target.value);
+                          setFilters(prev => ({ ...prev, tanggal: e.target.value, _referenceDate: e.target.value }));
                           setExcelData(null);
                           setExcelDate("");
                           setFileName("");
@@ -2110,15 +2087,15 @@
                   </div>
                 )}
                 
-                {dateMode === "KUSTOM" && (
+                {filters.dateMode === "KUSTOM" && (
                   <div className="flex items-center gap-1 text-[12px] font-bold text-brand-850 dark:text-brand-200 border-l border-brand-200 dark:border-brand-700 pl-2 ml-1">
                     <span>Dari:</span>
                     <input 
                       type="date" 
-                      value={startDate}
+                      value={filters.tanggal}
                       onChange={(e) => {
                         if (e.target.value) {
-                          setStartDate(e.target.value);
+                          setFilters(prev => ({ ...prev, tanggal: e.target.value }));
                           setExcelData(null);
                           setExcelDate("");
                           setFileName("");
@@ -2130,10 +2107,10 @@
                     <span className="mx-1">s.d.</span>
                     <input 
                       type="date" 
-                      value={endDate}
+                      value={filters.tanggal_akhir}
                       onChange={(e) => {
                         if (e.target.value) {
-                          setEndDate(e.target.value);
+                          setFilters(prev => ({ ...prev, tanggal_akhir: e.target.value }));
                           setExcelData(null);
                           setExcelDate("");
                           setFileName("");
@@ -2164,14 +2141,14 @@
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mx-auto"></div>
               <p className="text-[12px] text-slate-500 mt-2">Memeriksa database...</p>
             </div>
-          ) : (startDate !== endDate) ? (
+          ) : (filters.tanggal !== filters.tanggal_akhir) ? (
             <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-6 bg-white dark:bg-slate-800 shadow-sm text-center">
               <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center text-brand-600 dark:text-brand-400 shadow-sm border border-brand-100 dark:border-brand-900 mx-auto mb-3">
                 <Icon name="info" size={22} />
               </div>
               <h3 className="text-sm font-bold text-slate-800 dark:text-white">Mode Rentang Tanggal Aktif</h3>
               <p className="text-[11px] text-slate-400 mt-1 max-w-md mx-auto">
-                Unggah dan simpan file Excel PalmOps dinonaktifkan dalam mode rentang tanggal. Anda sedang mengevaluasi akumulasi data regional dari database untuk rentang <b>{formatIndoDate(startDate)}</b> s.d. <b>{formatIndoDate(endDate)}</b>.
+                Unggah dan simpan file Excel PalmOps dinonaktifkan dalam mode rentang tanggal. Anda sedang mengevaluasi akumulasi data regional dari database untuk rentang <b>{formatIndoDate(filters.tanggal)}</b> s.d. <b>{formatIndoDate(filters.tanggal_akhir)}</b>.
               </p>
             </div>
           ) : isFromDb ? (
@@ -2272,15 +2249,15 @@
           )}
 
           {/* Date Mismatch Warning Banner */}
-          {excelData && excelDate !== selectedDate && (
+          {excelData && excelDate !== filters.tanggal && (
             <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-xl p-4 flex items-start gap-3 text-amber-800 dark:text-amber-300 animate-fadeIn">
               <Icon name="alert-triangle" size={18} className="flex-shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-[13px] font-bold">Peringatan: Perbedaan Tanggal Laporan!</h4>
                 {excelDate ? (
-                  <p className="text-[11px] mt-1">Tanggal laporan pada file Excel yang diunggah (<b>{formatIndoDate(excelDate)}</b>) berbeda dengan Tanggal Evaluasi aktif (<b>{formatIndoDate(selectedDate)}</b>).</p>
+                  <p className="text-[11px] mt-1">Tanggal laporan pada file Excel yang diunggah (<b>{formatIndoDate(excelDate)}</b>) berbeda dengan Tanggal Evaluasi aktif (<b>{formatIndoDate(filters.tanggal)}</b>).</p>
                 ) : (
-                  <p className="text-[11px] mt-1">Sistem tidak dapat membaca tanggal dari sel A2 pada file Excel yang diunggah. Pastikan Anda menyimpan ke Tanggal Evaluasi yang benar (<b>{formatIndoDate(selectedDate)}</b>).</p>
+                  <p className="text-[11px] mt-1">Sistem tidak dapat membaca tanggal dari sel A2 pada file Excel yang diunggah. Pastikan Anda menyimpan ke Tanggal Evaluasi yang benar (<b>{formatIndoDate(filters.tanggal)}</b>).</p>
                 )}
                 <p className="text-[11px] mt-0.5">Pastikan Anda mengunggah file laporan yang sesuai atau ubah Tanggal Evaluasi di atas sebelum menyimpan data.</p>
               </div>
@@ -2588,7 +2565,7 @@
 
         fetchDashboardData();
         return () => { active = false; };
-      }, [filters.tanggal]);
+      }, [filters.tanggal, filters.tanggal_akhir]);
 
       const regionalDetails = computeRegionalDetails(realisasiRecords, estimasiData);
 
@@ -2608,8 +2585,8 @@
                   <ValidationPanel 
                     realisasiRecords={realisasiRecords}
                     regionalDetails={regionalDetails}
-                    selectedDate={filters.tanggal}
-                    onDateChange={(newDate) => setFilters(prev => ({ ...prev, tanggal: newDate }))}
+                    filters={filters}
+                    setFilters={setFilters}
                   />
                 ) : (
                   <>

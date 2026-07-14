@@ -17,22 +17,35 @@ module.exports = async (req, res) => {
 
     const tanggal_akhir = (p.tanggal_akhir || '').trim();
 
-    let query = supabase.from('data_estimasi').select('*').gte('tanggal', tanggal);
-    if (tanggal_akhir) {
-      query = query.lte('tanggal', tanggal_akhir);
-    } else {
-      query = query.lte('tanggal', tanggal);
-    }
-    if (region && region.toUpperCase() !== 'ALL') query = query.eq('region', region);
+    let allData = [];
+    let page = 0;
+    const pageSize = 1000;
 
-    const { data, error } = await query;
-    if (error) return res.json({ success: false, message: 'Gagal mengambil data estimasi: ' + error.message });
+    while (true) {
+      let query = supabase.from('data_estimasi').select('*').gte('tanggal', tanggal);
+      if (tanggal_akhir) {
+        query = query.lte('tanggal', tanggal_akhir);
+      } else {
+        query = query.lte('tanggal', tanggal);
+      }
+      if (region && region.toUpperCase() !== 'ALL') query = query.eq('region', region);
+      
+      query = query.range(page * pageSize, (page + 1) * pageSize - 1);
+
+      const { data, error } = await query;
+      if (error) return res.json({ success: false, message: 'Gagal mengambil data estimasi: ' + error.message });
+      if (!data || data.length === 0) break;
+
+      allData = allData.concat(data);
+      if (data.length < pageSize) break;
+      page++;
+    }
 
     if (!region || region.toUpperCase() === 'ALL') {
       const allEstimasi = {};
       let totalRestanLalu = 0, totalLuasPanen = 0, totalTkPanen = 0, totalEstimasiPanen = 0, totalEstimasiKirim = 0, totalEstimasiRestan = 0;
 
-      (data || []).forEach(r => {
+      (allData || []).forEach(r => {
         const restanLalu = parseFloat(r.restan_lalu) || 0;
         const luasPanen = parseFloat(r.luas_panen_ha) || 0;
         const tkPanen = parseFloat(r.tk_panen_hk) || 0;
@@ -66,9 +79,9 @@ module.exports = async (req, res) => {
       });
     }
 
-    if (!data || data.length === 0) return res.json({ success: true, exists: false, data: null });
+    if (!allData || allData.length === 0) return res.json({ success: true, exists: false, data: null });
 
-    const r = data[0];
+    const r = allData[0];
     return res.json({
       success: true, exists: true,
       data: { restanLalu: r.restan_lalu, luasPanen: r.luas_panen_ha, tkPanen: r.tk_panen_hk, estPanen: r.estimasi_panen_kg, outPanen: r.output_panen, estKirim: r.estimasi_kirim_kg, estRestan: r.estimasi_restan_kg }

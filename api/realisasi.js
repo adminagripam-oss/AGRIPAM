@@ -26,23 +26,36 @@ module.exports = async (req, res) => {
     if (!tanggal) return res.json({ success: false, message: 'Tanggal wajib diisi.' });
     const tanggal_akhir = (p.tanggal_akhir || '').trim();
     
-    let query = supabase.from('database_input').select('region, jam, tonase').order('jam', { ascending: true });
-    if (tanggal_akhir) {
-      query = query.gte('tanggal', tanggal).lte('tanggal', tanggal_akhir);
-    } else {
-      query = query.eq('tanggal', tanggal);
-    }
-    if (region && region.toUpperCase() !== 'ALL') query = query.eq('region', region);
+    let allData = [];
+    let page = 0;
+    const pageSize = 1000;
     
-    const { data, error } = await query;
-    if (error) return res.json({ success: false, message: 'Gagal mengambil data: ' + error.message });
+    while (true) {
+      let query = supabase.from('database_input').select('region, jam, tonase').order('jam', { ascending: true });
+      if (tanggal_akhir) {
+        query = query.gte('tanggal', tanggal).lte('tanggal', tanggal_akhir);
+      } else {
+        query = query.eq('tanggal', tanggal);
+      }
+      if (region && region.toUpperCase() !== 'ALL') query = query.eq('region', region);
+      
+      query = query.range(page * pageSize, (page + 1) * pageSize - 1);
+      
+      const { data, error } = await query;
+      if (error) return res.json({ success: false, message: 'Gagal mengambil data: ' + error.message });
+      if (!data || data.length === 0) break;
+      
+      allData = allData.concat(data);
+      if (data.length < pageSize) break;
+      page++;
+    }
 
     if (!region || region.toUpperCase() === 'ALL') {
-      const allRecords = (data || []).map(r => ({ region: r.region, jam: r.jam, tonase: parseFloat(r.tonase) || 0 }));
+      const allRecords = allData.map(r => ({ region: r.region, jam: r.jam, tonase: parseFloat(r.tonase) || 0 }));
       return res.json({ success: true, allRecords });
     }
 
-    const { jamData, total } = computeJamDataAndTotal(data);
+    const { jamData, total } = computeJamDataAndTotal(allData);
     return res.json({ success: true, total, jamData });
   }
 
