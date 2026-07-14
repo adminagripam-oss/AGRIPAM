@@ -14,11 +14,16 @@ module.exports = async (req, res) => {
   // 1. Action: Get PalmOps Data for a specific date (Public/Dashboard read)
   if (action === 'get') {
     if (!tanggal) return res.json({ success: false, message: 'Tanggal wajib diisi.' });
+    const tanggal_akhir = (p.tanggal_akhir || '').trim();
 
-    const { data, error } = await supabase
-      .from('database_palmops')
-      .select('region, tonase')
-      .eq('tanggal', tanggal);
+    let query = supabase.from('database_palmops').select('region, tonase, tanggal');
+    if (tanggal_akhir) {
+      query = query.gte('tanggal', tanggal).lte('tanggal', tanggal_akhir);
+    } else {
+      query = query.eq('tanggal', tanggal);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       return res.json({ success: false, message: 'Gagal mengambil data PalmOps: ' + error.message });
@@ -26,8 +31,14 @@ module.exports = async (req, res) => {
 
     const palmopsMap = {};
     (data || []).forEach(r => {
-      palmopsMap[r.region] = parseFloat(r.tonase) || 0;
+      if (!palmopsMap[r.region]) palmopsMap[r.region] = 0;
+      palmopsMap[r.region] += parseFloat(r.tonase) || 0;
     });
+
+    // Round the values to 2 decimal places after summing
+    for (const region in palmopsMap) {
+      palmopsMap[region] = Math.round(palmopsMap[region] * 100) / 100;
+    }
 
     return res.json({ success: true, data: palmopsMap });
   }

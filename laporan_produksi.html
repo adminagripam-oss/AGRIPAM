@@ -1519,6 +1519,7 @@
       const [excelData, setExcelData] = useState(null);
       const [excelDate, setExcelDate] = useState("");
       const [dbPalmopsData, setDbPalmopsData] = useState(null);
+      const [dbRealisasiData, setDbRealisasiData] = useState([]);
       const [fileName, setFileName] = useState("");
       const [showOnlyMismatch, setShowOnlyMismatch] = useState(false);
       const [dragActive, setDragActive] = useState(false);
@@ -1526,31 +1527,56 @@
       const [saving, setSaving] = useState(false);
       const fileInputRef = useRef(null);
 
-      // Fetch saved PalmOps data from DB on date change
+      // Date Range States
+      const [startDate, setStartDate] = useState(selectedDate);
+      const [endDate, setEndDate] = useState(selectedDate);
+
+      // Sync local range states when parent selectedDate changes
+      useEffect(() => {
+        setStartDate(selectedDate);
+        setEndDate(selectedDate);
+      }, [selectedDate]);
+
+      // Fetch saved PalmOps and Realisasi data from DB on date range change
       useEffect(() => {
         let active = true;
-        const fetchDbPalmops = async () => {
+        const fetchDataForRange = async () => {
           setDbLoading(true);
           try {
-            const res = await fetch(`/api/palmops?action=get&tanggal=${selectedDate}`);
-            const json = await res.json();
+            const [palmopsRes, realisasiRes] = await Promise.all([
+              fetch(`/api/palmops?action=get&tanggal=${startDate}&tanggal_akhir=${endDate}`),
+              fetch(`/api/realisasi?action=getData&tanggal=${startDate}&tanggal_akhir=${endDate}&region=ALL`)
+            ]);
+
+            const palmopsJson = await palmopsRes.json();
+            const realisasiJson = await realisasiRes.json();
+
             if (active) {
-              if (json.success && json.data && Object.keys(json.data).length > 0) {
-                setDbPalmopsData(json.data);
+              if (palmopsJson.success && palmopsJson.data && Object.keys(palmopsJson.data).length > 0) {
+                setDbPalmopsData(palmopsJson.data);
               } else {
                 setDbPalmopsData(null);
+              }
+
+              if (realisasiJson.success && realisasiJson.allRecords) {
+                setDbRealisasiData(realisasiJson.allRecords);
+              } else {
+                setDbRealisasiData([]);
               }
             }
           } catch (e) {
             console.error(e);
-            if (active) setDbPalmopsData(null);
+            if (active) {
+              setDbPalmopsData(null);
+              setDbRealisasiData([]);
+            }
           } finally {
             if (active) setDbLoading(false);
           }
         };
-        fetchDbPalmops();
+        fetchDataForRange();
         return () => { active = false; };
-      }, [selectedDate]);
+      }, [startDate, endDate]);
 
       const handleFile = (file) => {
         if (!file) return;
@@ -1857,8 +1883,12 @@
       const activePalmopsSource = excelData || dbPalmopsData;
       const isFromDb = !excelData && !!dbPalmopsData;
 
+      const activeRealisasi = (startDate === selectedDate && endDate === selectedDate && dbRealisasiData.length === 0)
+        ? (realisasiRecords || [])
+        : dbRealisasiData;
+
       const comparisonList = ALL_REGIONS.map(region => {
-        const agripamTotal = (realisasiRecords || [])
+        const agripamTotal = activeRealisasi
           .filter(r => r.region === region)
           .reduce((sum, r) => sum + (parseFloat(r.tonase) || 0), 0);
         
@@ -1948,7 +1978,9 @@
         worksheet['!cols'] = colWidths;
 
         // Generate Excel file and download
-        const filename = `Rincian_Perbandingan_Regional_${selectedDate}.xlsx`;
+        const filename = startDate === endDate 
+          ? `Rincian_Perbandingan_Regional_${startDate}.xlsx`
+          : `Rincian_Perbandingan_Regional_${startDate}_to_${endDate}.xlsx`;
         XLSX.writeFile(workbook, filename);
       };
 
@@ -1961,18 +1993,18 @@
               <p className="text-xs text-slate-450 dark:text-slate-400">Membandingkan realisasi database AGRI-PAM vs Excel LHP PalmOps</p>
             </div>
             
-            <div className="flex items-center gap-2">
-              {/* Interactive Date Picker */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Custom Date Range Picker */}
               <div className="flex items-center gap-2 bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-900 rounded-lg px-3 py-1.5 w-fit">
                 <Icon name="calendar" size={14} className="text-brand-600 dark:text-brand-400" />
-                <label className="text-[12px] font-bold text-brand-850 dark:text-brand-200 cursor-pointer flex items-center gap-1.5">
-                  Tanggal Evaluasi:
+                <div className="flex items-center gap-1 text-[12px] font-bold text-brand-850 dark:text-brand-200">
+                  <span>Dari:</span>
                   <input 
                     type="date" 
-                    value={selectedDate}
+                    value={startDate}
                     onChange={(e) => {
                       if (e.target.value) {
-                        onDateChange(e.target.value);
+                        setStartDate(e.target.value);
                         setExcelData(null);
                         setExcelDate("");
                         setFileName("");
@@ -1981,7 +2013,23 @@
                     className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer"
                     style={{ colorScheme: 'light' }}
                   />
-                </label>
+                  <span className="mx-1">s.d.</span>
+                  <span>Sampai:</span>
+                  <input 
+                    type="date" 
+                    value={endDate}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setEndDate(e.target.value);
+                        setExcelData(null);
+                        setExcelDate("");
+                        setFileName("");
+                      }
+                    }}
+                    className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer"
+                    style={{ colorScheme: 'light' }}
+                  />
+                </div>
               </div>
 
               {/* Export to Excel Button */}
@@ -2001,6 +2049,16 @@
             <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-8 bg-white dark:bg-slate-800 text-center shadow-sm">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mx-auto"></div>
               <p className="text-[12px] text-slate-500 mt-2">Memeriksa database...</p>
+            </div>
+          ) : (startDate !== endDate) ? (
+            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-6 bg-white dark:bg-slate-800 shadow-sm text-center">
+              <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center text-brand-600 dark:text-brand-400 shadow-sm border border-brand-100 dark:border-brand-900 mx-auto mb-3">
+                <Icon name="info" size={22} />
+              </div>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">Mode Rentang Tanggal Aktif</h3>
+              <p className="text-[11px] text-slate-400 mt-1 max-w-md mx-auto">
+                Unggah dan simpan file Excel PalmOps dinonaktifkan dalam mode rentang tanggal. Anda sedang mengevaluasi akumulasi data regional dari database untuk rentang <b>{formatIndoDate(startDate)}</b> s.d. <b>{formatIndoDate(endDate)}</b>.
+              </p>
             </div>
           ) : isFromDb ? (
             <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-6 bg-white dark:bg-slate-800 shadow-sm">

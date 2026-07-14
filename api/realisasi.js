@@ -24,8 +24,14 @@ module.exports = async (req, res) => {
 
   if (action === 'getData' || action === 'getRunningTextData') {
     if (!tanggal) return res.json({ success: false, message: 'Tanggal wajib diisi.' });
+    const tanggal_akhir = (p.tanggal_akhir || '').trim();
     
-    let query = supabase.from('database_input').select('region, jam, tonase').eq('tanggal', tanggal).order('jam', { ascending: true });
+    let query = supabase.from('database_input').select('region, jam, tonase').order('jam', { ascending: true });
+    if (tanggal_akhir) {
+      query = query.gte('tanggal', tanggal).lte('tanggal', tanggal_akhir);
+    } else {
+      query = query.eq('tanggal', tanggal);
+    }
     if (region && region.toUpperCase() !== 'ALL') query = query.eq('region', region);
     
     const { data, error } = await query;
