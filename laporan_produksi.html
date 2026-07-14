@@ -1689,7 +1689,7 @@
                 { region: 'Riau 2',                     excelRow: 184 },
                 { region: 'Riau 3',                     excelRow: 213 },
                 { region: 'Riau 4',                     excelRow: 220 },
-                { region: 'Bangka Belitung',            excelRow: 223 },
+                { region: 'Bangka Belitung',            excelRow: 233 },
                 { region: 'Jambi',                      excelRow: 250 },
                 { region: 'Sumatera Barat',             excelRow: 256 },
                 { region: 'Sumatera Selatan',           excelRow: 311 },
@@ -1950,7 +1950,12 @@
         
         if (hasExcelVal) {
           selisih = agripamTotal - palmopsTotal;
-          status = Math.abs(selisih) < 0.05 ? 'MATCH' : 'MISMATCH';
+          if (palmopsTotal === 0) {
+            status = agripamTotal === 0 ? 'MATCH' : 'MISMATCH';
+          } else {
+            const pctDiff = Math.abs(selisih / palmopsTotal);
+            status = pctDiff > 0.05 ? 'MISMATCH' : 'MATCH';
+          }
         }
         
         return {
@@ -1992,7 +1997,7 @@
 
           let pct = "-";
           if (activePalmopsSource && row.palmops > 0) {
-            pct = ((row.agripam / row.palmops) * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%";
+            pct = ((row.selisih / row.palmops) * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%";
           }
 
           return {
@@ -2008,7 +2013,7 @@
 
         let totalPct = "-";
         if (activePalmopsSource && totalPalmops > 0) {
-          totalPct = ((totalAgripam / totalPalmops) * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%";
+          totalPct = ((totalSelisih / totalPalmops) * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%";
         }
 
         // Add a total row
@@ -2019,7 +2024,7 @@
           "Realisasi PalmOps (Ton)": activePalmopsSource ? Math.round(totalPalmops * 100) / 100 : "-",
           "Selisih (Ton)": activePalmopsSource ? Math.round(totalSelisih * 100) / 100 : "-",
           "Persentase": totalPct,
-          "Status": Math.abs(totalSelisih) < 0.1 ? "Pas" : "Selisih"
+          "Status": (totalPalmops > 0 && Math.abs(totalSelisih / totalPalmops) <= 0.05) || (totalPalmops === 0 && totalAgripam === 0) ? "Pas" : "Selisih"
         });
 
         // Create workbook and worksheet
@@ -2401,7 +2406,7 @@
                           {activePalmopsSource ? (row.selisih > 0 ? `+${formatRibuan(row.selisih)}` : formatRibuan(row.selisih)) : "-"}
                         </td>
                         <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-slate-800 dark:text-white">
-                          {activePalmopsSource && row.palmops > 0 ? ((row.agripam / row.palmops) * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%" : "-"}
+                          {activePalmopsSource && row.palmops > 0 ? ((row.selisih / row.palmops) * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%" : "-"}
                         </td>
                         <td className="px-4 py-2.5 text-center">{statusBadge}</td>
                       </tr>
@@ -2416,11 +2421,11 @@
                       {activePalmopsSource ? (totalSelisih > 0 ? `+${formatRibuan(totalSelisih)}` : formatRibuan(totalSelisih)) : "-"}
                     </td>
                     <td className="px-4 py-3 text-right text-[13px] tabular-nums text-slate-800 dark:text-white">
-                      {activePalmopsSource && totalPalmops > 0 ? ((totalAgripam / totalPalmops) * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%" : "-"}
+                      {activePalmopsSource && totalPalmops > 0 ? ((totalSelisih / totalPalmops) * 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%" : "-"}
                     </td>
                     <td className="px-4 py-3 text-center">
                       {activePalmopsSource ? (
-                        Math.abs(totalSelisih) < 0.1 ? (
+                        (totalPalmops > 0 && Math.abs(totalSelisih / totalPalmops) <= 0.05) || (totalPalmops === 0 && totalAgripam === 0) ? (
                           <span className="text-[11px] text-green-600 font-bold flex items-center justify-center gap-1 w-fit mx-auto"><Icon name="check-check" size={13} /> Pas</span>
                         ) : (
                           <span className="text-[11px] text-red-600 font-bold flex items-center justify-center gap-1 w-fit mx-auto"><Icon name="alert-circle" size={13} /> Selisih</span>
