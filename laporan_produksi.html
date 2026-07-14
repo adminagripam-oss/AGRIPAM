@@ -1898,6 +1898,60 @@
         : totalMismatch === 0 ? 'ALL_MATCH' 
         : 'MISMATCH_FOUND';
 
+      const handleExportToExcel = () => {
+        if (!comparisonList || comparisonList.length === 0) {
+          alert("Tidak ada data untuk diexport.");
+          return;
+        }
+
+        // Prepare the data for Excel sheet
+        const excelRows = comparisonList.map((row, idx) => {
+          let statusText = "Belum Ada Data";
+          if (row.status === 'MATCH') statusText = "Sesuai";
+          else if (row.status === 'MISMATCH') statusText = "Selisih";
+
+          return {
+            "No": idx + 1,
+            "Nama Regional": row.region,
+            "Realisasi AGRI-PAM (Ton)": row.agripam,
+            "Realisasi PalmOps (Ton)": activePalmopsSource ? row.palmops : "-",
+            "Selisih (Ton)": activePalmopsSource ? row.selisih : "-",
+            "Status": statusText
+          };
+        });
+
+        // Add a total row
+        excelRows.push({
+          "No": "",
+          "Nama Regional": "Total Nasional",
+          "Realisasi AGRI-PAM (Ton)": Math.round(totalAgripam * 100) / 100,
+          "Realisasi PalmOps (Ton)": activePalmopsSource ? Math.round(totalPalmops * 100) / 100 : "-",
+          "Selisih (Ton)": activePalmopsSource ? Math.round(totalSelisih * 100) / 100 : "-",
+          "Status": Math.abs(totalSelisih) < 0.1 ? "Pas" : "Selisih"
+        });
+
+        // Create workbook and worksheet
+        const worksheet = XLSX.utils.json_to_sheet(excelRows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Perbandingan Regional");
+
+        // Adjust column widths automatically
+        const maxLen = (val) => (val ? val.toString().length : 10);
+        const colWidths = Object.keys(excelRows[0]).map(key => {
+          let max = key.length;
+          excelRows.forEach(row => {
+            const valLen = maxLen(row[key]);
+            if (valLen > max) max = valLen;
+          });
+          return { wch: max + 2 };
+        });
+        worksheet['!cols'] = colWidths;
+
+        // Generate Excel file and download
+        const filename = `Rincian_Perbandingan_Regional_${selectedDate}.xlsx`;
+        XLSX.writeFile(workbook, filename);
+      };
+
       return (
         <div className="space-y-5 animate-fadeIn">
           {/* Header Card */}
@@ -1907,26 +1961,38 @@
               <p className="text-xs text-slate-450 dark:text-slate-400">Membandingkan realisasi database AGRI-PAM vs Excel LHP PalmOps</p>
             </div>
             
-            {/* Interactive Date Picker */}
-            <div className="flex items-center gap-2 bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-900 rounded-lg px-3 py-1.5 w-fit">
-              <Icon name="calendar" size={14} className="text-brand-600 dark:text-brand-400" />
-              <label className="text-[12px] font-bold text-brand-850 dark:text-brand-200 cursor-pointer flex items-center gap-1.5">
-                Tanggal Evaluasi:
-                <input 
-                  type="date" 
-                  value={selectedDate}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      onDateChange(e.target.value);
-                      setExcelData(null);
-                      setExcelDate("");
-                      setFileName("");
-                    }
-                  }}
-                  className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
-              </label>
+            <div className="flex items-center gap-2">
+              {/* Interactive Date Picker */}
+              <div className="flex items-center gap-2 bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-900 rounded-lg px-3 py-1.5 w-fit">
+                <Icon name="calendar" size={14} className="text-brand-600 dark:text-brand-400" />
+                <label className="text-[12px] font-bold text-brand-850 dark:text-brand-200 cursor-pointer flex items-center gap-1.5">
+                  Tanggal Evaluasi:
+                  <input 
+                    type="date" 
+                    value={selectedDate}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        onDateChange(e.target.value);
+                        setExcelData(null);
+                        setExcelDate("");
+                        setFileName("");
+                      }
+                    }}
+                    className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer"
+                    style={{ colorScheme: 'light' }}
+                  />
+                </label>
+              </div>
+
+              {/* Export to Excel Button */}
+              <button
+                onClick={handleExportToExcel}
+                className="bg-green-600 hover:bg-green-700 text-white text-[12px] font-semibold px-4 py-2 rounded-lg shadow transition-colors flex items-center gap-1.5"
+                title="Ekspor Perbandingan ke Excel"
+              >
+                <Icon name="file-spreadsheet" size={13} />
+                Ekspor Excel
+              </button>
             </div>
           </div>
 
