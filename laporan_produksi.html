@@ -1606,20 +1606,20 @@
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
 
-            // ── Helper: baca nilai sel langsung via alamat Excel (A1, G15, dst.)
-            // PENTING: rows array dari sheet_to_json TIDAK bisa dipakai untuk
-            // koordinat tetap karena baris kosong dilewati & indeks bergeser.
-            // Metode ini membaca sel persis seperti di Excel.
+            // ── BACA SELURUH SHEET KE ARRAY 2D ──
+            // blankrows: true memastikan baris kosong tidak dibuang, 
+            // sehingga index array tetap sejajar dengan nomor baris Excel (index 0 = Baris 1).
+            const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', blankrows: true });
+
+            // Helper untuk membaca cell dari array 2D dengan koordinat A1, B2, dst.
+            // col berupa huruf (A-Z), row berupa angka 1-indexed.
             const getCellValue = (col, row) => {
-              const addr = `${col}${row}`;
-              const cell = worksheet[addr];
-              if (!cell) return null;
-              // Kembalikan cell.v, tapi jika cell.v adalah number (serial date excel) dan cell.w ada,
-              // utamakan cell.w (formatted string) untuk parsing tanggal yang lebih mudah
-              if (typeof cell.v === 'number' && cell.w) {
-                return cell.w;
+              const colIdx = col.toUpperCase().charCodeAt(0) - 65; // A=0, B=1, ...
+              const rowIdx = row - 1; // 1-indexed ke 0-indexed
+              if (rows[rowIdx] && rows[rowIdx][colIdx] !== undefined && rows[rowIdx][colIdx] !== '') {
+                return rows[rowIdx][colIdx];
               }
-              return cell.v !== undefined ? cell.v : null;
+              return null;
             };
 
             // ── Deteksi header LHP (A1)
@@ -1645,46 +1645,41 @@
             const parsedTotals = {};
 
             if (isLHP) {
-              // ── PEMETAAN SEL LANGSUNG — nomor baris 1-indexed sesuai Excel asli
-              // Nilai di kolom G (produksi hari ini realisasi) dalam satuan Kg → dikonversi ke Ton
-              // getCellValue('G', 15) = sel G15 di Excel — tidak terpengaruh baris kosong
-              const cellMapping = [
-                { region: 'Aceh', excelRow: 15 },
-                { region: 'Sumatera Utara 1', excelRow: 39 },
-                { region: 'Sumatera Utara 2 Ex Torganda', excelRow: 50 },
-                { region: 'Riau 1', excelRow: 73 },
-                { region: 'Riau 2', excelRow: 184 },
-                { region: 'Riau 3', excelRow: 213 },
-                { region: 'Riau 4', excelRow: 220 },
-                { region: 'Bangka Belitung', excelRow: 233 },
-                { region: 'Jambi', excelRow: 250 },
-                { region: 'Sumatera Barat', excelRow: 256 },
-                { region: 'Sumatera Selatan', excelRow: 311 },
-                { region: 'Kalimantan Barat 1', excelRow: 374 },
-                { region: 'Kalimantan Barat 2', excelRow: 424 },
-                { region: 'Kalimantan Selatan 1', excelRow: 432 },
-                { region: 'Kalimantan Selatan 2', excelRow: 445 },
-                { region: 'Kalimantan Timur', excelRow: 500 },
-                { region: 'Kalimantan Utara', excelRow: 449 },
-                { region: 'Kalimantan Tengah 1', excelRow: 605 },
-                { region: 'Kalimantan Tengah 3', excelRow: 660 },
-                { region: 'Kalimantan Tengah 2', excelRow: 727 },
-                { region: 'Sulawesi Tengah', excelRow: 748 },
-                { region: 'Sulawesi Tenggara', excelRow: 759 },
-              ];
-
-              for (const { region, excelRow } of cellMapping) {
-                // getCellValue pakai nomor baris Excel 1-indexed persis
-                const rawVal = getCellValue('G', excelRow);
-                const numVal = rawVal !== null ? parseFloat(rawVal) : 0;
-                // Nilai LHP dalam Kg → bagi 1000 → Ton
-                parsedTotals[region] = isNaN(numVal) ? 0 : Math.round((numVal / 1000) * 100) / 100;
+              // ── PEMBACAAN DINAMIS KHUSUS LHP ──
+              // Karena baris subtotal di LHP hasil export seringkali kosong datanya,
+              // kita loop semua baris data kebun (dimulai setelah baris header)
+              // Kolom B (index 1) = Regional, Kolom G (index 6) = Produksi Kg Real Hari Ini
+              for (let r = 5; r < rows.length; r++) {
+                const row = rows[r];
+                if (!row || !Array.isArray(row)) continue;
+                
+                const rawReg = row[1]; // Kolom B
+                let rawVal = row[6]; // Kolom G
+                
+                if (!rawReg) continue;
+                
+                const matched = findRegionMatch(rawReg);
+                if (matched) {
+                    if (typeof rawVal === 'string') {
+                        rawVal = rawVal.replace(/[^\d.,]/g, '');
+                        rawVal = rawVal.replace(/,/g, '');
+                    }
+                    const numVal = rawVal !== null && rawVal !== '' ? parseFloat(rawVal) : 0;
+                    if (!isNaN(numVal)) {
+                        if (!parsedTotals[matched]) parsedTotals[matched] = 0;
+                        parsedTotals[matched] += numVal;
+                    }
+                }
+              }
+              
+              // Nilai LHP dalam Kg → bagi 1000 → Ton
+              for (const reg in parsedTotals) {
+                 parsedTotals[reg] = Math.round((parsedTotals[reg] / 1000) * 100) / 100;
               }
 
             } else {
               // ── FALLBACK: deteksi dinamis untuk file Excel non-LHP
-              // Gunakan sheet_to_json hanya di sini (format lain umumnya tidak punya baris kosong banyak)
-              const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+              // (Menggunakan array rows yang sudah di-generate di atas)
 
               let regionColIdx = -1;
               let tonaseColIdx = -1;
