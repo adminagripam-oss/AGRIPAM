@@ -744,7 +744,7 @@
                 class="px-6 py-4 border-b border-outline-variant dark:border-slate-800 flex items-center justify-between bg-primary text-white">
                 <h3 class="font-bold text-lg flex items-center gap-2">
                     <span class="material-symbols-outlined">fact_check</span>
-                    Persetujuan Hapus Data
+                    Persetujuan Request (Hapus & Buka Akses)
                 </h3>
                 <button onclick="closeAdminApprovalModal()" class="text-white/80 hover:text-white transition-colors">
                     <span class="material-symbols-outlined text-2xl">close</span>
@@ -781,7 +781,7 @@
                 </div>
                 <div id="adminApprovalEmpty"
                     class="hidden text-center py-8 text-on-surface-variant dark:text-slate-500">
-                    Tidak ada permintaan hapus data yang menunggu persetujuan.
+                    Tidak ada permintaan yang menunggu persetujuan.
                 </div>
             </div>
         </div>
@@ -983,11 +983,11 @@
                     if (s && s.region === 'ADMIN') {
                         const btn = document.getElementById("formEstimasiHeaderBtn");
                         if (btn) {
-                            btn.title = "Persetujuan Hapus Data";
+                            btn.title = "Persetujuan Request (Hapus & Buka Akses)";
                             btn.classList.add("relative");
                             btn.innerHTML = `
                                 <span class="material-symbols-outlined text-[16px]">fact_check</span>
-                                <span>Verifikasi Hapus</span>
+                                <span>Verifikasi Request</span>
                                 <span id="deleteRequestBadge" class="hidden absolute top-0 right-0 -mt-2 -mr-2 flex h-4 min-w-[16px]">
                                     <span class="animate-ping absolute inline-flex h-full w-full rounded-lg bg-red-400 opacity-75"></span>
                                     <span id="deleteRequestBadgeCount" class="relative inline-flex items-center justify-center rounded-lg h-4 min-w-[16px] px-1 bg-red-500 text-white text-[10px] font-bold leading-none border border-white dark:border-slate-900"></span>
@@ -1827,44 +1827,58 @@
             document.getElementById("adminApprovalTable").classList.add("hidden");
             document.getElementById("adminApprovalEmpty").classList.add("hidden");
 
-            const url = `/api/deleteRequest?action=getDeleteRequests&region=${s.region}&token=${s.token}`;
-            fetch(url)
-                .then(res => res.json())
-                .then(res => {
-                    document.getElementById("adminApprovalLoading").classList.add("hidden");
-                    if (res.success) {
-                        if (res.data && res.data.length > 0) {
-                            document.getElementById("adminApprovalTable").classList.remove("hidden");
-                            const tbody = document.getElementById("adminApprovalBody");
-                            tbody.innerHTML = "";
-                            res.data.forEach(req => {
-                                const tr = document.createElement("tr");
-                                tr.className = "border-b border-outline-variant dark:border-slate-800 hover:bg-surface-container dark:hover:bg-slate-800/50 transition-colors";
-                                tr.innerHTML = `
-                                    <td class="p-3 text-sm font-bold text-primary dark:text-emerald-400">${req.type}</td>
-                                    <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.region}</td>
-                                    <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.tanggal}</td>
-                                    <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.jam || '-'}</td>
-                                    <td class="p-3 text-xs text-on-surface-variant dark:text-slate-500">${new Date(req.requested_at).toLocaleString('id-ID')}</td>
-                                    <td class="p-3 text-center space-x-2">
-                                        <button onclick="resolveDeleteRequest(${req.id}, 'APPROVE')" class="bg-primary hover:bg-primary/90 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">Terima</button>
-                                        <button onclick="resolveDeleteRequest(${req.id}, 'REJECT')" class="bg-error hover:bg-error/90 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">Tolak</button>
-                                    </td>
-                                `;
-                                tbody.appendChild(tr);
-                            });
-                        } else {
-                            document.getElementById("adminApprovalEmpty").classList.remove("hidden");
-                        }
-                    } else {
-                        document.getElementById("adminApprovalEmpty").classList.remove("hidden");
-                        document.getElementById("adminApprovalEmpty").innerText = "Error: " + res.message;
-                    }
-                })
-                .catch(err => {
-                    document.getElementById("adminApprovalLoading").classList.add("hidden");
-                    alert("Gagal memuat data: " + err);
-                });
+            const urlDelete = `/api/deleteRequest?action=getDeleteRequests&region=${s.region}&token=${s.token}`;
+            const urlUnlock = `/api/unlockRequest?action=getUnlockRequests&region=${s.region}&token=${s.token}`;
+            
+            Promise.all([
+                fetch(urlDelete).then(res => res.json()).catch(() => ({success: false, data: []})),
+                fetch(urlUnlock).then(res => res.json()).catch(() => ({success: false, data: []}))
+            ])
+            .then(([resDelete, resUnlock]) => {
+                document.getElementById("adminApprovalLoading").classList.add("hidden");
+                let allRequests = [];
+                if (resDelete.success && resDelete.data) {
+                    resDelete.data.forEach(d => { d._api = 'delete'; allRequests.push(d); });
+                }
+                if (resUnlock.success && resUnlock.data) {
+                    resUnlock.data.forEach(d => { d._api = 'unlock'; d.type = 'Buka Akses Estimasi'; allRequests.push(d); });
+                }
+                
+                if (allRequests.length > 0) {
+                    allRequests.sort((a,b) => new Date(b.requested_at) - new Date(a.requested_at));
+                    document.getElementById("adminApprovalTable").classList.remove("hidden");
+                    const tbody = document.getElementById("adminApprovalBody");
+                    tbody.innerHTML = "";
+                    allRequests.forEach(req => {
+                        const tr = document.createElement("tr");
+                        tr.className = req._api === 'unlock' 
+                            ? "border-b border-outline-variant dark:border-slate-800 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+                            : "border-b border-outline-variant dark:border-slate-800 hover:bg-surface-container dark:hover:bg-slate-800/50 transition-colors";
+                        
+                        const actionName = req._api === 'delete' ? 'resolveDeleteRequest' : 'resolveUnlockRequestAdmin';
+                        const typeColor = req._api === 'unlock' ? 'text-amber-600 dark:text-amber-400' : 'text-primary dark:text-emerald-400';
+                        
+                        tr.innerHTML = `
+                            <td class="p-3 text-sm font-bold ${typeColor}">${req.type}</td>
+                            <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.region}</td>
+                            <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.tanggal}</td>
+                            <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.jam || '-'}</td>
+                            <td class="p-3 text-xs text-on-surface-variant dark:text-slate-500">${new Date(req.requested_at).toLocaleString('id-ID')}</td>
+                            <td class="p-3 text-center space-x-2">
+                                <button onclick="${actionName}(${req.id}, 'APPROVE')" class="bg-primary hover:bg-primary/90 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">Terima</button>
+                                <button onclick="${actionName}(${req.id}, 'REJECT')" class="bg-error hover:bg-error/90 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">Tolak</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    document.getElementById("adminApprovalEmpty").classList.remove("hidden");
+                }
+            })
+            .catch(err => {
+                document.getElementById("adminApprovalLoading").classList.add("hidden");
+                alert("Gagal memuat data: " + err);
+            });
         }
 
         function resolveDeleteRequest(id, actionStr) {
@@ -1902,31 +1916,72 @@
                 });
         }
 
+        function resolveUnlockRequestAdmin(id, actionStr) {
+            const raw = sessionStorage.getItem("agripam_session");
+            if (!raw) return;
+            const s = JSON.parse(raw);
+
+            const confirmMsg = actionStr === 'APPROVE' ? "Apakah Anda yakin ingin MENERIMA permintaan Buka Akses ini?" : "Apakah Anda yakin ingin MENOLAK permintaan Buka Akses ini?";
+            if (!confirm(confirmMsg)) return;
+
+            if (window.parent && window.parent.setLoading) {
+                window.parent.setLoading(true, "Memproses persetujuan...");
+            }
+
+            const url = `/api/unlockRequest?action=resolveUnlockRequest&region=${s.region}&token=${s.token}&requestId=${id}&resolveAction=${actionStr}`;
+            fetch(url)
+                .then(res => res.json())
+                .then(res => {
+                    if (window.parent && window.parent.setLoading) {
+                        window.parent.setLoading(false);
+                    }
+                    if (res.success) {
+                        alert(res.message);
+                        loadDeleteRequests();
+                        checkDeleteRequestsNotification();
+                    } else {
+                        alert(res.message || "Gagal memproses.");
+                    }
+                })
+                .catch(err => {
+                    if (window.parent && window.parent.setLoading) {
+                        window.parent.setLoading(false);
+                    }
+                    alert("Error: " + err);
+                });
+        }
+
         function checkDeleteRequestsNotification() {
             const raw = sessionStorage.getItem("agripam_session");
             if (!raw) return;
             const s = JSON.parse(raw);
             if (s.region !== 'ADMIN') return;
 
-            const url = `/api/deleteRequest?action=getDeleteRequests&region=${s.region}&token=${s.token}`;
-            fetch(url)
-                .then(res => res.json())
-                .then(res => {
-                    if (res.success) {
-                        const badge = document.getElementById("deleteRequestBadge");
-                        const count = document.getElementById("deleteRequestBadgeCount");
-                        if (badge) {
-                            const pendingCount = res.data ? res.data.length : 0;
-                            if (pendingCount > 0) {
-                                if (count) count.textContent = pendingCount > 99 ? "99+" : String(pendingCount);
-                                badge.classList.remove("hidden");
-                            } else {
-                                badge.classList.add("hidden");
-                            }
-                        }
+            const urlDelete = `/api/deleteRequest?action=getDeleteRequests&region=${s.region}&token=${s.token}`;
+            const urlUnlock = `/api/unlockRequest?action=getUnlockRequests&region=${s.region}&token=${s.token}`;
+            
+            Promise.all([
+                fetch(urlDelete).then(res => res.json()).catch(() => ({success: false, data: []})),
+                fetch(urlUnlock).then(res => res.json()).catch(() => ({success: false, data: []}))
+            ])
+            .then(([resDelete, resUnlock]) => {
+                const badge = document.getElementById("deleteRequestBadge");
+                const count = document.getElementById("deleteRequestBadgeCount");
+                
+                let pendingCount = 0;
+                if (resDelete.success && resDelete.data) pendingCount += resDelete.data.length;
+                if (resUnlock.success && resUnlock.data) pendingCount += resUnlock.data.length;
+
+                if (badge) {
+                    if (pendingCount > 0) {
+                        if (count) count.textContent = pendingCount > 99 ? "99+" : String(pendingCount);
+                        badge.classList.remove("hidden");
+                    } else {
+                        badge.classList.add("hidden");
                     }
-                })
-                .catch(e => console.error("Error checking delete requests:", e));
+                }
+            })
+            .catch(e => console.error("Error checking requests:", e));
         }
         // Fullscreen toggle for Rekap CRO Modal
         function toggleRekapCROFullscreen() {

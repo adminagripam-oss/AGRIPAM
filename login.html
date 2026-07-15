@@ -1624,14 +1624,14 @@
       <section class="intro">
         <p class="eyebrow">One Agrinas Operational Monitoring (One Agripam)</p>
         <h1 class="headline">Setiap tandan,<br><span>tercatat tepat waktu.</span></h1>
-        <p class="sub">Masuk dengan wilayah kerja Anda untuk mulai mencatat realisasi panen hari ini — kapan pun shift
+        <p class="sub">Masuk dengan wilayah kerja Anda untuk mulai mencatat realisasi panen hari ini â€” kapan pun shift
           Anda berlangsung.</p>
 
         <div class="ticker" aria-hidden="true">
           <div class="ticker__clock">
             <span class="dot"></span>
             <span id="clockTime">--:--:--</span>
-            <span class="tz">WIB · UTC+7</span>
+            <span class="tz">WIB Â· UTC+7</span>
           </div>
           <div class="ticker__track">
             <div class="ticker__list" id="tickerList"></div>
@@ -2046,11 +2046,11 @@
     // =========================================================================
     // KONFIGURASI
     // =========================================================================
-    // ── API Configuration (Supabase via Vercel Serverless) ──────────────
+    // â”€â”€ API Configuration (Supabase via Vercel Serverless) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     var API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:'
       ? 'http://localhost:3000/api'
       : '/api';
-    // Pemetaan action lama (Apps Script) → endpoint baru
+    // Pemetaan action lama (Apps Script) â†’ endpoint baru
     var ACTION_MAP = {
       "login": "auth",
       "logout": "auth",
@@ -2073,15 +2073,15 @@
     var BC_CHANNEL = "agripam_bc"; // nama channel BroadcastChannel
 
     // =========================================================================
-    // BROADCASTCHANNEL — komunikasi antar tab
+    // BROADCASTCHANNEL â€” komunikasi antar tab
     // =========================================================================
     var bc = (typeof BroadcastChannel !== "undefined") ? new BroadcastChannel(BC_CHANNEL) : null;
 
     // Pesan yang dikirim/diterima antar tab:
-    // { type: "SESSION_QUERY" }          → tab baru tanya: "ada sesi aktif?"
-    // { type: "SESSION_ANNOUNCE", region } → tab aktif jawab: "saya aktif dengan region X"
-    // { type: "SESSION_STARTED", region } → tab baru kasih tahu: "saya baru login region X"
-    // { type: "SESSION_ENDED" }           → tab yang logout kasih tahu semua tab
+    // { type: "SESSION_QUERY" }          â†’ tab baru tanya: "ada sesi aktif?"
+    // { type: "SESSION_ANNOUNCE", region } â†’ tab aktif jawab: "saya aktif dengan region X"
+    // { type: "SESSION_STARTED", region } â†’ tab baru kasih tahu: "saya baru login region X"
+    // { type: "SESSION_ENDED" }           â†’ tab yang logout kasih tahu semua tab
 
     if (bc) {
       bc.onmessage = function (event) {
@@ -2089,18 +2089,18 @@
         if (!msg || !msg.type) return;
 
         if (msg.type === "SESSION_QUERY") {
-          // Ada tab baru yang tanya — jawab jika kita punya sesi aktif
+          // Ada tab baru yang tanya â€” jawab jika kita punya sesi aktif
           var s = loadSession();
           if (s) {
             bc.postMessage({ type: "SESSION_ANNOUNCE", region: s.region });
           }
 
         } else if (msg.type === "SESSION_ANNOUNCE") {
-          // Ada tab lain yang aktif — simpan info ini untuk dipakai saat login
+          // Ada tab lain yang aktif â€” simpan info ini untuk dipakai saat login
           window._activeTabRegion = msg.region;
 
         } else if (msg.type === "SESSION_STARTED") {
-          // Tab lain baru login — kita harus logout
+          // Tab lain baru login â€” kita harus logout
           var mySession = loadSession();
           if (mySession) {
             clearSession();
@@ -2108,7 +2108,7 @@
           }
 
         } else if (msg.type === "SESSION_ENDED") {
-          // Tab lain logout — tidak perlu aksi khusus, tapi reset flag
+          // Tab lain logout â€” tidak perlu aksi khusus, tapi reset flag
           window._activeTabRegion = null;
         }
       };
@@ -2141,7 +2141,7 @@
     var sessionTimer = null;
     var currentEstimasiPanen = 0; // estimasi panen dalam Ton
     var isAdminTotalAll = false;
-    var myChart = null; // instance Chart.js grafik realisasi — dideklarasikan di sini (bukan dekat updateChart())
+    var myChart = null; // instance Chart.js grafik realisasi â€” dideklarasikan di sini (bukan dekat updateChart())
                          // karena init() yang memanggil updateChart() lebih dulu jalan di posisi source ini
 
     var statusText = document.getElementById("status");
@@ -2151,7 +2151,7 @@
     var currentEstimasiExists = false;
     var isInternalNavigation = false;
 
-    // Tombol di estimasi section — diambil saat dibutuhkan agar tidak null saat load
+    // Tombol di estimasi section â€” diambil saat dibutuhkan agar tidak null saat load
     function getEstimasiBtn() { return document.getElementById("submitEstimasiBtn"); }
     function getDeleteEstBtn() { return document.getElementById("deleteEstimasiBtn"); }
 
@@ -2220,7 +2220,7 @@
       }
       var hours = Math.floor(remaining / 3600000);
       var mins = Math.floor((remaining % 3600000) / 60000);
-      el.textContent = "Sesi aktif — berakhir " + hours + " jam " + mins + " menit lagi";
+      el.textContent = "Sesi aktif â€” berakhir " + hours + " jam " + mins + " menit lagi";
       el.className = "session-info";
     }
 
@@ -2260,69 +2260,185 @@
 
       setLoading(true, "Memeriksa data estimasi...");
 
-      jsonpRequest(
-        { action: "getEstimasi", tanggal: tanggal, region: s.region, token: s.token },
-        function (res) {
-          setLoading(false);
-          if (res.success) {
-            currentEstimasiExists = res.exists;
-            if (res.exists) {
-              hint.textContent = "Data estimasi tanggal ini sudah terisi (" + res.data.estPanen + " Kg)." +
-                (isLocked ? " (Pengisian Baru / Edit ditutup)" : "");
-              hint.style.color = isLocked ? "#ffa600" : "#dc3545";
+            // Cek status unlock sebelum fetch estimasi
+      var unlockUrl = "/api/unlockRequest?action=checkUnlock&tanggal=" + tanggal + "&region=" + encodeURIComponent(s.region) + "&token=" + encodeURIComponent(s.token);
+      fetch(unlockUrl)
+        .then(function(res) { return res.json(); })
+        .catch(function() { return { success: false }; })
+        .then(function(unlockData) {
+           var unlockStatus = (unlockData && unlockData.success) ? unlockData.status : 'NONE';
+           var finalLocked = isLocked;
+           if (unlockStatus === 'APPROVED') {
+             finalLocked = false;
+           }
 
-              document.getElementById("luasPanen").value = res.data.luasPanen;
-              document.getElementById("estimasiRestanLalu").value = res.data.restanLalu;
-              document.getElementById("tkPanen").value = res.data.tkPanen;
-              document.getElementById("estimasiPanen").value = res.data.estPanen;
-              document.getElementById("outputPanen").value = res.data.outPanen;
-              document.getElementById("estimasiKirim").value = res.data.estKirim;
-              document.getElementById("estimasiRestan").value = res.data.estRestan;
+           jsonpRequest(
+             { action: "getEstimasi", tanggal: tanggal, region: s.region, token: s.token },
+             function (res) {
+               setLoading(false);
+               if (res.success) {
+                 currentEstimasiExists = res.exists;
+                 
+                 // Persiapkan tombol request
+                 var reqBtn = document.getElementById("btnRequestUnlock");
+                 if (!reqBtn) {
+                   reqBtn = document.createElement("button");
+                   reqBtn.id = "btnRequestUnlock";
+                   reqBtn.type = "button";
+                   reqBtn.style.marginTop = "5px";
+                   reqBtn.style.marginBottom = "10px";
+                   reqBtn.style.padding = "5px 10px";
+                   reqBtn.style.fontSize = "12px";
+                   reqBtn.style.fontWeight = "bold";
+                   reqBtn.style.borderRadius = "4px";
+                   reqBtn.style.border = "none";
+                   reqBtn.style.cursor = "pointer";
+                   reqBtn.onclick = requestUnlockAccess;
+                   hint.parentNode.insertBefore(reqBtn, hint.nextSibling);
+                 }
+                 reqBtn.style.display = "none";
 
-              var isTp = (parseFloat(res.data.luasPanen) === 0 && parseFloat(res.data.estPanen) === 0);
-              toggleTidakPanen(isTp);
-            } else {
-              if (isLocked) {
-                var d1 = new Date(estYear, estMonth, estDay - 1);
-                var d1Day = String(d1.getDate()).padStart(2, '0');
-                var d1Month = String(d1.getMonth() + 1).padStart(2, '0');
-                var d1Year = d1.getFullYear();
-                var deadlineStr = d1Day + "/" + d1Month + "/" + d1Year + " pukul 22.00 WIB";
+                 if (res.exists) {
+                   hint.textContent = "Data estimasi tanggal ini sudah terisi (" + res.data.estPanen + " Kg)." +
+                     (finalLocked ? " (Pengisian Baru / Edit ditutup)" : "");
+                   hint.style.color = finalLocked ? "#ffa600" : "#dc3545";
+                   
+                   if (finalLocked && unlockStatus === 'NONE') {
+                       reqBtn.style.display = "inline-block";
+                       reqBtn.textContent = "Ajukan Buka Akses";
+                       reqBtn.style.backgroundColor = "#ffc107";
+                       reqBtn.style.color = "#000";
+                       reqBtn.disabled = false;
+                   } else if (finalLocked && unlockStatus === 'PENDING') {
+                       reqBtn.style.display = "inline-block";
+                       reqBtn.textContent = "Menunggu Persetujuan Admin";
+                       reqBtn.style.backgroundColor = "#6c757d";
+                       reqBtn.style.color = "#fff";
+                       reqBtn.disabled = true;
+                   } else if (finalLocked && unlockStatus === 'REJECTED') {
+                       reqBtn.style.display = "inline-block";
+                       reqBtn.textContent = "Ajukan Ulang Buka Akses";
+                       reqBtn.style.backgroundColor = "#ffc107";
+                       reqBtn.style.color = "#000";
+                       reqBtn.disabled = false;
+                   }
 
-                hint.textContent = "Pengisian ditutup! Batas pengisian berakhir pada " + deadlineStr;
-                hint.style.color = "#dc3545";
-              } else {
-                hint.textContent = "Tanggal ini belum ada data estimasi (Bisa diisi).";
-                hint.style.color = "#28a745";
-              }
+                   document.getElementById("luasPanen").value = res.data.luasPanen;
+                   document.getElementById("estimasiRestanLalu").value = res.data.restanLalu;
+                   document.getElementById("tkPanen").value = res.data.tkPanen;
+                   document.getElementById("estimasiPanen").value = res.data.estPanen;
+                   document.getElementById("outputPanen").value = res.data.outPanen;
+                   document.getElementById("estimasiKirim").value = res.data.estKirim;
+                   document.getElementById("estimasiRestan").value = res.data.estRestan;
+     
+                   var isTp = (parseFloat(res.data.luasPanen) === 0 && parseFloat(res.data.estPanen) === 0);
+                   toggleTidakPanen(isTp);
+                 } else {
+                   if (finalLocked) {
+                     var d1 = new Date(estYear, estMonth, estDay - 1);
+                     var d1Day = String(d1.getDate()).padStart(2, '0');
+                     var d1Month = String(d1.getMonth() + 1).padStart(2, '0');
+                     var d1Year = d1.getFullYear();
+                     var deadlineStr = d1Day + "/" + d1Month + "/" + d1Year + " pukul 22.00 WIB";
+     
+                     hint.textContent = "Pengisian ditutup! Batas pengisian berakhir pada " + deadlineStr;
+                     hint.style.color = "#dc3545";
+                     
+                     if (unlockStatus === 'NONE') {
+                         reqBtn.style.display = "inline-block";
+                         reqBtn.textContent = "Ajukan Buka Akses";
+                         reqBtn.style.backgroundColor = "#ffc107";
+                         reqBtn.style.color = "#000";
+                         reqBtn.disabled = false;
+                     } else if (unlockStatus === 'PENDING') {
+                         reqBtn.style.display = "inline-block";
+                         reqBtn.textContent = "Menunggu Persetujuan Admin";
+                         reqBtn.style.backgroundColor = "#6c757d";
+                         reqBtn.style.color = "#fff";
+                         reqBtn.disabled = true;
+                     } else if (unlockStatus === 'REJECTED') {
+                         reqBtn.style.display = "inline-block";
+                         reqBtn.textContent = "Ajukan Ulang Buka Akses";
+                         reqBtn.style.backgroundColor = "#ffc107";
+                         reqBtn.style.color = "#000";
+                         reqBtn.disabled = false;
+                     }
+                   } else {
+                     hint.textContent = "Tanggal ini belum ada data estimasi (Bisa diisi).";
+                     hint.style.color = "#28a745";
+                   }
+     
+                   document.getElementById("luasPanen").value = "";
+                   document.getElementById("estimasiRestanLalu").value = "";
+                   document.getElementById("tkPanen").value = "";
+                   document.getElementById("estimasiPanen").value = "";
+                   document.getElementById("outputPanen").value = "";
+                   document.getElementById("estimasiKirim").value = "";
+                   document.getElementById("estimasiRestan").value = "";
+                   toggleTidakPanen(false);
+                 }
+                 
+                 // Disable/Enable fields based on finalLocked
+                 var formFields = [
+                   "luasPanen", "estimasiRestanLalu", "tkPanen", "estimasiPanen",
+                   "estimasiKirim", "estimasiRestan", "btnTidakPanen"
+                 ];
+                 formFields.forEach(function (id) {
+                   var el = document.getElementById(id);
+                   if (el) el.disabled = finalLocked;
+                 });
+                 
+                 var submitBtn = getEstimasiBtn();
+                 if(submitBtn) submitBtn.disabled = finalLocked;
+                 
+                 var delBtn = getDeleteEstBtn();
+                 if(delBtn) delBtn.style.display = (res.exists && !finalLocked) ? "inline-block" : "none";
+               } else {
+                 hint.textContent = "Gagal mengecek data.";
+                 hint.style.color = "#dc3545";
+               }
+             },
+             function (errMsg) {
+               setLoading(false);
+               hint.textContent = "Gagal koneksi ke server.";
+               hint.style.color = "#dc3545";
+             }
+           );
+        });
+    }
 
-              document.getElementById("luasPanen").value = "";
-              document.getElementById("estimasiRestanLalu").value = "";
-              document.getElementById("tkPanen").value = "";
-              document.getElementById("estimasiPanen").value = "";
-              document.getElementById("outputPanen").value = "";
-              document.getElementById("estimasiKirim").value = "";
-              document.getElementById("estimasiRestan").value = "";
-              toggleTidakPanen(false);
-            }
-          } else {
-            hint.textContent = "Gagal mengecek data.";
-            hint.style.color = "#dc3545";
-          }
-        },
-        function (errMsg) {
-          setLoading(false);
-          hint.textContent = "Gagal koneksi ke server.";
-          hint.style.color = "#dc3545";
+    function requestUnlockAccess() {
+      var tanggal = document.getElementById("tanggalEstimasi").value;
+      var s = loadSession();
+      if (!tanggal || !s) return;
+      
+      if (!confirm("Ajukan permohonan buka akses pengisian estimasi ke Admin untuk tanggal " + tanggal + "?")) return;
+      
+      setLoading(true, "Mengirim pengajuan...");
+      fetch("/api/unlockRequest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "requestUnlock", tanggal: tanggal, region: s.region, token: s.token })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        setLoading(false);
+        alert(res.message || (res.success ? "Pengajuan berhasil" : "Pengajuan gagal"));
+        if (res.success) {
+          checkEstimasi(); // Refresh status
         }
-      );
+      })
+      .catch(function(err) {
+        setLoading(false);
+        alert("Gagal menghubungi server.");
+      });
     }
 
     // =========================================================================
     // JSONP ENGINE
     // =========================================================================
 
-    // ── API Request Engine (fetch-based, menggantikan JSONP) ─────────────
+    // â”€â”€ API Request Engine (fetch-based, menggantikan JSONP) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function jsonpRequest(params, onSuccess, onError, _retry) {
       var retry = _retry || 0;
       var action = params.action || "";
@@ -2513,9 +2629,9 @@
 
             if (items.length > 0) {
               // Duplicate items for seamless looping if few items
-              var html = items.join(' <span style="margin: 0 15px; opacity: 0.3;">●</span> ');
+              var html = items.join(' <span style="margin: 0 15px; opacity: 0.3;">â—</span> ');
               if (items.length < 5) {
-                html = html + ' <span style="margin: 0 30px; opacity: 0.3;">●</span> ' + html;
+                html = html + ' <span style="margin: 0 30px; opacity: 0.3;">â—</span> ' + html;
               }
               if (content.innerHTML !== html) {
                 content.innerHTML = html;
@@ -2665,7 +2781,7 @@
     }
 
     // =========================================================================
-    // ✅ BARU: HEARTBEAT — perpanjang sesi otomatis setiap 30 menit
+    // âœ… BARU: HEARTBEAT â€” perpanjang sesi otomatis setiap 30 menit
     // =========================================================================
     var heartbeatInterval = null;
 
@@ -2682,14 +2798,14 @@
               // Perbarui expiry di sessionStorage
               saveSession(s.region, s.token, res.ttlMs || (8 * 60 * 60 * 1000));
             } else {
-              // Token sudah tidak valid — paksa logout
+              // Token sudah tidak valid â€” paksa logout
               stopHeartbeat();
               alert("Sesi Anda berakhir: " + (res.message || "Silakan login ulang."));
               prosesLogout();
             }
           },
           function () {
-            // Gagal koneksi — biarkan saja, coba lagi di interval berikutnya
+            // Gagal koneksi â€” biarkan saja, coba lagi di interval berikutnya
           }
         );
       }, 30 * 60 * 1000); // setiap 30 menit
@@ -2703,7 +2819,7 @@
     }
 
     // =========================================================================
-    // ✅ BARU: AUTO UPDATE ADMIN — update data panen tiap 30 detik tanpa refresh
+    // âœ… BARU: AUTO UPDATE ADMIN â€” update data panen tiap 30 detik tanpa refresh
     // =========================================================================
     var adminAutoUpdateInterval = null;
 
@@ -2732,7 +2848,7 @@
     }
 
     // =========================================================================
-    // ✅ BARU: NOTIFICATIONS CHECK (SAP)
+    // âœ… BARU: NOTIFICATIONS CHECK (SAP)
     // =========================================================================
     var notificationsInterval = null;
 
@@ -2777,7 +2893,7 @@
       window.removeEventListener("focus", checkNotifications);
     }
 
-    // Buka SAP (Sistem Administrasi Persuratan) — dengan animasi scale-in dari tombol
+    // Buka SAP (Sistem Administrasi Persuratan) â€” dengan animasi scale-in dari tombol
     function bukaSAP() {
       var s = loadSession();
       var region = s ? s.region : null;
@@ -2814,7 +2930,7 @@
         sapIframe.src = 'sap_regional.html' + params;
       }
 
-      // Prepare classes and display — animate scale-in
+      // Prepare classes and display â€” animate scale-in
       sapSec.classList.remove("scale-out");
       sapSec.classList.add("scale-in");
       sapSec.style.display = "flex";
@@ -2828,7 +2944,7 @@
       }, 500);
     }
 
-    // Tutup SAP — dengan animasi scale-out kembali ke tombol
+    // Tutup SAP â€” dengan animasi scale-out kembali ke tombol
     function tutupSAP() {
       var sapSec = document.getElementById("sapSection");
 
@@ -2878,14 +2994,14 @@
     function prosesLogout() {
       var s = loadSession();
       if (s) {
-        // Beritahu server untuk hapus sesi — fire and forget
+        // Beritahu server untuk hapus sesi â€” fire and forget
         jsonpRequest(
           { action: "logout", token: s.token, region: s.region },
           function () { }, function () { }
         );
       }
-      stopHeartbeat(); // ✅ BARU: hentikan heartbeat
-      stopAdminAutoUpdate(); // ✅ BARU: hentikan auto-update admin
+      stopHeartbeat(); // âœ… BARU: hentikan heartbeat
+      stopAdminAutoUpdate(); // âœ… BARU: hentikan auto-update admin
       stopNotificationsCheck(); // Hentikan notifikasi
       clearSession();
       if (bc) bc.postMessage({ type: "SESSION_ENDED" });
@@ -2894,8 +3010,8 @@
     }
     // Logout diam-diam karena dipaksa oleh BroadcastChannel (tidak perlu broadcast balik)
     function prosesLogoutSilent() {
-      stopHeartbeat(); // ✅ BARU: hentikan heartbeat
-      stopAdminAutoUpdate(); // ✅ BARU: hentikan auto-update admin
+      stopHeartbeat(); // âœ… BARU: hentikan heartbeat
+      stopAdminAutoUpdate(); // âœ… BARU: hentikan auto-update admin
       clearSession();
       _resetUI();
     }
@@ -3861,7 +3977,7 @@
         return;
       }
 
-      // Validasi numerik — masing-masing field divalidasi sendiri
+      // Validasi numerik â€” masing-masing field divalidasi sendiri
       var luasPanenNum = parseFloat(luasPanen);
       if (isNaN(luasPanenNum) || luasPanenNum < 0 || luasPanenNum > 999999) {
         alert("Luas Panen tidak valid.");
@@ -4025,7 +4141,7 @@
     }
 
     // =========================================================================
-    // INIT — pulihkan sesi jika halaman di-refresh
+    // INIT â€” pulihkan sesi jika halaman di-refresh
     // =========================================================================
     (function init() {
       var params = new URLSearchParams(window.location.search);
@@ -4057,14 +4173,14 @@
         currentJamData = {};
         updateJamHint();
       } else {
-        // Sesi kosong — tetap di login.html, tampilkan login form
+        // Sesi kosong â€” tetap di login.html, tampilkan login form
         document.getElementById("loginSection").style.display = "block";
         document.getElementById("mainSection").style.display = "none";
       }
     })();
 
     // =========================================================================
-    // PAGESHOW GUARD — cegah akses halaman dari bfcache setelah logout
+    // PAGESHOW GUARD â€” cegah akses halaman dari bfcache setelah logout
     // =========================================================================
     window.addEventListener("pageshow", function (event) {
       if (event.persisted) {
@@ -4129,9 +4245,9 @@
     // GRAFIK REALISASI PANEN TIAP JAM (CHART.JS)
     // =========================================================================
 
-    var TREND_UP_COLOR = '#2563eb';   // biru — kenaikan
-    var TREND_DOWN_COLOR = '#dc2626'; // merah — penurunan
-    var TREND_FLAT_COLOR = 'rgba(148, 163, 184, 0.6)'; // netral — tidak ada perubahan / tidak ada data
+    var TREND_UP_COLOR = '#2563eb';   // biru â€” kenaikan
+    var TREND_DOWN_COLOR = '#dc2626'; // merah â€” penurunan
+    var TREND_FLAT_COLOR = 'rgba(148, 163, 184, 0.6)'; // netral â€” tidak ada perubahan / tidak ada data
 
     // Memotong data hanya pada rentang jam yang sudah dilaporkan: null sebelum jam pertama
     // dan sesudah jam terakhir yang terisi, supaya garis penghubung tidak "rata di 0" di luar rentang itu.
@@ -4305,7 +4421,7 @@
               var isUp = change > 0;
               var isFlat = change === 0;
               var color = isFlat ? TREND_FLAT_COLOR : (isUp ? TREND_UP_COLOR : TREND_DOWN_COLOR);
-              var arrow = isFlat ? "▬" : (isUp ? "▲" : "▼");
+              var arrow = isFlat ? "â–¬" : (isUp ? "â–²" : "â–¼");
               var text = arrow + " " + (change >= 0 ? "+" : "") + change.toFixed(1) + "%";
 
               ctx.save();
@@ -4476,7 +4592,7 @@
       var html = '';
       for (var pass = 0; pass < 2; pass++) {
         for (var i = 0; i < regions.length; i++) {
-          html += '<span>' + regions[i] + '</span><span class="sep">•</span>';
+          html += '<span>' + regions[i] + '</span><span class="sep">â€¢</span>';
         }
       }
       list.innerHTML = html;

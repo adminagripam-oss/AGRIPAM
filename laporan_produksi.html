@@ -1556,7 +1556,6 @@
       const [excelData, setExcelData] = useState(null);
       const [excelDate, setExcelDate] = useState("");
       const [dbPalmopsData, setDbPalmopsData] = useState(null);
-      const [dbRealisasiData, setDbRealisasiData] = useState([]);
       const [fileName, setFileName] = useState("");
       const [showOnlyMismatch, setShowOnlyMismatch] = useState(false);
       const [dragActive, setDragActive] = useState(false);
@@ -1564,7 +1563,7 @@
       const [saving, setSaving] = useState(false);
       const fileInputRef = useRef(null);
 
-      // Fetch saved PalmOps and Realisasi data from DB on date range change
+      // Fetch saved PalmOps data from DB on date range change
       useEffect(() => {
         let active = true;
         const fetchDataForRange = async () => {
@@ -1572,15 +1571,9 @@
           try {
             const isRange = filters.tanggal !== filters.tanggal_akhir;
             const palmopsUrl = `/api/palmops?action=get&tanggal=${filters.tanggal}${isRange ? `&tanggal_akhir=${filters.tanggal_akhir}` : ''}`;
-            const realisasiUrl = `/api/realisasi?action=getData&tanggal=${filters.tanggal}${isRange ? `&tanggal_akhir=${filters.tanggal_akhir}` : ''}&region=ALL`;
 
-            const [palmopsRes, realisasiRes] = await Promise.all([
-              fetch(palmopsUrl),
-              fetch(realisasiUrl)
-            ]);
-
+            const palmopsRes = await fetch(palmopsUrl);
             const palmopsJson = await palmopsRes.json();
-            const realisasiJson = await realisasiRes.json();
 
             if (active) {
               if (palmopsJson.success && palmopsJson.data && Object.keys(palmopsJson.data).length > 0) {
@@ -1588,18 +1581,11 @@
               } else {
                 setDbPalmopsData(null);
               }
-
-              if (realisasiJson.success && realisasiJson.allRecords) {
-                setDbRealisasiData(realisasiJson.allRecords);
-              } else {
-                setDbRealisasiData([]);
-              }
             }
           } catch (e) {
             console.error(e);
             if (active) {
               setDbPalmopsData(null);
-              setDbRealisasiData([]);
             }
           } finally {
             if (active) setDbLoading(false);
@@ -1914,7 +1900,7 @@
       const activePalmopsSource = excelData || dbPalmopsData;
       const isFromDb = !excelData && !!dbPalmopsData;
 
-      const activeRealisasi = dbRealisasiData.length > 0 ? dbRealisasiData : (realisasiRecords || []);
+      const activeRealisasi = realisasiRecords || [];
 
       const comparisonList = ALL_REGIONS.map(region => {
         const agripamTotal = activeRealisasi
