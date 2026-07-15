@@ -2256,9 +2256,7 @@
       var estDay = parseInt(parts[2], 10);
 
       var deadline = new Date(estYear, estMonth, estDay - 1, 22, 0, 0, 0);
-      // Nonaktifkan sementara fitur batasan waktu (dibatasi jam 22.00 WIB)
-      // var isLocked = wibNow.getTime() > deadline.getTime();
-      var isLocked = false;
+      var isLocked = wibNow.getTime() > deadline.getTime();
 
       setLoading(true, "Memeriksa data estimasi...");
 
@@ -3850,8 +3848,6 @@
 
       var deadline = new Date(estYear, estMonth, estDay - 1, 22, 0, 0, 0);
 
-      // Nonaktifkan sementara fitur batasan waktu (dibatasi jam 22.00 WIB)
-      /*
       if (wibNow.getTime() > deadline.getTime()) {
         var d1 = new Date(estYear, estMonth, estDay - 1);
         var d1Day = String(d1.getDate()).padStart(2, '0');
@@ -3864,7 +3860,6 @@
           " telah berakhir pada tanggal " + deadlineDateStr + " pukul 22.00 WIB.");
         return;
       }
-      */
 
       // Validasi numerik — masing-masing field divalidasi sendiri
       var luasPanenNum = parseFloat(luasPanen);
