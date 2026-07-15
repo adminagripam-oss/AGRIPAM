@@ -1374,10 +1374,10 @@
             {/* Mode Tanggal */}
             <div className="relative">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"><Icon name="calendar-range" size={15} className="text-slate-400" /></div>
-              <select 
-                value={filters.dateMode || 'TUNGGAL'} 
-                onChange={e => setFilters(prev => ({ ...prev, dateMode: e.target.value }))} 
-                className={selectClass} 
+              <select
+                value={filters.dateMode || 'TUNGGAL'}
+                onChange={e => setFilters(prev => ({ ...prev, dateMode: e.target.value }))}
+                className={selectClass}
                 aria-label="Filter berdasarkan Mode Tanggal"
               >
                 <option value="TUNGGAL">Tanggal Tunggal</option>
@@ -1539,10 +1539,10 @@
       for (const official of ALL_REGIONS) {
         const cleanOfficial = official.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
         const cleanOfficialNoTorganda = official.toLowerCase().replace(/\bex torganda\b/g, '').replace(/[^a-z0-9]/g, '').trim();
-        if (cleanRaw === cleanOfficial || 
-            cleanRaw === cleanOfficialNoTorganda ||
-            cleanRaw.includes(cleanOfficialNoTorganda) || 
-            cleanOfficialNoTorganda.includes(cleanRaw)) {
+        if (cleanRaw === cleanOfficial ||
+          cleanRaw === cleanOfficialNoTorganda ||
+          cleanRaw.includes(cleanOfficialNoTorganda) ||
+          cleanOfficialNoTorganda.includes(cleanRaw)) {
           return official;
         }
       }
@@ -1663,28 +1663,28 @@
               // Nilai di kolom G (produksi hari ini realisasi) dalam satuan Kg → dikonversi ke Ton
               // getCellValue('G', 15) = sel G15 di Excel — tidak terpengaruh baris kosong
               const cellMapping = [
-                { region: 'Aceh',                       excelRow: 15  },
-                { region: 'Sumatera Utara 1',           excelRow: 39  },
+                { region: 'Aceh', excelRow: 15 },
+                { region: 'Sumatera Utara 1', excelRow: 39 },
                 { region: 'Sumatera Utara 2 Ex Torganda', excelRow: 50 },
-                { region: 'Riau 1',                     excelRow: 73  },
-                { region: 'Riau 2',                     excelRow: 184 },
-                { region: 'Riau 3',                     excelRow: 213 },
-                { region: 'Riau 4',                     excelRow: 220 },
-                { region: 'Bangka Belitung',            excelRow: 233 },
-                { region: 'Jambi',                      excelRow: 250 },
-                { region: 'Sumatera Barat',             excelRow: 256 },
-                { region: 'Sumatera Selatan',           excelRow: 311 },
-                { region: 'Kalimantan Barat 1',         excelRow: 374 },
-                { region: 'Kalimantan Barat 2',         excelRow: 424 },
-                { region: 'Kalimantan Selatan 1',       excelRow: 432 },
-                { region: 'Kalimantan Selatan 2',       excelRow: 445 },
-                { region: 'Kalimantan Timur',           excelRow: 500 },
-                { region: 'Kalimantan Utara',           excelRow: 449 },
-                { region: 'Kalimantan Tengah 1',        excelRow: 605 },
-                { region: 'Kalimantan Tengah 3',        excelRow: 660 },
-                { region: 'Kalimantan Tengah 2',        excelRow: 727 },
-                { region: 'Sulawesi Tengah',            excelRow: 748 },
-                { region: 'Sulawesi Tenggara',          excelRow: 759 },
+                { region: 'Riau 1', excelRow: 73 },
+                { region: 'Riau 2', excelRow: 184 },
+                { region: 'Riau 3', excelRow: 213 },
+                { region: 'Riau 4', excelRow: 220 },
+                { region: 'Bangka Belitung', excelRow: 233 },
+                { region: 'Jambi', excelRow: 250 },
+                { region: 'Sumatera Barat', excelRow: 256 },
+                { region: 'Sumatera Selatan', excelRow: 311 },
+                { region: 'Kalimantan Barat 1', excelRow: 374 },
+                { region: 'Kalimantan Barat 2', excelRow: 424 },
+                { region: 'Kalimantan Selatan 1', excelRow: 432 },
+                { region: 'Kalimantan Selatan 2', excelRow: 445 },
+                { region: 'Kalimantan Timur', excelRow: 500 },
+                { region: 'Kalimantan Utara', excelRow: 449 },
+                { region: 'Kalimantan Tengah 1', excelRow: 605 },
+                { region: 'Kalimantan Tengah 3', excelRow: 660 },
+                { region: 'Kalimantan Tengah 2', excelRow: 727 },
+                { region: 'Sulawesi Tengah', excelRow: 748 },
+                { region: 'Sulawesi Tenggara', excelRow: 759 },
               ];
 
               for (const { region, excelRow } of cellMapping) {
@@ -1702,7 +1702,7 @@
 
               let regionColIdx = -1;
               let tonaseColIdx = -1;
-              let startRowIdx   = 0;
+              let startRowIdx = 0;
 
               for (let r = 0; r < Math.min(rows.length, 20); r++) {
                 const row = rows[r];
@@ -1733,7 +1733,7 @@
                       for (let nc = c + 1; nc < row.length; nc++) {
                         if (typeof row[nc] === 'number' || (row[nc] && !isNaN(parseFloat(row[nc])))) {
                           tonaseColIdx = nc;
-                          startRowIdx  = r;
+                          startRowIdx = r;
                           break;
                         }
                       }
@@ -1829,7 +1829,7 @@
       const handleSaveToDb = async () => {
         const dataToSave = excelData;
         if (!dataToSave) return;
-        
+
         setSaving(true);
         try {
           const sessionRaw = sessionStorage.getItem("agripam_session");
@@ -1874,7 +1874,7 @@
 
       const handleDeleteFromDb = async () => {
         if (!confirm("Apakah Anda yakin ingin menghapus data PalmOps tanggal ini dari database?")) return;
-        
+
         setSaving(true);
         try {
           const sessionRaw = sessionStorage.getItem("agripam_session");
@@ -1920,13 +1920,13 @@
         const agripamTotal = activeRealisasi
           .filter(r => r.region === region)
           .reduce((sum, r) => sum + (parseFloat(r.tonase) || 0), 0);
-        
+
         const palmopsTotal = activePalmopsSource ? (activePalmopsSource[region] || 0) : null;
         const hasExcelVal = palmopsTotal !== null;
-        
+
         let selisih = null;
         let status = 'NO_DATA';
-        
+
         if (hasExcelVal) {
           selisih = agripamTotal - palmopsTotal;
           if (palmopsTotal === 0) {
@@ -1936,7 +1936,7 @@
             status = pctDiff > 0.05 ? 'MISMATCH' : 'MATCH';
           }
         }
-        
+
         return {
           region,
           agripam: Math.round(agripamTotal * 100) / 100,
@@ -1951,16 +1951,16 @@
       const totalPalmops = activePalmopsSource ? comparisonList.reduce((sum, r) => sum + r.palmops, 0) : 0;
       const totalSelisih = activePalmopsSource ? (totalAgripam - totalPalmops) : 0;
 
-      const filteredList = showOnlyMismatch 
-        ? comparisonList.filter(r => r.status === 'MISMATCH') 
+      const filteredList = showOnlyMismatch
+        ? comparisonList.filter(r => r.status === 'MISMATCH')
         : comparisonList;
 
       const totalMismatch = comparisonList.filter(r => r.status === 'MISMATCH').length;
       const matchCount = comparisonList.filter(r => r.status === 'MATCH').length;
-      
-      const overallStatus = !activePalmopsSource ? 'AWAITING_UPLOAD' 
-        : totalMismatch === 0 ? 'ALL_MATCH' 
-        : 'MISMATCH_FOUND';
+
+      const overallStatus = !activePalmopsSource ? 'AWAITING_UPLOAD'
+        : totalMismatch === 0 ? 'ALL_MATCH'
+          : 'MISMATCH_FOUND';
 
       const handleExportToExcel = () => {
         if (!comparisonList || comparisonList.length === 0) {
@@ -2008,7 +2008,7 @@
 
         // Create workbook and worksheet
         const worksheet = XLSX.utils.json_to_sheet(excelRows);
-        
+
         // Inject custom styling for Calibri 12
         if (worksheet['!ref']) {
           const range = XLSX.utils.decode_range(worksheet['!ref']);
@@ -2037,7 +2037,7 @@
         worksheet['!cols'] = colWidths;
 
         // Generate Excel file and download
-        const filename = filters.tanggal === filters.tanggal_akhir 
+        const filename = filters.tanggal === filters.tanggal_akhir
           ? `Rincian_Perbandingan_Regional_${filters.tanggal}.xlsx`
           : `Rincian_Perbandingan_Regional_${filters.tanggal}_to_${filters.tanggal_akhir}.xlsx`;
         XLSX.writeFile(workbook, filename);
@@ -2051,12 +2051,12 @@
               <h2 className="text-lg font-bold text-slate-800 dark:text-white">Validasi Data Produksi Harian</h2>
               <p className="text-xs text-slate-450 dark:text-slate-400">Membandingkan realisasi database AGRI-PAM vs Excel LHP PalmOps</p>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-2">
               {/* Date Mode Dropdown */}
               <div className="flex items-center gap-2 bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-900 rounded-lg px-3 py-1.5 w-fit">
                 <Icon name="calendar" size={14} className="text-brand-600 dark:text-brand-400" />
-                <select 
+                <select
                   value={filters.dateMode}
                   onChange={(e) => setFilters(prev => ({ ...prev, dateMode: e.target.value }))}
                   className="bg-transparent border-none text-[12px] font-bold text-brand-800 dark:text-brand-200 outline-none p-0 focus:ring-0 cursor-pointer pr-1"
@@ -2066,12 +2066,12 @@
                   <option value="SD_BULAN_INI">s.d. Bulan Ini (Tahun Berjalan)</option>
                   <option value="KUSTOM">Rentang Kustom</option>
                 </select>
-                
+
                 {filters.dateMode === "TUNGGAL" && (
                   <div className="flex items-center gap-1 text-[12px] font-bold text-brand-850 dark:text-brand-200 border-l border-brand-200 dark:border-brand-700 pl-2 ml-1">
                     <span>Tanggal:</span>
-                    <input 
-                      type="date" 
+                    <input
+                      type="date"
                       value={filters.tanggal}
                       onChange={(e) => {
                         if (e.target.value) {
@@ -2086,12 +2086,12 @@
                     />
                   </div>
                 )}
-                
+
                 {filters.dateMode === "KUSTOM" && (
                   <div className="flex items-center gap-1 text-[12px] font-bold text-brand-850 dark:text-brand-200 border-l border-brand-200 dark:border-brand-700 pl-2 ml-1">
                     <span>Dari:</span>
-                    <input 
-                      type="date" 
+                    <input
+                      type="date"
                       value={filters.tanggal}
                       onChange={(e) => {
                         if (e.target.value) {
@@ -2105,8 +2105,8 @@
                       style={{ colorScheme: 'light' }}
                     />
                     <span className="mx-1">s.d.</span>
-                    <input 
-                      type="date" 
+                    <input
+                      type="date"
                       value={filters.tanggal_akhir}
                       onChange={(e) => {
                         if (e.target.value) {
@@ -2164,14 +2164,14 @@
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button 
+                  <button
                     onClick={onButtonClick}
                     className="bg-brand-600 hover:bg-brand-700 text-white text-[12px] font-semibold px-4 py-2 rounded-lg shadow transition-colors flex items-center gap-1.5"
                   >
                     <Icon name="refresh-cw" size={13} />
                     Perbarui dengan Excel
                   </button>
-                  <button 
+                  <button
                     onClick={handleDeleteFromDb}
                     disabled={saving}
                     className="bg-red-600 hover:bg-red-700 text-white text-[12px] font-semibold px-4 py-2 rounded-lg shadow transition-colors flex items-center gap-1.5 disabled:opacity-50"
@@ -2179,34 +2179,33 @@
                     <Icon name="trash-2" size={13} />
                     {saving ? "Menghapus..." : "Hapus Data Database"}
                   </button>
-                  <input 
+                  <input
                     ref={fileInputRef}
-                    type="file" 
-                    accept=".xlsx, .xls" 
-                    onChange={handleInputChange} 
+                    type="file"
+                    accept=".xlsx, .xls"
+                    onChange={handleInputChange}
                     className="hidden"
                   />
                 </div>
               </div>
             </div>
           ) : (
-            <div 
-              onDragEnter={handleDrag} 
-              onDragOver={handleDrag} 
-              onDragLeave={handleDrag} 
+            <div
+              onDragEnter={handleDrag}
+              onDragOver={handleDrag}
+              onDragLeave={handleDrag}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-xl p-8 text-center bg-white dark:bg-slate-800 transition-all shadow-sm relative ${
-                dragActive ? 'border-brand-500 bg-brand-50/20' : 'border-slate-300 dark:border-slate-700 hover:border-brand-400'
-              }`}
+              className={`border-2 border-dashed rounded-xl p-8 text-center bg-white dark:bg-slate-800 transition-all shadow-sm relative ${dragActive ? 'border-brand-500 bg-brand-50/20' : 'border-slate-300 dark:border-slate-700 hover:border-brand-400'
+                }`}
             >
-              <input 
+              <input
                 ref={fileInputRef}
-                type="file" 
-                accept=".xlsx, .xls" 
-                onChange={handleInputChange} 
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={handleInputChange}
                 className="hidden"
               />
-              
+
               <div className="flex flex-col items-center justify-center space-y-3">
                 <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center text-brand-600 dark:text-brand-400 shadow-sm border border-brand-100 dark:border-brand-900">
                   <Icon name={excelData ? "file-check" : "file-up"} size={22} />
@@ -2218,7 +2217,7 @@
                   <p className="text-[11px] text-slate-400 mt-1">Format file harus berupa Excel LHP (.xlsx / .xls) dari dashboard PalmOps</p>
                 </div>
                 <div className="flex gap-2">
-                  <button 
+                  <button
                     onClick={onButtonClick}
                     className="bg-brand-600 hover:bg-brand-700 text-white text-[12px] font-semibold px-4 py-2 rounded-lg shadow transition-colors flex items-center gap-1.5"
                   >
@@ -2227,7 +2226,7 @@
                   </button>
                   {excelData && (
                     <>
-                      <button 
+                      <button
                         onClick={handleSaveToDb}
                         disabled={saving}
                         className="bg-green-600 hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-[12px] font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5 transition-colors"
@@ -2235,7 +2234,7 @@
                         <Icon name="save" size={13} />
                         {saving ? "Menyimpan..." : "Simpan ke Database"}
                       </button>
-                      <button 
+                      <button
                         onClick={() => { setExcelData(null); setExcelDate(""); setFileName(""); }}
                         className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-white text-[12px] font-semibold px-4 py-2 rounded-lg transition-colors"
                       >
@@ -2320,13 +2319,12 @@
               </div>
               {activePalmopsSource && (
                 <div className="flex items-center gap-2">
-                  <button 
+                  <button
                     onClick={() => setShowOnlyMismatch(!showOnlyMismatch)}
-                    className={`text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-colors flex items-center gap-1 ${
-                      showOnlyMismatch 
-                        ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:border-red-900' 
+                    className={`text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-colors flex items-center gap-1 ${showOnlyMismatch
+                        ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:border-red-900'
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:hover:bg-slate-650'
-                    }`}
+                      }`}
                   >
                     <Icon name="filter" size={11} />
                     {showOnlyMismatch ? "Tampilkan Semua" : "Hanya Selisih"}
@@ -2352,7 +2350,7 @@
                   {filteredList.map((row, idx) => {
                     const hasDiff = row.status === 'MISMATCH';
                     const isMatched = row.status === 'MATCH';
-                    
+
                     let statusBadge = (
                       <span className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold px-2 py-0.5 rounded-full uppercase">Belum Ada Data</span>
                     );
@@ -2371,11 +2369,10 @@
                     }
 
                     return (
-                      <tr 
-                        key={row.region} 
-                        className={`hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${
-                          hasDiff ? 'bg-red-500/5 dark:bg-red-950/10' : ''
-                        }`}
+                      <tr
+                        key={row.region}
+                        className={`hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${hasDiff ? 'bg-red-500/5 dark:bg-red-950/10' : ''
+                          }`}
                       >
                         <td className="px-4 py-2.5 text-center font-medium text-slate-400">{idx + 1}</td>
                         <td className="px-4 py-2.5 font-bold text-slate-700 dark:text-slate-200 text-left">{row.region}</td>
@@ -2391,7 +2388,7 @@
                       </tr>
                     );
                   })}
-                  
+
                   <tr className="bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 font-bold">
                     <td colSpan={2} className="px-4 py-3 text-center text-[13px] text-slate-700 dark:text-white uppercase tracking-wider">Total Nasional</td>
                     <td className="px-4 py-3 text-right text-[13px] tabular-nums text-slate-800 dark:text-white">{formatRibuan(totalAgripam)}</td>
@@ -2415,7 +2412,7 @@
                 </tbody>
               </table>
             </div>
-            
+
             {filteredList.length === 0 && (
               <div className="text-center py-10 bg-slate-50/20 dark:bg-slate-800/10">
                 <Icon name="info" size={24} className="text-slate-400 mx-auto mb-2" />
@@ -2492,7 +2489,7 @@
             start = prev.tanggal;
             end = prev.tanggal_akhir;
           }
-          
+
           if (prev.tanggal !== start || prev.tanggal_akhir !== end) {
             return { ...prev, tanggal: start, tanggal_akhir: end };
           }
@@ -2582,7 +2579,7 @@
             <div className="flex-1 overflow-y-auto">
               <div className="flex flex-col gap-5 p-6 max-w-screen-2xl mx-auto w-full">
                 {activeNav === 'validasi' ? (
-                  <ValidationPanel 
+                  <ValidationPanel
                     realisasiRecords={realisasiRecords}
                     regionalDetails={regionalDetails}
                     filters={filters}

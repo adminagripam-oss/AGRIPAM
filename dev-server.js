@@ -1,8 +1,35 @@
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 
-const express = require('express');
+const fs = require('fs');
 const path = require('path');
+
+// Load environment variables from .env if process.env values are not already set
+try {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    const envConfig = fs.readFileSync(envPath, 'utf8');
+    envConfig.split(/\r?\n/).forEach(line => {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#')) {
+        const parts = trimmed.split('=');
+        if (parts.length >= 2) {
+          const key = parts[0].trim();
+          const value = parts.slice(1).join('=').trim();
+          // Remove wrapping single or double quotes
+          const cleanValue = value.replace(/^['"]|['"]$/g, '');
+          if (!process.env[key]) {
+            process.env[key] = cleanValue;
+          }
+        }
+      }
+    });
+  }
+} catch (err) {
+  console.error("Failed to load .env manually:", err.message);
+}
+
+const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 
