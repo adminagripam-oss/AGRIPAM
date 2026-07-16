@@ -41,50 +41,44 @@ module.exports = async (req, res) => {
       page++;
     }
 
-    if (!region || region.toUpperCase() === 'ALL') {
-      const allEstimasi = {};
-      let totalRestanLalu = 0, totalLuasPanen = 0, totalTkPanen = 0, totalEstimasiPanen = 0, totalEstimasiKirim = 0, totalEstimasiRestan = 0;
+    const allEstimasi = {};
+    let totalRestanLalu = 0, totalLuasPanen = 0, totalTkPanen = 0, totalEstimasiPanen = 0, totalEstimasiKirim = 0, totalEstimasiRestan = 0;
 
-      (allData || []).forEach(r => {
-        const restanLalu = parseFloat(r.restan_lalu) || 0;
-        const luasPanen = parseFloat(r.luas_panen_ha) || 0;
-        const tkPanen = parseFloat(r.tk_panen_hk) || 0;
-        const estimasiPanen = parseFloat(r.estimasi_panen_kg) || 0;
-        const estimasiKirim = parseFloat(r.estimasi_kirim_kg) || 0;
-        const estimasiRestan = parseFloat(r.estimasi_restan_kg) || 0;
+    (allData || []).forEach(r => {
+      const restanLalu = parseFloat(r.restan_lalu) || 0;
+      const luasPanen = parseFloat(r.luas_panen_ha) || 0;
+      const tkPanen = parseFloat(r.tk_panen_hk) || 0;
+      const estimasiPanen = parseFloat(r.estimasi_panen_kg) || 0;
+      const estimasiKirim = parseFloat(r.estimasi_kirim_kg) || 0;
+      const estimasiRestan = parseFloat(r.estimasi_restan_kg) || 0;
 
-        totalRestanLalu += restanLalu; totalLuasPanen += luasPanen; totalTkPanen += tkPanen;
-        totalEstimasiPanen += estimasiPanen; totalEstimasiKirim += estimasiKirim; totalEstimasiRestan += estimasiRestan;
+      totalRestanLalu += restanLalu; totalLuasPanen += luasPanen; totalTkPanen += tkPanen;
+      totalEstimasiPanen += estimasiPanen; totalEstimasiKirim += estimasiKirim; totalEstimasiRestan += estimasiRestan;
 
-        if (!allEstimasi[r.region]) {
-          allEstimasi[r.region] = { restanLalu: 0, luasPanen: 0, tkPanen: 0, estPanen: 0, outPanen: 0, estKirim: 0, estRestan: 0 };
-        }
-        allEstimasi[r.region].restanLalu += restanLalu;
-        allEstimasi[r.region].luasPanen += luasPanen;
-        allEstimasi[r.region].tkPanen += tkPanen;
-        allEstimasi[r.region].estPanen += estimasiPanen;
-        allEstimasi[r.region].estKirim += estimasiKirim;
-        allEstimasi[r.region].estRestan += estimasiRestan;
-      });
+      if (!allEstimasi[r.region]) {
+        allEstimasi[r.region] = { restanLalu: 0, luasPanen: 0, tkPanen: 0, estPanen: 0, outPanen: 0, estKirim: 0, estRestan: 0 };
+      }
+      allEstimasi[r.region].restanLalu += restanLalu;
+      allEstimasi[r.region].luasPanen += luasPanen;
+      allEstimasi[r.region].tkPanen += tkPanen;
+      allEstimasi[r.region].estPanen += estimasiPanen;
+      allEstimasi[r.region].estKirim += estimasiKirim;
+      allEstimasi[r.region].estRestan += estimasiRestan;
+    });
 
-      Object.keys(allEstimasi).forEach(reg => {
-        const d = allEstimasi[reg];
-        d.outPanen = d.tkPanen > 0 ? Math.round(d.estPanen / d.tkPanen) : 0;
-      });
+    Object.keys(allEstimasi).forEach(reg => {
+      const d = allEstimasi[reg];
+      d.outPanen = d.tkPanen > 0 ? Math.round(d.estPanen / d.tkPanen) : 0;
+    });
 
-      const avgOutputPanen = totalTkPanen > 0 ? Math.round(totalEstimasiPanen / totalTkPanen) : 0;
-      return res.json({
-        success: true, exists: Object.keys(allEstimasi).length > 0, allEstimasi,
-        data: { restanLalu: totalRestanLalu, luasPanen: totalLuasPanen, tkPanen: totalTkPanen, estPanen: totalEstimasiPanen, outPanen: avgOutputPanen, estKirim: totalEstimasiKirim, estRestan: totalEstimasiRestan }
-      });
-    }
+    const avgOutputPanen = totalTkPanen > 0 ? Math.round(totalEstimasiPanen / totalTkPanen) : 0;
 
-    if (!allData || allData.length === 0) return res.json({ success: true, exists: false, data: null });
-
-    const r = allData[0];
     return res.json({
-      success: true, exists: true,
-      data: { restanLalu: r.restan_lalu, luasPanen: r.luas_panen_ha, tkPanen: r.tk_panen_hk, estPanen: r.estimasi_panen_kg, outPanen: r.output_panen, estKirim: r.estimasi_kirim_kg, estRestan: r.estimasi_restan_kg }
+      success: true,
+      exists: allData.length > 0,
+      allEstimasi,
+      data: { restanLalu: totalRestanLalu, luasPanen: totalLuasPanen, tkPanen: totalTkPanen, estPanen: totalEstimasiPanen, outPanen: avgOutputPanen, estKirim: totalEstimasiKirim, estRestan: totalEstimasiRestan },
+      allRecords: allData
     });
   }
 

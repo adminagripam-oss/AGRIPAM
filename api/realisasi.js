@@ -7,7 +7,14 @@ const MAX_TONASE = 5000;
 
 function computeJamDataAndTotal(rows) {
   const jamData = {};
-  (rows || []).forEach(r => { jamData[r.jam] = parseFloat(r.tonase) || 0; });
+  (rows || []).forEach(r => {
+    if (!jamData[r.jam]) jamData[r.jam] = 0;
+    jamData[r.jam] += parseFloat(r.tonase) || 0;
+  });
+  // Round each hour sum to 2 decimal places
+  Object.keys(jamData).forEach(k => {
+    jamData[k] = Math.round(jamData[k] * 100) / 100;
+  });
   const total = Object.values(jamData).reduce((sum, t) => sum + t, 0);
   return { jamData, total: Math.round(total * 100) / 100 };
 }
@@ -31,7 +38,7 @@ module.exports = async (req, res) => {
     const pageSize = 1000;
     
     while (true) {
-      let query = supabase.from('database_input').select('region, jam, tonase').order('jam', { ascending: true });
+      let query = supabase.from('database_input').select('tanggal, region, jam, tonase').order('jam', { ascending: true });
       if (tanggal_akhir) {
         query = query.gte('tanggal', tanggal).lte('tanggal', tanggal_akhir);
       } else {
@@ -50,13 +57,10 @@ module.exports = async (req, res) => {
       page++;
     }
 
-    if (!region || region.toUpperCase() === 'ALL') {
-      const allRecords = allData.map(r => ({ region: r.region, jam: r.jam, tonase: parseFloat(r.tonase) || 0 }));
-      return res.json({ success: true, allRecords });
-    }
-
     const { jamData, total } = computeJamDataAndTotal(allData);
-    return res.json({ success: true, total, jamData });
+    const allRecords = allData.map(r => ({ tanggal: r.tanggal, region: r.region, jam: r.jam, tonase: parseFloat(r.tonase) || 0 }));
+    
+    return res.json({ success: true, total, jamData, allRecords });
   }
 
   if (action === 'insert') {
