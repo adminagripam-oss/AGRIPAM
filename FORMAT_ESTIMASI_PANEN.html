@@ -1705,8 +1705,8 @@
                 sumEstKirim += estKirim;
                 sumEstRestan += estRestan;
 
-                // Check if there is NO input at all
-                const hasNoInput = (restanLalu === 0 && luasPanen === 0 && tkPanen === 0 && estPanen === 0);
+                // Check if there is NO input at all (if not present in globalAllEstimasi, means not submitted)
+                const hasNoInput = !globalAllEstimasi.hasOwnProperty(regionName);
 
                 // Use inline styles to guarantee color rendering (Tailwind purge won't affect inline)
                 const regionCellStyle = hasNoInput

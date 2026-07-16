@@ -1652,29 +1652,29 @@
               for (let r = 5; r < rows.length; r++) {
                 const row = rows[r];
                 if (!row || !Array.isArray(row)) continue;
-                
+
                 const rawReg = row[1]; // Kolom B
                 let rawVal = row[6]; // Kolom G
-                
+
                 if (!rawReg) continue;
-                
+
                 const matched = findRegionMatch(rawReg);
                 if (matched) {
-                    if (typeof rawVal === 'string') {
-                        rawVal = rawVal.replace(/[^\d.,]/g, '');
-                        rawVal = rawVal.replace(/,/g, '');
-                    }
-                    const numVal = rawVal !== null && rawVal !== '' ? parseFloat(rawVal) : 0;
-                    if (!isNaN(numVal)) {
-                        if (!parsedTotals[matched]) parsedTotals[matched] = 0;
-                        parsedTotals[matched] += numVal;
-                    }
+                  if (typeof rawVal === 'string') {
+                    rawVal = rawVal.replace(/[^\d.,]/g, '');
+                    rawVal = rawVal.replace(/,/g, '');
+                  }
+                  const numVal = rawVal !== null && rawVal !== '' ? parseFloat(rawVal) : 0;
+                  if (!isNaN(numVal)) {
+                    if (!parsedTotals[matched]) parsedTotals[matched] = 0;
+                    parsedTotals[matched] += numVal;
+                  }
                 }
               }
-              
+
               // Nilai LHP dalam Kg → bagi 1000 → Ton
               for (const reg in parsedTotals) {
-                 parsedTotals[reg] = Math.round((parsedTotals[reg] / 1000) * 100) / 100;
+                parsedTotals[reg] = Math.round((parsedTotals[reg] / 1000) * 100) / 100;
               }
 
             } else {
@@ -2303,8 +2303,8 @@
                   <button
                     onClick={() => setShowOnlyMismatch(!showOnlyMismatch)}
                     className={`text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-colors flex items-center gap-1 ${showOnlyMismatch
-                        ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:border-red-900'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:hover:bg-slate-650'
+                      ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:border-red-900'
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:hover:bg-slate-650'
                       }`}
                   >
                     <Icon name="filter" size={11} />

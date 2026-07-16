@@ -293,7 +293,7 @@ x
                 sumEstKirim += estKirim;
                 sumEstRestan += estRestan;
 
-                const hasNoInput = (restanLalu === 0 && luasPanen === 0 && tkPanen === 0 && estPanen === 0);
+                const hasNoInput = !globalAllEstimasi.hasOwnProperty(regionName);
 
                 const regionCellStyle = hasNoInput
                     ? 'background-color:#b91c1c;color:#ffffff;font-weight:700;'

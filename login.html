@@ -1624,14 +1624,14 @@
       <section class="intro">
         <p class="eyebrow">One Agrinas Operational Monitoring (One Agripam)</p>
         <h1 class="headline">Setiap tandan,<br><span>tercatat tepat waktu.</span></h1>
-        <p class="sub">Masuk dengan wilayah kerja Anda untuk mulai mencatat realisasi panen hari ini â€” kapan pun shift
+        <p class="sub">Masuk dengan wilayah kerja Anda untuk mulai mencatat realisasi panen hari ini kapan pun shift
           Anda berlangsung.</p>
 
         <div class="ticker" aria-hidden="true">
           <div class="ticker__clock">
             <span class="dot"></span>
             <span id="clockTime">--:--:--</span>
-            <span class="tz">WIB Â· UTC+7</span>
+            <span class="tz">WIB · UTC+7</span>
           </div>
           <div class="ticker__track">
             <div class="ticker__list" id="tickerList"></div>
@@ -1978,12 +1978,13 @@
           <button type="button" id="deleteEstimasiBtn" class="btn-delete" onclick="handleDeleteEstimasi()">Hapus
             Estimasi</button>
         </div>
-
-
         <button type="button" class="btn-logout" style="width:100%; margin-top:10px; background-color: #6c757d;"
           onclick="tutupEstimasiModal()">
           Tutup Form Estimasi
         </button>
+        <button type="button" id="btnSimpanDraftEstimasi"
+          style="width:100%; margin-top:10px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; padding: 10px; font-weight: bold; cursor: pointer;"
+          onclick="simpanDraftEstimasi()">Simpan Draft</button>
 
         <p id="statusEstimasi"
           style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 14px; min-height: 20px;"></p>
@@ -2027,7 +2028,7 @@
         if (iframe && iframe.contentWindow && typeof iframe.contentWindow.syncTheme === "function") {
           iframe.contentWindow.syncTheme();
         }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     function applyChartTheme() {
@@ -2142,7 +2143,7 @@
     var currentEstimasiPanen = 0; // estimasi panen dalam Ton
     var isAdminTotalAll = false;
     var myChart = null; // instance Chart.js grafik realisasi â€” dideklarasikan di sini (bukan dekat updateChart())
-                         // karena init() yang memanggil updateChart() lebih dulu jalan di posisi source ini
+    // karena init() yang memanggil updateChart() lebih dulu jalan di posisi source ini
 
     var statusText = document.getElementById("status");
     var submitBtn = document.getElementById("submitBtn");
@@ -2260,150 +2261,169 @@
 
       setLoading(true, "Memeriksa data estimasi...");
 
-            // Cek status unlock sebelum fetch estimasi
+      // Cek status unlock sebelum fetch estimasi
       var unlockUrl = "/api/unlockRequest?action=checkUnlock&tanggal=" + tanggal + "&region=" + encodeURIComponent(s.region) + "&token=" + encodeURIComponent(s.token);
       fetch(unlockUrl)
-        .then(function(res) { return res.json(); })
-        .catch(function() { return { success: false }; })
-        .then(function(unlockData) {
-           var unlockStatus = (unlockData && unlockData.success) ? unlockData.status : 'NONE';
-           var finalLocked = isLocked;
-           if (unlockStatus === 'APPROVED') {
-             finalLocked = false;
-           }
+        .then(function (res) { return res.json(); })
+        .catch(function () { return { success: false }; })
+        .then(function (unlockData) {
+          var unlockStatus = (unlockData && unlockData.success) ? unlockData.status : 'NONE';
+          var finalLocked = isLocked;
+          if (unlockStatus === 'APPROVED') {
+            finalLocked = false;
+          }
+          window.currentUnlockStatus = unlockStatus;
 
-           jsonpRequest(
-             { action: "getEstimasi", tanggal: tanggal, region: s.region, token: s.token },
-             function (res) {
-               setLoading(false);
-               if (res.success) {
-                 currentEstimasiExists = res.exists;
-                 
-                 // Persiapkan tombol request
-                 var reqBtn = document.getElementById("btnRequestUnlock");
-                 if (!reqBtn) {
-                   reqBtn = document.createElement("button");
-                   reqBtn.id = "btnRequestUnlock";
-                   reqBtn.type = "button";
-                   reqBtn.style.marginTop = "5px";
-                   reqBtn.style.marginBottom = "10px";
-                   reqBtn.style.padding = "5px 10px";
-                   reqBtn.style.fontSize = "12px";
-                   reqBtn.style.fontWeight = "bold";
-                   reqBtn.style.borderRadius = "4px";
-                   reqBtn.style.border = "none";
-                   reqBtn.style.cursor = "pointer";
-                   reqBtn.onclick = requestUnlockAccess;
-                   hint.parentNode.insertBefore(reqBtn, hint.nextSibling);
-                 }
-                 reqBtn.style.display = "none";
+          jsonpRequest(
+            { action: "getEstimasi", tanggal: tanggal, region: s.region, token: s.token },
+            function (res) {
+              setLoading(false);
+              if (res.success) {
+                currentEstimasiExists = res.exists;
 
-                 if (res.exists) {
-                   hint.textContent = "Data estimasi tanggal ini sudah terisi (" + res.data.estPanen + " Kg)." +
-                     (finalLocked ? " (Pengisian Baru / Edit ditutup)" : "");
-                   hint.style.color = finalLocked ? "#ffa600" : "#dc3545";
-                   
-                   if (finalLocked && unlockStatus === 'NONE') {
-                       reqBtn.style.display = "inline-block";
-                       reqBtn.textContent = "Ajukan Buka Akses";
-                       reqBtn.style.backgroundColor = "#ffc107";
-                       reqBtn.style.color = "#000";
-                       reqBtn.disabled = false;
-                   } else if (finalLocked && unlockStatus === 'PENDING') {
-                       reqBtn.style.display = "inline-block";
-                       reqBtn.textContent = "Menunggu Persetujuan Admin";
-                       reqBtn.style.backgroundColor = "#6c757d";
-                       reqBtn.style.color = "#fff";
-                       reqBtn.disabled = true;
-                   } else if (finalLocked && unlockStatus === 'REJECTED') {
-                       reqBtn.style.display = "inline-block";
-                       reqBtn.textContent = "Ajukan Ulang Buka Akses";
-                       reqBtn.style.backgroundColor = "#ffc107";
-                       reqBtn.style.color = "#000";
-                       reqBtn.disabled = false;
-                   }
+                // Persiapkan tombol request
+                var reqBtn = document.getElementById("btnRequestUnlock");
+                if (!reqBtn) {
+                  reqBtn = document.createElement("button");
+                  reqBtn.id = "btnRequestUnlock";
+                  reqBtn.type = "button";
+                  reqBtn.style.marginTop = "5px";
+                  reqBtn.style.marginBottom = "10px";
+                  reqBtn.style.padding = "5px 10px";
+                  reqBtn.style.fontSize = "12px";
+                  reqBtn.style.fontWeight = "bold";
+                  reqBtn.style.borderRadius = "4px";
+                  reqBtn.style.border = "none";
+                  reqBtn.style.cursor = "pointer";
+                  reqBtn.onclick = requestUnlockAccess;
+                  hint.parentNode.insertBefore(reqBtn, hint.nextSibling);
+                }
+                reqBtn.style.display = "none";
 
-                   document.getElementById("luasPanen").value = res.data.luasPanen;
-                   document.getElementById("estimasiRestanLalu").value = res.data.restanLalu;
-                   document.getElementById("tkPanen").value = res.data.tkPanen;
-                   document.getElementById("estimasiPanen").value = res.data.estPanen;
-                   document.getElementById("outputPanen").value = res.data.outPanen;
-                   document.getElementById("estimasiKirim").value = res.data.estKirim;
-                   document.getElementById("estimasiRestan").value = res.data.estRestan;
-     
-                   var isTp = (parseFloat(res.data.luasPanen) === 0 && parseFloat(res.data.estPanen) === 0);
-                   toggleTidakPanen(isTp);
-                 } else {
-                   if (finalLocked) {
-                     var d1 = new Date(estYear, estMonth, estDay - 1);
-                     var d1Day = String(d1.getDate()).padStart(2, '0');
-                     var d1Month = String(d1.getMonth() + 1).padStart(2, '0');
-                     var d1Year = d1.getFullYear();
-                     var deadlineStr = d1Day + "/" + d1Month + "/" + d1Year + " pukul 22.00 WIB";
-     
-                     hint.textContent = "Pengisian ditutup! Batas pengisian berakhir pada " + deadlineStr;
-                     hint.style.color = "#dc3545";
-                     
-                     if (unlockStatus === 'NONE') {
-                         reqBtn.style.display = "inline-block";
-                         reqBtn.textContent = "Ajukan Buka Akses";
-                         reqBtn.style.backgroundColor = "#ffc107";
-                         reqBtn.style.color = "#000";
-                         reqBtn.disabled = false;
-                     } else if (unlockStatus === 'PENDING') {
-                         reqBtn.style.display = "inline-block";
-                         reqBtn.textContent = "Menunggu Persetujuan Admin";
-                         reqBtn.style.backgroundColor = "#6c757d";
-                         reqBtn.style.color = "#fff";
-                         reqBtn.disabled = true;
-                     } else if (unlockStatus === 'REJECTED') {
-                         reqBtn.style.display = "inline-block";
-                         reqBtn.textContent = "Ajukan Ulang Buka Akses";
-                         reqBtn.style.backgroundColor = "#ffc107";
-                         reqBtn.style.color = "#000";
-                         reqBtn.disabled = false;
-                     }
-                   } else {
-                     hint.textContent = "Tanggal ini belum ada data estimasi (Bisa diisi).";
-                     hint.style.color = "#28a745";
-                   }
-     
-                   document.getElementById("luasPanen").value = "";
-                   document.getElementById("estimasiRestanLalu").value = "";
-                   document.getElementById("tkPanen").value = "";
-                   document.getElementById("estimasiPanen").value = "";
-                   document.getElementById("outputPanen").value = "";
-                   document.getElementById("estimasiKirim").value = "";
-                   document.getElementById("estimasiRestan").value = "";
-                   toggleTidakPanen(false);
-                 }
-                 
-                 // Disable/Enable fields based on finalLocked
-                 var formFields = [
-                   "luasPanen", "estimasiRestanLalu", "tkPanen", "estimasiPanen",
-                   "estimasiKirim", "estimasiRestan", "btnTidakPanen"
-                 ];
-                 formFields.forEach(function (id) {
-                   var el = document.getElementById(id);
-                   if (el) el.disabled = finalLocked;
-                 });
-                 
-                 var submitBtn = getEstimasiBtn();
-                 if(submitBtn) submitBtn.disabled = finalLocked;
-                 
-                 var delBtn = getDeleteEstBtn();
-                 if(delBtn) delBtn.style.display = (res.exists && !finalLocked) ? "inline-block" : "none";
-               } else {
-                 hint.textContent = "Gagal mengecek data.";
-                 hint.style.color = "#dc3545";
-               }
-             },
-             function (errMsg) {
-               setLoading(false);
-               hint.textContent = "Gagal koneksi ke server.";
-               hint.style.color = "#dc3545";
-             }
-           );
+                if (res.exists) {
+                  hint.textContent = "Data estimasi tanggal ini sudah terisi (" + res.data.estPanen + " Kg)." +
+                    (finalLocked ? " (Pengisian Baru / Edit ditutup)" : "");
+                  hint.style.color = finalLocked ? "#ffa600" : "#dc3545";
+
+                  if (finalLocked && unlockStatus === 'NONE') {
+                    reqBtn.style.display = "inline-block";
+                    reqBtn.textContent = "Ajukan Buka Akses";
+                    reqBtn.style.backgroundColor = "#ffc107";
+                    reqBtn.style.color = "#000";
+                    reqBtn.disabled = false;
+                  } else if (finalLocked && unlockStatus === 'PENDING') {
+                    reqBtn.style.display = "inline-block";
+                    reqBtn.textContent = "Menunggu Persetujuan Admin";
+                    reqBtn.style.backgroundColor = "#6c757d";
+                    reqBtn.style.color = "#fff";
+                    reqBtn.disabled = true;
+                  } else if (finalLocked && unlockStatus === 'REJECTED') {
+                    reqBtn.style.display = "inline-block";
+                    reqBtn.textContent = "Ajukan Ulang Buka Akses";
+                    reqBtn.style.backgroundColor = "#ffc107";
+                    reqBtn.style.color = "#000";
+                    reqBtn.disabled = false;
+                  }
+
+                  document.getElementById("luasPanen").value = res.data.luasPanen;
+                  document.getElementById("estimasiRestanLalu").value = res.data.restanLalu;
+                  document.getElementById("tkPanen").value = res.data.tkPanen;
+                  document.getElementById("estimasiPanen").value = res.data.estPanen;
+                  document.getElementById("outputPanen").value = res.data.outPanen;
+                  document.getElementById("estimasiKirim").value = res.data.estKirim;
+                  document.getElementById("estimasiRestan").value = res.data.estRestan;
+
+                  var isTp = (parseFloat(res.data.luasPanen) === 0 && parseFloat(res.data.estPanen) === 0);
+                  toggleTidakPanen(isTp);
+                } else {
+                  if (finalLocked) {
+                    var d1 = new Date(estYear, estMonth, estDay - 1);
+                    var d1Day = String(d1.getDate()).padStart(2, '0');
+                    var d1Month = String(d1.getMonth() + 1).padStart(2, '0');
+                    var d1Year = d1.getFullYear();
+                    var deadlineStr = d1Day + "/" + d1Month + "/" + d1Year + " pukul 22.00 WIB";
+
+                    hint.textContent = "Pengisian ditutup! Batas pengisian berakhir pada " + deadlineStr;
+                    hint.style.color = "#dc3545";
+
+                    if (unlockStatus === 'NONE') {
+                      reqBtn.style.display = "inline-block";
+                      reqBtn.textContent = "Ajukan Buka Akses";
+                      reqBtn.style.backgroundColor = "#ffc107";
+                      reqBtn.style.color = "#000";
+                      reqBtn.disabled = false;
+                    } else if (unlockStatus === 'PENDING') {
+                      reqBtn.style.display = "inline-block";
+                      reqBtn.textContent = "Menunggu Persetujuan Admin";
+                      reqBtn.style.backgroundColor = "#6c757d";
+                      reqBtn.style.color = "#fff";
+                      reqBtn.disabled = true;
+                    } else if (unlockStatus === 'REJECTED') {
+                      reqBtn.style.display = "inline-block";
+                      reqBtn.textContent = "Ajukan Ulang Buka Akses";
+                      reqBtn.style.backgroundColor = "#ffc107";
+                      reqBtn.style.color = "#000";
+                      reqBtn.disabled = false;
+                    }
+                  } else {
+                    hint.textContent = "Tanggal ini belum ada data estimasi (Bisa diisi).";
+                    hint.style.color = "#28a745";
+                  }
+
+                  document.getElementById("luasPanen").value = "";
+                  document.getElementById("estimasiRestanLalu").value = "";
+                  document.getElementById("tkPanen").value = "";
+                  document.getElementById("estimasiPanen").value = "";
+                  document.getElementById("outputPanen").value = "";
+                  document.getElementById("estimasiKirim").value = "";
+                  document.getElementById("estimasiRestan").value = "";
+                  toggleTidakPanen(false);
+
+                  var draftKey = "draft_estimasi_" + s.region + "_" + tanggal;
+                  var draftDataStr = localStorage.getItem(draftKey);
+                  if (draftDataStr) {
+                    try {
+                      var draftData = JSON.parse(draftDataStr);
+                      document.getElementById("luasPanen").value = draftData.luasPanen || "";
+                      document.getElementById("estimasiRestanLalu").value = draftData.estimasiRestanLalu || "";
+                      document.getElementById("tkPanen").value = draftData.tkPanen || "";
+                      document.getElementById("estimasiPanen").value = draftData.estimasiPanen || "";
+                      document.getElementById("outputPanen").value = draftData.outputPanen || "";
+                      document.getElementById("estimasiKirim").value = draftData.estimasiKirim || "";
+                      document.getElementById("estimasiRestan").value = draftData.estimasiRestan || "";
+                      var isTpDraft = (draftData.luasPanen === "0" && draftData.estimasiPanen === "0");
+                      toggleTidakPanen(isTpDraft);
+                      hint.textContent += " (Memuat Draft Lokal)";
+                    } catch (e) { }
+                  }
+                }
+
+                // Disable/Enable fields based on finalLocked
+                var formFields = [
+                  "luasPanen", "estimasiRestanLalu", "tkPanen", "estimasiPanen",
+                  "estimasiKirim", "estimasiRestan", "btnTidakPanen", "btnSimpanDraftEstimasi"
+                ];
+                formFields.forEach(function (id) {
+                  var el = document.getElementById(id);
+                  if (el) el.disabled = finalLocked;
+                });
+
+                var submitBtn = getEstimasiBtn();
+                if (submitBtn) submitBtn.disabled = finalLocked;
+
+                var delBtn = getDeleteEstBtn();
+                if (delBtn) delBtn.style.display = (res.exists && !finalLocked) ? "inline-block" : "none";
+              } else {
+                hint.textContent = "Gagal mengecek data.";
+                hint.style.color = "#dc3545";
+              }
+            },
+            function (errMsg) {
+              setLoading(false);
+              hint.textContent = "Gagal koneksi ke server.";
+              hint.style.color = "#dc3545";
+            }
+          );
         });
     }
 
@@ -2411,27 +2431,27 @@
       var tanggal = document.getElementById("tanggalEstimasi").value;
       var s = loadSession();
       if (!tanggal || !s) return;
-      
+
       if (!confirm("Ajukan permohonan buka akses pengisian estimasi ke Admin untuk tanggal " + tanggal + "?")) return;
-      
+
       setLoading(true, "Mengirim pengajuan...");
       fetch("/api/unlockRequest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "requestUnlock", tanggal: tanggal, region: s.region, token: s.token })
       })
-      .then(function(r) { return r.json(); })
-      .then(function(res) {
-        setLoading(false);
-        alert(res.message || (res.success ? "Pengajuan berhasil" : "Pengajuan gagal"));
-        if (res.success) {
-          checkEstimasi(); // Refresh status
-        }
-      })
-      .catch(function(err) {
-        setLoading(false);
-        alert("Gagal menghubungi server.");
-      });
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          setLoading(false);
+          alert(res.message || (res.success ? "Pengajuan berhasil" : "Pengajuan gagal"));
+          if (res.success) {
+            checkEstimasi(); // Refresh status
+          }
+        })
+        .catch(function (err) {
+          setLoading(false);
+          alert("Gagal menghubungi server.");
+        });
     }
 
     // =========================================================================
@@ -3920,6 +3940,41 @@
       }
     }
 
+    function simpanDraftEstimasi() {
+      var s = requireSession();
+      if (!s) return;
+      var tanggal = document.getElementById("tanggalEstimasi").value;
+      if (!tanggal) { alert("Pilih tanggal estimasi terlebih dahulu."); return; }
+
+      var now = new Date();
+      var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      var wibNow = new Date(utc + (7 * 3600000));
+      var parts = tanggal.split("-");
+      var estYear = parseInt(parts[0], 10);
+      var estMonth = parseInt(parts[1], 10) - 1;
+      var estDay = parseInt(parts[2], 10);
+      var deadline = new Date(estYear, estMonth, estDay - 1, 22, 0, 0, 0);
+
+      if (wibNow.getTime() > deadline.getTime() && window.currentUnlockStatus !== 'APPROVED') {
+        alert("Penyimpanan draft ditutup! Batas pengisian rencana estimasi telah berakhir pada pukul 22.00 WIB.");
+        return;
+      }
+
+      var draftData = {
+        luasPanen: document.getElementById("luasPanen").value,
+        estimasiRestanLalu: document.getElementById("estimasiRestanLalu").value,
+        tkPanen: document.getElementById("tkPanen").value,
+        estimasiPanen: document.getElementById("estimasiPanen").value,
+        outputPanen: document.getElementById("outputPanen").value,
+        estimasiKirim: document.getElementById("estimasiKirim").value,
+        estimasiRestan: document.getElementById("estimasiRestan").value
+      };
+
+      var draftKey = "draft_estimasi_" + s.region + "_" + tanggal;
+      localStorage.setItem(draftKey, JSON.stringify(draftData));
+      alert("Draft estimasi berhasil disimpan di perangkat ini.");
+    }
+
     // 3. Fungsi Kirim Data Estimasi ke Backend
     function handleInsertEstimasi() {
       if (isSubmitting) { alert("Sedang memproses, harap tunggu."); return; }
@@ -3964,7 +4019,7 @@
 
       var deadline = new Date(estYear, estMonth, estDay - 1, 22, 0, 0, 0);
 
-      if (wibNow.getTime() > deadline.getTime()) {
+      if (wibNow.getTime() > deadline.getTime() && window.currentUnlockStatus !== 'APPROVED') {
         var d1 = new Date(estYear, estMonth, estDay - 1);
         var d1Day = String(d1.getDate()).padStart(2, '0');
         var d1Month = String(d1.getMonth() + 1).padStart(2, '0');
@@ -4046,6 +4101,7 @@
             document.getElementById("estimasiForm").reset();
             document.getElementById("estimasiHint").textContent = "";
             currentEstimasiExists = true;
+            localStorage.removeItem("draft_estimasi_" + s.region + "_" + tanggal);
           } else {
             if (isSessionError(res.message)) { alert(res.message); prosesLogout(); return; }
             if (stat) {
@@ -4200,7 +4256,7 @@
     fetch('https://api.ipify.org?format=json')
       .then(response => response.json())
       .then(data => { clientIP = data.ip; })
-      .catch(e => {});
+      .catch(e => { });
 
     // =========================================================================
     // JAM DIGITAL SERVER WIB (UTC+7)
@@ -4592,7 +4648,7 @@
       var html = '';
       for (var pass = 0; pass < 2; pass++) {
         for (var i = 0; i < regions.length; i++) {
-          html += '<span>' + regions[i] + '</span><span class="sep">â€¢</span>';
+          html += '<span>' + regions[i] + '</span><span class="sep"></span>';
         }
       }
       list.innerHTML = html;
@@ -4654,10 +4710,10 @@
         if (slider) slider.style.display = isLoginVisible ? "block" : "none";
         if (overlay) overlay.style.display = isLoginVisible ? "block" : "none";
       };
-      
+
       // Run once immediately
       updateBgVisibility();
-      
+
       var observer = new MutationObserver(updateBgVisibility);
       observer.observe(loginSec, { attributes: true, attributeFilter: ["style"] });
     })();
