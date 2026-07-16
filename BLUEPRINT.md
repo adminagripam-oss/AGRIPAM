@@ -145,7 +145,7 @@ The dashboard uses Tailwind CSS's flexible grid layout to divide information int
 - **Summary Bento Boxes**: Total Estimasi, Total Realisasi, and Persentase Pencapaian in high-font readability.
 - **Form Card**: Interactive harvest report inputs.
 - **Visualisation Cards**: Hourly and National comparative charts.
-- **Navigation Bar**: Clean bottom-tab navigation for quick swapping between Monitoring, SAP, and Infografis.
+- **Navigation Bar**: Clean bottom-tab navigation for quick swapping between Monitoring, SAP, and Est Panen.
 
 ### 5.2. Chart.js Configurations
 The application implements two major charts:
@@ -168,6 +168,7 @@ The application implements two major charts:
 - A button class `.header-theme-toggle` in the header allows users to swap between theme styles.
 - Toggling modifies `document.documentElement.setAttribute("data-theme", "dark" | "light")` and stores selection in local storage.
 - Custom CSS overrides theme variables globally, automatically updating dashboard backgrounds, sidebar navigation selectors, headers, clocks, cards, inputs, and database tables to a unified dark theme.
+- Tailwind CSS CDN is configured with `darkMode: ['selector', '[data-theme="dark"]']` to decouple theme styles from system preference mismatch bugs, preventing theme leakage during login/logout states.
 
 ---
 

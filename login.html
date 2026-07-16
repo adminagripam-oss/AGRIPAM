@@ -754,7 +754,8 @@
       color: #34d399 !important;
     }
 
-    [data-theme="dark"] #leftSidebar .border-t {
+    [data-theme="dark"] #leftSidebar .border-t,
+    [data-theme="dark"] #leftSidebar .sidebar-brand {
       border-color: #334155 !important;
     }
 
@@ -770,7 +771,7 @@
       background-color: #0f172a !important;
     }
 
-    [data-theme="dark"] main header {
+    [data-theme="dark"] #mainSection header {
       background-color: #1e293b !important;
       border-color: #334155 !important;
     }
@@ -1721,6 +1722,11 @@
 
   <!-- Tailwind CSS v3 & Fonts (Dantara Indonesia Theme) -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: ['selector', '[data-theme="dark"]']
+    }
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     body {
@@ -1801,6 +1807,12 @@
       width: 0;
       margin-left: 0;
       display: none;
+    }
+
+    .sidebar-collapsed #leftSidebar .sidebar-brand {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
     }
 
     /* Override Tailwind Preflight for EstimasiSection to match loginPANDUAN.html */
@@ -2000,8 +2012,16 @@
   <div id="mainSection" style="display:none;" class="h-screen w-full flex overflow-hidden">
     <!-- LeftSidebar -->
     <aside id="leftSidebar"
-      class="bg-white border-r border-gray-200 flex flex-col py-4 space-y-8 flex-shrink-0 z-20 transition-all duration-300"
+      class="bg-white border-r border-gray-200 flex flex-col py-4 space-y-4 flex-shrink-0 z-20 transition-all duration-300"
       style="width: 16rem;">
+      <!-- Sidebar Brand Logo -->
+      <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 sidebar-brand">
+        <img src="LOGO AGRIPAM.jpeg" alt="Logo AGRIPAM" class="w-9 h-9 rounded-lg object-contain shadow-sm flex-shrink-0" />
+        <div class="transition-opacity duration-300 nav-text">
+          <div class="text-[13px] font-extrabold text-slate-800 dark:text-slate-150 leading-tight tracking-tight">AGRI-PAM</div>
+          <div class="text-[10px] text-slate-400 dark:text-slate-500 leading-tight">Agrinas Panen Monitoring</div>
+        </div>
+      </div>
       <nav class="flex flex-col space-y-2 px-3 w-full">
         <!-- Button 1: Monitoring -->
         <button onclick="tutupSAP(); tutupEstimasiModal(); setActiveSidebar(0);"
@@ -2018,13 +2038,13 @@
         <!-- Button 2: Infografis -->
         <button id="btnOpenInfografis" onclick="bukaInfografis(); setActiveSidebar(1);"
           class="flex items-center p-3 text-gray-400 hover:bg-gray-50 rounded-lg transition-colors w-full"
-          data-purpose="nav-item" title="Infografis">
+          data-purpose="nav-item" title="Est Panen">
           <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
             <path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
               stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
           </svg>
           <span
-            class="nav-text text-sm font-semibold ml-3 overflow-hidden whitespace-nowrap transition-all duration-300">Infografis</span>
+            class="nav-text text-sm font-semibold ml-3 overflow-hidden whitespace-nowrap transition-all duration-300">Est Panen</span>
         </button>
         <!-- Button 3: SAP -->
         <button id="btnOpenSAP" onclick="bukaSAP(); setActiveSidebar(2);"
@@ -2074,12 +2094,11 @@
       </div>
     </aside>
 
-    <!-- MainContentContainer -->
-    <main class="flex-1 overflow-y-auto p-6 bg-[#f8fafc] custom-scrollbar flex flex-col justify-between">
-      <div>
-        <!-- Top Header -->
-        <header
-          class="flex-shrink-0 bg-white border-b border-slate-200 px-6 py-2.5 flex items-center justify-between transition-colors duration-300 mb-6 rounded-xl shadow-sm border">
+    <!-- Right Container (Header + Main) -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f8fafc] dark:bg-slate-950">
+      <!-- Top Header -->
+      <header
+        class="flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between transition-colors duration-300 z-10">
           <div class="flex items-center gap-3">
             <button onclick="toggleSidebar()"
               class="p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors hidden md:block">
@@ -2127,6 +2146,10 @@
             </button>
           </div>
         </header>
+
+      <!-- MainContentContainer (Scrollable) -->
+      <main class="flex-1 overflow-y-auto p-6 custom-scrollbar flex flex-col justify-between">
+        <div>
 
         <!-- Filter Bar -->
         <section class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
@@ -2312,7 +2335,8 @@
         </footer>
       </div>
     </main>
-    <script>
+  </div>
+  <script>
       function setActiveSidebar(index) {
         const buttons = document.querySelectorAll('[data-purpose="nav-item"]');
         buttons.forEach((btn, idx) => {
