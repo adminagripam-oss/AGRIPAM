@@ -5,6 +5,17 @@ const { applyCors } = require('./lib/cors');
 const MIN_TONASE = 0;
 const MAX_TONASE = 5000;
 
+/**
+ * Kembalikan prefix bulan berjalan dalam zona WIB (UTC+7).
+ * Contoh: '2026-07'
+ */
+function getCurrentMonthWIB() {
+  const now = new Date(Date.now() + 7 * 60 * 60 * 1000); // offset ke WIB
+  const yyyy = now.getUTCFullYear();
+  const mm   = String(now.getUTCMonth() + 1).padStart(2, '0');
+  return `${yyyy}-${mm}`;
+}
+
 function computeJamDataAndTotal(rows) {
   const jamData = {};
   (rows || []).forEach(r => {
@@ -72,6 +83,19 @@ module.exports = async (req, res) => {
 
     if (!tanggal || !region || !jam || tonase === undefined || tonase === '') {
       return res.json({ success: false, message: 'Data tidak lengkap.' });
+    }
+
+    // ✅ Validasi bulan berjalan (WIB)
+    const currentMonth = getCurrentMonthWIB(); // e.g. '2026-07'
+    const inputMonth   = tanggal.substring(0, 7); // e.g. '2026-07'
+    if (inputMonth !== currentMonth) {
+      const [cy, cm] = currentMonth.split('-');
+      const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      const bulanIni = `${monthNames[parseInt(cm, 10) - 1]} ${cy}`;
+      return res.json({
+        success: false,
+        message: `❌ Input ditolak! Tanggal yang Anda masukkan (${tanggal}) berada di luar bulan berjalan. Hanya data bulan ${bulanIni} yang diizinkan.`
+      });
     }
 
     const tonaseNum = parseFloat(tonase);

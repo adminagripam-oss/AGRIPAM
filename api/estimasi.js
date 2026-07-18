@@ -2,6 +2,17 @@ const { supabase } = require('./lib/supabase');
 const { verifyToken } = require('./lib/auth');
 const { applyCors } = require('./lib/cors');
 
+/**
+ * Kembalikan prefix bulan berjalan dalam zona WIB (UTC+7).
+ * Contoh: '2026-07'
+ */
+function getCurrentMonthWIB() {
+  const now = new Date(Date.now() + 7 * 60 * 60 * 1000);
+  const yyyy = now.getUTCFullYear();
+  const mm   = String(now.getUTCMonth() + 1).padStart(2, '0');
+  return `${yyyy}-${mm}`;
+}
+
 module.exports = async (req, res) => {
   applyCors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -100,6 +111,19 @@ module.exports = async (req, res) => {
 
     if (!tanggal || !region || isNaN(restanLalu) || isNaN(luasPanen) || isNaN(tkPanen) || isNaN(estPanen) || isNaN(estKirim) || isNaN(estRestan)) {
       return res.json({ success: false, message: 'Data estimasi tidak lengkap atau tidak valid.' });
+    }
+
+    // ✅ Validasi bulan berjalan (WIB)
+    const currentMonth = getCurrentMonthWIB();
+    const inputMonth   = tanggal.substring(0, 7);
+    if (inputMonth !== currentMonth) {
+      const [cy, cm] = currentMonth.split('-');
+      const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      const bulanIni = `${monthNames[parseInt(cm, 10) - 1]} ${cy}`;
+      return res.json({
+        success: false,
+        message: `❌ Input estimasi ditolak! Tanggal (${tanggal}) berada di luar bulan berjalan. Hanya estimasi bulan ${bulanIni} yang diizinkan.`
+      });
     }
 
     const { data: existing } = await supabase.from('data_estimasi').select('id').eq('tanggal', tanggal).eq('region', region).maybeSingle();
