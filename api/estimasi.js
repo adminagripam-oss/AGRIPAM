@@ -3,14 +3,31 @@ const { verifyToken } = require('./lib/auth');
 const { applyCors } = require('./lib/cors');
 
 /**
- * Kembalikan prefix bulan berjalan dalam zona WIB (UTC+7).
- * Contoh: '2026-07'
+ * Kembalikan tanggal hari ini dan besok dalam zona WIB (UTC+7).
+ * Format: 'YYYY-MM-DD'
+ *
+ * Estimasi bersifat H+1 — user boleh input estimasi untuk:
+ *   • Hari ini (hari berjalan)
+ *   • Besok / H+1 (termasuk lintas bulan, misal 31 Juli → 1 Agustus)
+ * Estimasi TIDAK boleh lebih dari H+1 (jauh ke depan).
  */
-function getCurrentMonthWIB() {
-  const now = new Date(Date.now() + 7 * 60 * 60 * 1000);
-  const yyyy = now.getUTCFullYear();
-  const mm   = String(now.getUTCMonth() + 1).padStart(2, '0');
-  return `${yyyy}-${mm}`;
+function getWIBDateInfo() {
+  const nowUTC = Date.now() + 7 * 60 * 60 * 1000; // offset WIB
+  const today  = new Date(nowUTC);
+
+  const yyyy  = today.getUTCFullYear();
+  const mm    = String(today.getUTCMonth() + 1).padStart(2, '0');
+  const dd    = String(today.getUTCDate()).padStart(2, '0');
+  const todayStr = `${yyyy}-${mm}-${dd}`;
+
+  // Hitung besok (H+1)
+  const tomorrowDate = new Date(nowUTC + 24 * 60 * 60 * 1000);
+  const yyyy2 = tomorrowDate.getUTCFullYear();
+  const mm2   = String(tomorrowDate.getUTCMonth() + 1).padStart(2, '0');
+  const dd2   = String(tomorrowDate.getUTCDate()).padStart(2, '0');
+  const tomorrowStr = `${yyyy2}-${mm2}-${dd2}`;
+
+  return { today: todayStr, tomorrow: tomorrowStr };
 }
 
 module.exports = async (req, res) => {
@@ -113,16 +130,25 @@ module.exports = async (req, res) => {
       return res.json({ success: false, message: 'Data estimasi tidak lengkap atau tidak valid.' });
     }
 
-    // ✅ Validasi bulan berjalan (WIB)
-    const currentMonth = getCurrentMonthWIB();
-    const inputMonth   = tanggal.substring(0, 7);
-    if (inputMonth !== currentMonth) {
-      const [cy, cm] = currentMonth.split('-');
+    // ✅ Validasi H+1 — estimasi hanya boleh untuk hari ini atau besok (WIB)
+    // Contoh skenario yang diizinkan:
+    //   • Hari ini  31 Juli  → estimasi 31 Juli  ✅
+    //   • Hari ini  31 Juli  → estimasi 1 Agustus ✅ (H+1, lintas bulan)
+    //   • Hari ini  31 Juli  → estimasi 2 Agustus ❌ (terlalu jauh ke depan)
+    //   • Hari ini  31 Juli  → estimasi 30 Juni   ❌ (masa lalu)
+    const { today: todayWIB, tomorrow: tomorrowWIB } = getWIBDateInfo();
+    if (tanggal !== todayWIB && tanggal !== tomorrowWIB) {
+      const isInPast = tanggal < todayWIB;
+      const [ty, tm, td] = todayWIB.split('-');
+      const [ry, rm, rd] = tomorrowWIB.split('-');
       const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-      const bulanIni = `${monthNames[parseInt(cm, 10) - 1]} ${cy}`;
+      const todayLabel    = `${td} ${monthNames[parseInt(tm,10)-1]} ${ty}`;
+      const tomorrowLabel = `${rd} ${monthNames[parseInt(rm,10)-1]} ${ry}`;
       return res.json({
         success: false,
-        message: `❌ Input estimasi ditolak! Tanggal (${tanggal}) berada di luar bulan berjalan. Hanya estimasi bulan ${bulanIni} yang diizinkan.`
+        message: isInPast
+          ? `❌ Input estimasi ditolak! Tanggal (${tanggal}) sudah lewat. Estimasi hanya bisa diisi untuk hari ini (${todayLabel}) atau besok / H+1 (${tomorrowLabel}).`
+          : `❌ Input estimasi ditolak! Tanggal (${tanggal}) terlalu jauh ke depan. Estimasi hanya bisa diisi untuk hari ini (${todayLabel}) atau besok / H+1 (${tomorrowLabel}).`
       });
     }
 
