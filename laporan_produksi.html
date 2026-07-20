@@ -352,20 +352,57 @@
     }
 
     /* Transition Tab classes */
-    .bg-background { background-color: #f8fafc; }
-    .text-muted-foreground { color: #64748b; }
-    .hover\:text-foreground:hover { color: #1e293b; }
-    .hover\:bg-muted:hover { background-color: #f1f5f9; }
-    .bg-primary { background-color: #16a34a; }
-    .text-primary-foreground { color: #ffffff; }
+    .bg-background {
+      background-color: #f8fafc;
+    }
 
-    [data-theme="dark"] .bg-background { background-color: #0f172a; }
-    [data-theme="dark"] .text-muted-foreground { color: #94a3b8; }
-    [data-theme="dark"] .hover\:text-foreground:hover { color: #f8fafc; }
-    [data-theme="dark"] .hover\:bg-muted:hover { background-color: #334155; }
-    [data-theme="dark"] .bg-primary { background-color: #22c55e; }
-    [data-theme="dark"] .text-primary-foreground { color: #ffffff; }
-    [data-theme="dark"] .border { border-color: #334155 !important; }
+    .text-muted-foreground {
+      color: #64748b;
+    }
+
+    .hover\:text-foreground:hover {
+      color: #1e293b;
+    }
+
+    .hover\:bg-muted:hover {
+      background-color: #f1f5f9;
+    }
+
+    .bg-primary {
+      background-color: #16a34a;
+    }
+
+    .text-primary-foreground {
+      color: #ffffff;
+    }
+
+    [data-theme="dark"] .bg-background {
+      background-color: #0f172a;
+    }
+
+    [data-theme="dark"] .text-muted-foreground {
+      color: #94a3b8;
+    }
+
+    [data-theme="dark"] .hover\:text-foreground:hover {
+      color: #f8fafc;
+    }
+
+    [data-theme="dark"] .hover\:bg-muted:hover {
+      background-color: #334155;
+    }
+
+    [data-theme="dark"] .bg-primary {
+      background-color: #22c55e;
+    }
+
+    [data-theme="dark"] .text-primary-foreground {
+      color: #ffffff;
+    }
+
+    [data-theme="dark"] .border {
+      border-color: #334155 !important;
+    }
   </style>
 </head>
 
@@ -1348,9 +1385,9 @@
 
                 setChartData({ labels, realisasi, estimasi });
 
-              // ----------------------------------------------------
-              // CASE 2: Tab Mingguan
-              // ----------------------------------------------------
+                // ----------------------------------------------------
+                // CASE 2: Tab Mingguan
+                // ----------------------------------------------------
               } else if (activeTab === 'mingguan') {
                 const targetRegion = filters.regional;
                 const numWeeks = lastDay > 28 ? 5 : 4;
@@ -1387,13 +1424,13 @@
 
                 setChartData({ labels: weekLabels, realisasi: weekRealValues, estimasi: weekEstValues });
 
-              // ----------------------------------------------------
-              // CASE 3: Tab Bulanan
-              // ----------------------------------------------------
+                // ----------------------------------------------------
+                // CASE 3: Tab Bulanan
+                // ----------------------------------------------------
               } else if (activeTab === 'bulanan') {
                 const monthLabels = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
                 const monthKeys = Array.from({ length: 12 }, (_, i) => `${parts[0]}-${String(i + 1).padStart(2, '0')}`);
-                
+
                 const monthRealValues = Array(12).fill(0);
                 const monthEstValues = Array(12).fill(0);
 
@@ -1464,7 +1501,7 @@
                   // Avoid label clutter on 31 points by only drawing every 3rd label
                   if (data > 0 && index % 3 === 0) {
                     ctx.save();
-                    ctx.fillStyle = datasetIndex === 0 
+                    ctx.fillStyle = datasetIndex === 0
                       ? (isDark ? '#4ade80' : '#16a34a')
                       : (isDark ? '#f87171' : '#dc2626');
                     ctx.font = 'bold 9px sans-serif';
@@ -1594,56 +1631,56 @@
             data: {
               labels: chartData.labels,
               datasets: [
-                { 
-                  label: 'Estimasi Panen', 
-                  data: chartData.estimasi, 
-                  backgroundColor: 'rgba(37,99,235,0.15)', 
-                  borderColor: '#2563eb', 
-                  borderWidth: 2, 
-                  borderRadius: 5, 
-                  borderSkipped: false 
+                {
+                  label: 'Estimasi Panen',
+                  data: chartData.estimasi,
+                  backgroundColor: 'rgba(37,99,235,0.15)',
+                  borderColor: '#2563eb',
+                  borderWidth: 2,
+                  borderRadius: 5,
+                  borderSkipped: false
                 },
-                { 
-                  label: 'Realisasi Panen', 
-                  data: chartData.realisasi, 
-                  backgroundColor: 'rgba(22,163,74,0.75)', 
-                  borderColor: '#16a34a', 
-                  borderWidth: 1, 
-                  borderRadius: 5, 
-                  borderSkipped: false 
+                {
+                  label: 'Realisasi Panen',
+                  data: chartData.realisasi,
+                  backgroundColor: 'rgba(22,163,74,0.75)',
+                  borderColor: '#16a34a',
+                  borderWidth: 1,
+                  borderRadius: 5,
+                  borderSkipped: false
                 },
               ]
             },
             options: {
-              responsive: true, 
+              responsive: true,
               maintainAspectRatio: false,
               interaction: { mode: 'index', intersect: false },
               plugins: {
                 legend: { display: false },
                 tooltip: {
-                  backgroundColor: '#1e293b', 
-                  titleColor: '#94a3b8', 
-                  bodyColor: '#f1f5f9', 
-                  padding: 12, 
+                  backgroundColor: '#1e293b',
+                  titleColor: '#94a3b8',
+                  bodyColor: '#f1f5f9',
+                  padding: 12,
                   cornerRadius: 8,
-                  callbacks: { 
-                    label: ctx => ` ${ctx.dataset.label}: ${Number(ctx.parsed.y).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ton` 
+                  callbacks: {
+                    label: ctx => ` ${ctx.dataset.label}: ${Number(ctx.parsed.y).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ton`
                   }
                 }
               },
               scales: {
-                x: { 
-                  grid: { display: false }, 
-                  ticks: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } 
+                x: {
+                  grid: { display: false },
+                  ticks: { color: '#94a3b8', font: { size: 10, weight: 'bold' } }
                 },
-                y: { 
-                  grid: { color: isDark ? 'rgba(255, 255, 255, 0.08)' : '#f1f5f9' }, 
-                  ticks: { 
-                    color: '#94a3b8', 
-                    font: { size: 10, weight: 'bold' }, 
-                    callback: v => v.toLocaleString('id-ID', { minimumFractionDigits: 0 }) 
-                  }, 
-                  border: { dash: [4, 4] } 
+                y: {
+                  grid: { color: isDark ? 'rgba(255, 255, 255, 0.08)' : '#f1f5f9' },
+                  ticks: {
+                    color: '#94a3b8',
+                    font: { size: 10, weight: 'bold' },
+                    callback: v => v.toLocaleString('id-ID', { minimumFractionDigits: 0 })
+                  },
+                  border: { dash: [4, 4] }
                 }
               }
             },
@@ -1662,19 +1699,19 @@
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 mb-4">
             <div>
               <h2 className="text-[14px] font-bold text-slate-800">
-                {activeTab === 'harian' ? `Realisasi vs Estimasi Panen — ${labelScope}` : 
-                 activeTab === 'mingguan' ? `Akumulasi Mingguan Realisasi vs Estimasi — ${labelScope}` : 
-                 `Akumulasi Bulanan Realisasi vs Estimasi — ${labelScope}`}
+                {activeTab === 'harian' ? `Realisasi vs Estimasi Panen — ${labelScope}` :
+                  activeTab === 'mingguan' ? `Akumulasi Mingguan Realisasi vs Estimasi — ${labelScope}` :
+                    `Akumulasi Bulanan Realisasi vs Estimasi — ${labelScope}`}
               </h2>
               <p className="text-[12px] text-slate-400 mt-0.5">
-                {activeTab === 'harian' 
+                {activeTab === 'harian'
                   ? `Perbandingan pencapaian vs target ${filters.tanggal !== 'Semua Tanggal' ? ' — ' + formatIndoDate(filters.tanggal) : ' harian hari ini'}`
                   : activeTab === 'mingguan'
-                  ? `Pencapaian mingguan s.d. ${filters.tanggal_akhir !== filters.tanggal ? formatIndoDate(filters.tanggal_akhir) : formatIndoDate(filters.tanggal)}`
-                  : `Pencapaian bulan s.d. ${filters.tanggal_akhir !== filters.tanggal ? formatIndoDate(filters.tanggal_akhir) : formatIndoDate(filters.tanggal)}`}
+                    ? `Pencapaian mingguan s.d. ${filters.tanggal_akhir !== filters.tanggal ? formatIndoDate(filters.tanggal_akhir) : formatIndoDate(filters.tanggal)}`
+                    : `Pencapaian bulan s.d. ${filters.tanggal_akhir !== filters.tanggal ? formatIndoDate(filters.tanggal_akhir) : formatIndoDate(filters.tanggal)}`}
               </p>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-4 flex-shrink-0">
               {/* Custom Legend (Line style for harian, Bar style for others) */}
               {activeTab === 'harian' ? (
@@ -1705,33 +1742,30 @@
 
               {/* Tab Toggle buttons */}
               <div className="flex gap-1 bg-background rounded-lg p-1 border">
-                <button 
-                  onClick={() => setActiveTab('harian')} 
-                  className={`px-3 py-1 rounded text-[10px] font-semibold transition-all ${
-                    activeTab === 'harian' 
-                      ? 'bg-primary text-primary-foreground shadow' 
+                <button
+                  onClick={() => setActiveTab('harian')}
+                  className={`px-3 py-1 rounded text-[10px] font-semibold transition-all ${activeTab === 'harian'
+                      ? 'bg-primary text-primary-foreground shadow'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
+                    }`}
                 >
                   Harian
                 </button>
-                <button 
-                  onClick={() => setActiveTab('mingguan')} 
-                  className={`px-3 py-1 rounded text-[10px] font-semibold transition-all ${
-                    activeTab === 'mingguan' 
-                      ? 'bg-primary text-primary-foreground shadow' 
+                <button
+                  onClick={() => setActiveTab('mingguan')}
+                  className={`px-3 py-1 rounded text-[10px] font-semibold transition-all ${activeTab === 'mingguan'
+                      ? 'bg-primary text-primary-foreground shadow'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
+                    }`}
                 >
                   Mingguan
                 </button>
-                <button 
-                  onClick={() => setActiveTab('bulanan')} 
-                  className={`px-3 py-1 rounded text-[10px] font-semibold transition-all ${
-                    activeTab === 'bulanan' 
-                      ? 'bg-primary text-primary-foreground shadow' 
+                <button
+                  onClick={() => setActiveTab('bulanan')}
+                  className={`px-3 py-1 rounded text-[10px] font-semibold transition-all ${activeTab === 'bulanan'
+                      ? 'bg-primary text-primary-foreground shadow'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
+                    }`}
                 >
                   Bulanan
                 </button>
@@ -2372,7 +2406,11 @@
           .filter(r => r.region === region)
           .reduce((sum, r) => sum + (parseFloat(r.tonase) || 0), 0);
 
-        const palmopsTotal = activePalmopsSource ? (activePalmopsSource[region]?.panen || 0) : null;
+        const palmopsTotal = activePalmopsSource 
+          ? (typeof activePalmopsSource[region] === 'object' 
+              ? (activePalmopsSource[region]?.panen || 0) 
+              : (parseFloat(activePalmopsSource[region]) || 0))
+          : null;
         const hasExcelVal = palmopsTotal !== null;
 
         let selisih = null;
@@ -2922,21 +2960,21 @@
             const workbook = XLSX.read(data, { type: 'array' });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-            
+
             const parsedData = {};
             for (let i = 1; i < rows.length; i++) {
               const row = rows[i];
               if (!row || !row[0]) continue;
               const regionName = row[0].toString().trim();
               if (regionName === "Total Target (Ton)" || regionName === "") continue;
-              
+
               const dates = {};
               for (let d = 1; d <= 31; d++) {
                 dates[d] = parseFloat(row[d]) || 0;
               }
               parsedData[regionName] = dates;
             }
-            
+
             setTargetData(parsedData);
           } catch (err) {
             alert("Gagal memparsing file Excel: " + err.message);
@@ -3029,13 +3067,13 @@
 
             {/* Content */}
             <div className="flex-1 overflow-auto p-6 flex flex-col gap-6">
-              
+
               <div className="flex items-center gap-4">
                 <div className="flex flex-col">
                   <label className="text-xs font-bold text-slate-500 uppercase mb-1">Bulan & Tahun</label>
                   <input type="month" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} className="border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none dark:bg-slate-800 dark:text-white" />
                 </div>
-                
+
                 {targetData && (
                   <div className="flex gap-2 mt-5">
                     <button onClick={saveToDb} disabled={uploading} className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50">
@@ -3049,7 +3087,7 @@
               </div>
 
               {!targetData && (
-                <div 
+                <div
                   onClick={() => fileInputRef.current?.click()}
                   className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center cursor-pointer hover:border-brand-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                 >
@@ -3071,7 +3109,7 @@
                       <thead className="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase">
                         <tr>
                           <th className="px-3 py-2 border-b dark:border-slate-700 whitespace-nowrap min-w-[120px]">Wilayah</th>
-                          {Array.from({length: 31}, (_, i) => i + 1).map(d => (
+                          {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
                             <th key={d} className="px-2 py-2 border-b dark:border-slate-700 text-center">Tgl {d}</th>
                           ))}
                         </tr>
@@ -3080,7 +3118,7 @@
                         {Object.keys(targetData).map(region => (
                           <tr key={region} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                             <td className="px-3 py-2 font-medium">{region}</td>
-                            {Array.from({length: 31}, (_, i) => i + 1).map(d => (
+                            {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
                               <td key={d} className="px-2 py-2 text-center text-slate-600 dark:text-slate-400">{targetData[region][d] || 0}</td>
                             ))}
                           </tr>
@@ -3088,7 +3126,7 @@
                       </tbody>
                       <tr className="bg-slate-100 dark:bg-slate-900 font-bold">
                         <td className="px-3 py-2">TOTAL</td>
-                        {Array.from({length: 31}, (_, i) => i + 1).map(d => {
+                        {Array.from({ length: 31 }, (_, i) => i + 1).map(d => {
                           const sum = Object.values(targetData).reduce((acc, curr) => acc + (curr[d] || 0), 0);
                           return (
                             <td key={d} className="px-2 py-2 text-center text-slate-800 dark:text-slate-200">{sum}</td>
@@ -3190,7 +3228,7 @@
         const [year, month, day] = dateStr.split('-');
         const bulan = `${year}-${month}`;
         const dayInt = parseInt(day, 10);
-        
+
         try {
           const sessionRaw = sessionStorage.getItem("agripam_session");
           const session = sessionRaw ? JSON.parse(sessionRaw) : null;
@@ -3241,7 +3279,7 @@
           const token = session ? session.token : "";
           const res = await fetch(`/api/laporanRealisasi?action=getLaporan&tanggal=${date}&token=${token}`);
           const json = await res.json();
-          
+
           if (json.success && json.exists && json.data) {
             setRegionTotals(json.data.regionTotals);
             setCustomRemarks(json.data.customRemarks || {});
@@ -3274,7 +3312,7 @@
           const sessionRaw = sessionStorage.getItem("agripam_session");
           const session = sessionRaw ? JSON.parse(sessionRaw) : null;
           const token = session ? session.token : "";
-          
+
           const payloadData = {
             regionTotals,
             customRemarks,
@@ -3315,7 +3353,7 @@
           const sessionRaw = sessionStorage.getItem("agripam_session");
           const session = sessionRaw ? JSON.parse(sessionRaw) : null;
           const token = session ? session.token : "";
-          
+
           const res = await fetch(`/api/laporanRealisasi`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -3427,13 +3465,13 @@
               if (matchedReg) {
                 let valPanen = row[11]; // Column L
                 let valKirim = row[6]; // Column G
-                
+
                 if (typeof valPanen === 'string') valPanen = valPanen.replace(/[^\d.,]/g, '').replace(/,/g, '');
                 if (typeof valKirim === 'string') valKirim = valKirim.replace(/[^\d.,]/g, '').replace(/,/g, '');
-                
+
                 const numPanen = valPanen !== null && valPanen !== '' ? parseFloat(valPanen) : 0;
                 const numKirim = valKirim !== null && valKirim !== '' ? parseFloat(valKirim) : 0;
-                
+
                 if (!isNaN(numPanen)) totals[matchedReg].panen += (numPanen / 1000);
                 if (!isNaN(numKirim)) totals[matchedReg].kirim += (numKirim / 1000);
               }
@@ -3463,18 +3501,18 @@
           const officialReg = rowConfig.regionKey;
           const estRow = dbEstimasi[officialReg];
           const rencanaPanen = estRow ? (parseFloat(estRow.estPanen) || 0) / 1000 : 0;
-          
+
           let tbsPanen = regionTotals && regionTotals[rowConfig.regionKey] ? (regionTotals[rowConfig.regionKey].panen || 0) : 0;
           let tbsKirim = regionTotals && regionTotals[rowConfig.regionKey] ? (regionTotals[rowConfig.regionKey].kirim || 0) : 0;
-          
+
           const pctPanenVsRenc = rencanaPanen > 0 ? (tbsPanen / rencanaPanen) * 100 : 0;
           const pctKirimVsRenc = rencanaPanen > 0 ? (tbsKirim / rencanaPanen) * 100 : 0;
-          
-          const dynamicTarget = (rowConfig.excelKey && targetChallengeData[rowConfig.excelKey] !== undefined) 
-            ? targetChallengeData[rowConfig.excelKey] 
+
+          const dynamicTarget = (rowConfig.excelKey && targetChallengeData[rowConfig.excelKey] !== undefined)
+            ? targetChallengeData[rowConfig.excelKey]
             : rowConfig.target;
           const pctKirimVsTarget = dynamicTarget > 0 ? (tbsKirim / dynamicTarget) * 100 : 0;
-          
+
           return {
             ...rowConfig,
             target: dynamicTarget,
@@ -3497,7 +3535,7 @@
           let rencanaPanen = 0;
           let tbsPanen = 0;
           let tbsKirim = 0;
-          
+
           row.children.forEach(childLabel => {
             const childRow = processedRows.find(r => r.type === 'detail' && r.label === childLabel);
             if (childRow) {
@@ -3508,7 +3546,7 @@
               tbsKirim += childRow.tbsKirim || 0;
             }
           });
-          
+
           row.luas = luas;
           row.target = target;
           row.rencanaPanen = rencanaPanen;
@@ -3528,7 +3566,7 @@
         let rencanaPanen = 0;
         let tbsPanen = 0;
         let tbsKirim = 0;
-        
+
         processedRows.forEach(row => {
           if (row.type === 'subtotal') {
             luas += row.luas || 0;
@@ -3538,7 +3576,7 @@
             tbsKirim += row.tbsKirim || 0;
           }
         });
-        
+
         totalRow.luas = luas; // Total otomatis dari subtotal
         totalRow.target = target;
         totalRow.rencanaPanen = rencanaPanen;
@@ -3579,7 +3617,7 @@
       const handleExportPdf = () => {
         const element = document.getElementById("rencana-realisasi-print-container");
         if (!element) return;
-        
+
         const opt = {
           margin: [5, 5, 5, 5],
           filename: `RENCANA_REALISASI_PANEN_HARIAN_${selectedDate}.pdf`,
@@ -3587,7 +3625,7 @@
           html2canvas: { scale: 2.5, useCORS: true, letterRendering: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
-        
+
         const btn = document.getElementById("btn-pdf-export");
         const originalText = btn.innerHTML;
         btn.innerHTML = `<span class="inline-block animate-spin mr-1">⚙️</span> Generating PDF...`;
@@ -3621,31 +3659,31 @@
               <p className="text-xs text-slate-400 mt-0.5">Unggah berkas LHP untuk menghasilkan laporan rencana vs realisasi</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <button 
+              <button
                 onClick={() => setIsTargetModalOpen(true)}
                 className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-all duration-200"
               >
                 <Icon name="target" size={14} />
                 Kelola Target Bulanan
               </button>
-              
+
               <div className="flex flex-col ml-2">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Laporan</span>
-                <input 
-                  type="date" 
-                  value={selectedDate} 
+                <input
+                  type="date"
+                  value={selectedDate}
                   onChange={(e) => {
                     setSelectedDate(e.target.value);
-                  }} 
-                  className="border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs font-medium text-slate-700 dark:text-slate-300 dark:bg-slate-800 focus:outline-none focus:border-brand-500" 
+                  }}
+                  className="border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs font-medium text-slate-700 dark:text-slate-300 dark:bg-slate-800 focus:outline-none focus:border-brand-500"
                 />
               </div>
-              
+
               {/* Conditional Buttons based on data state */}
               {regionTotals && (
                 <div className="flex flex-wrap items-center gap-2 mt-5">
                   {isDataSaved ? (
-                    <button 
+                    <button
                       onClick={deleteLaporan}
                       disabled={isSaving}
                       className="inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-all duration-200"
@@ -3654,7 +3692,7 @@
                       {isSaving ? "Menghapus..." : "Hapus & Upload Ulang"}
                     </button>
                   ) : (
-                    <button 
+                    <button
                       onClick={saveLaporan}
                       disabled={isSaving}
                       className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-all duration-200"
@@ -3663,8 +3701,8 @@
                       {isSaving ? "Menyimpan..." : "Simpan ke Database"}
                     </button>
                   )}
-                  <button 
-                    id="btn-pdf-export" 
+                  <button
+                    id="btn-pdf-export"
                     onClick={handleExportPdf}
                     disabled={!regionTotals || isSaving}
                     className="inline-flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-all duration-200"
@@ -3679,26 +3717,25 @@
 
           {/* Upload Area */}
           {!isDataSaved && (
-            <div 
+            <div
               onDragEnter={handleDrag}
               onDragOver={handleDrag}
               onDragLeave={handleDrag}
               onDrop={handleDrop}
               onClick={triggerFileInput}
-              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center min-h-[140px] ${
-                dragActive 
-                  ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20' 
+              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center min-h-[140px] ${dragActive
+                  ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20'
                   : 'border-slate-200 dark:border-slate-800 hover:border-brand-400 dark:hover:border-brand-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50'
-              }`}
+                }`}
             >
-              <input 
-                ref={fileInputRef} 
-                type="file" 
-                accept=".xlsx,.xls" 
-                onChange={handleFileInputChange} 
-                className="hidden" 
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileInputChange}
+                className="hidden"
               />
-              
+
               {loading ? (
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
@@ -3730,7 +3767,8 @@
               {/* Printable Area Wrapper (Portrait A4 Fit with 5mm margin = 756px centered) */}
               <div id="rencana-realisasi-print-container" className="bg-white p-6 w-[756px] mx-auto text-slate-800 shadow-lg">
                 {/* Scoped CSS Injector for 1px thick black borders (#000000), Libre Franklin Font, and all black text */}
-                <style dangerouslySetInnerHTML={{__html: `
+                <style dangerouslySetInnerHTML={{
+                  __html: `
                   #rencana-realisasi-print-container {
                     font-family: 'Libre Franklin', sans-serif !important;
                     color: #000000;
@@ -3792,9 +3830,9 @@
                     {processedRows.map((row, idx) => {
                       const isSubtotal = row.type === 'subtotal';
                       const isTotal = row.type === 'total';
-                      
+
                       let bgStyle = {};
-                      
+
                       if (isSubtotal) {
                         bgStyle = { backgroundColor: '#ffff99' };
                       } else if (isTotal) {
@@ -3812,7 +3850,7 @@
                           <td className={`text-center font-mono ${monoWeightClass}`}>{formatNumber(row.rencanaPanen, 0)}</td>
                           <td className={`text-center font-mono ${monoWeightClass}`}>{formatNumber(row.tbsPanen, 0)}</td>
                           <td className={`text-center font-mono ${monoWeightClass}`}>{formatNumber(row.tbsKirim, 0)}</td>
-                          
+
                           <td className="text-center font-mono font-bold" style={getConditionalStyle(row.pctPanenVsRenc)}>
                             {formatNumber(row.pctPanenVsRenc, 0)}
                           </td>
@@ -3822,11 +3860,11 @@
                           <td className="text-center font-mono font-bold" style={getConditionalStyle(row.pctKirimVsTarget)}>
                             {formatNumber(row.pctKirimVsTarget, 0)}
                           </td>
-                          
+
                           <td>
-                            <input 
-                              type="text" 
-                              value={customRemarks[row.label] || ''} 
+                            <input
+                              type="text"
+                              value={customRemarks[row.label] || ''}
                               onChange={(e) => handleRemarkChange(row.label, e.target.value)}
                               className={`text-[9px] text-center w-full ${weightClass}`}
                               style={{ color: '#000000' }}
@@ -3846,7 +3884,7 @@
               <p className="text-[10px] text-slate-400 mt-0.5">Data rencana otomatis dihubungkan dari database estimasi harian.</p>
             </div>
           )}
-          
+
           <TargetChallengeModal isOpen={isTargetModalOpen} onClose={() => setIsTargetModalOpen(false)} />
         </div>
       );
