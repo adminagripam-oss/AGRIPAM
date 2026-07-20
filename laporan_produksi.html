@@ -3784,21 +3784,24 @@
                       let textClass = "text-slate-700";
                       
                       if (isSubtotal) {
-                        bgStyle = { backgroundColor: '#ffff99', fontWeight: 'bold' };
+                        bgStyle = { backgroundColor: '#ffff99' };
                         textClass = "text-slate-900";
                       } else if (isTotal) {
-                        bgStyle = { backgroundColor: '#d1f6f5', fontWeight: 'bold' };
+                        bgStyle = { backgroundColor: '#d1f6f5' };
                         textClass = "text-slate-900";
                       }
 
+                      const weightClass = (isSubtotal || isTotal) ? "font-bold" : "font-medium";
+                      const monoWeightClass = (isSubtotal || isTotal) ? "font-bold" : "font-medium";
+
                       return (
                         <tr key={idx} style={bgStyle} className={textClass}>
-                          <td className="font-medium text-left">{row.label}</td>
-                          <td className="text-right font-mono">{formatNumber(row.luas, 0)}</td>
-                          <td className="text-right font-mono">{formatNumber(row.target, 0)}</td>
-                          <td className="text-right font-mono">{formatNumber(row.rencanaPanen, 0)}</td>
-                          <td className="text-right font-mono">{formatNumber(row.tbsPanen, 0)}</td>
-                          <td className="text-right font-mono">{formatNumber(row.tbsKirim, 0)}</td>
+                          <td className={`${weightClass} text-left`}>{row.label}</td>
+                          <td className={`text-right font-mono ${monoWeightClass}`}>{formatNumber(row.luas, 0)}</td>
+                          <td className={`text-right font-mono ${monoWeightClass}`}>{formatNumber(row.target, 0)}</td>
+                          <td className={`text-right font-mono ${monoWeightClass}`}>{formatNumber(row.rencanaPanen, 0)}</td>
+                          <td className={`text-right font-mono ${monoWeightClass}`}>{formatNumber(row.tbsPanen, 0)}</td>
+                          <td className={`text-right font-mono ${monoWeightClass}`}>{formatNumber(row.tbsKirim, 0)}</td>
                           
                           <td className="text-right font-mono font-bold" style={getConditionalStyle(row.pctPanenVsRenc)}>
                             {formatNumber(row.pctPanenVsRenc, 0)}
@@ -3815,7 +3818,7 @@
                               type="text" 
                               value={customRemarks[row.label] || ''} 
                               onChange={(e) => handleRemarkChange(row.label, e.target.value)}
-                              className="text-[9px] text-slate-800"
+                              className={`text-[9px] text-slate-800 ${weightClass}`}
                             />
                           </td>
                         </tr>
