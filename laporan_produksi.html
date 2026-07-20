@@ -3745,15 +3745,10 @@
                 `}} />
 
                 {/* Print Title Header */}
-                <div className="flex items-center justify-between mb-6 border-b border-slate-300 pb-4">
-                  <div style={{ width: '130px' }}>
-                    <img src="AGRINAS DANANTARA.png" alt="Logo" className="h-[40px] w-auto object-contain" />
-                  </div>
-                  <div className="text-center flex-1">
-                    <h1 className="text-[14px] font-extrabold text-slate-900 tracking-tight uppercase" style={{ margin: 0 }}>RENCANA & REALISASI PANEN HARIAN</h1>
-                    <p className="text-[11px] font-bold text-slate-600 mt-1" style={{ margin: 0 }}>{formatDateSlash(selectedDate)}</p>
-                  </div>
-                  <div style={{ width: '130px' }}></div>
+                <div className="flex flex-col items-center justify-center mb-8 pb-2">
+                  <h1 className="text-[14px] font-extrabold tracking-tight uppercase text-center" style={{ margin: 0, color: '#000000' }}>RENCANA & REALISASI PANEN HARIAN</h1>
+                  <p className="text-[11px] font-bold mt-1 text-center" style={{ margin: 0, color: '#000000' }}>{formatDateSlash(selectedDate)}</p>
+                  <img src="AGRINAS DANANTARA.png" alt="Logo" className="h-[40px] w-auto object-contain mt-4" />
                 </div>
 
                 <table className="text-[10px]">
@@ -3781,21 +3776,18 @@
                       const isTotal = row.type === 'total';
                       
                       let bgStyle = {};
-                      let textClass = "text-slate-700";
                       
                       if (isSubtotal) {
                         bgStyle = { backgroundColor: '#ffff99' };
-                        textClass = "text-slate-900";
                       } else if (isTotal) {
                         bgStyle = { backgroundColor: '#d1f6f5' };
-                        textClass = "text-slate-900";
                       }
 
                       const weightClass = (isSubtotal || isTotal) ? "font-bold" : "font-medium";
                       const monoWeightClass = (isSubtotal || isTotal) ? "font-bold" : "font-medium";
 
                       return (
-                        <tr key={idx} style={bgStyle} className={textClass}>
+                        <tr key={idx} style={bgStyle}>
                           <td className={`${weightClass} text-left`}>{row.label}</td>
                           <td className={`text-right font-mono ${monoWeightClass}`}>{formatNumber(row.luas, 0)}</td>
                           <td className={`text-right font-mono ${monoWeightClass}`}>{formatNumber(row.target, 0)}</td>
@@ -3818,7 +3810,8 @@
                               type="text" 
                               value={customRemarks[row.label] || ''} 
                               onChange={(e) => handleRemarkChange(row.label, e.target.value)}
-                              className={`text-[9px] text-slate-800 ${weightClass}`}
+                              className={`text-[9px] ${weightClass}`}
+                              style={{ color: '#000000' }}
                             />
                           </td>
                         </tr>
