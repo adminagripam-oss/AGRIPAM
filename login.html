@@ -1868,6 +1868,22 @@
       border-top: 1px solid #e0e0e0;
       margin: 0 0 16px 0;
     }
+
+    /* Transition Tab classes */
+    .bg-background { background-color: #f8fafc; }
+    .text-muted-foreground { color: #64748b; }
+    .hover\:text-foreground:hover { color: #1e293b; }
+    .hover\:bg-muted:hover { background-color: #f1f5f9; }
+    .bg-primary { background-color: #16a34a; }
+    .text-primary-foreground { color: #ffffff; }
+
+    [data-theme="dark"] .bg-background { background-color: #0f172a; }
+    [data-theme="dark"] .text-muted-foreground { color: #94a3b8; }
+    [data-theme="dark"] .hover\:text-foreground:hover { color: #f8fafc; }
+    [data-theme="dark"] .hover\:bg-muted:hover { background-color: #334155; }
+    [data-theme="dark"] .bg-primary { background-color: #22c55e; }
+    [data-theme="dark"] .text-primary-foreground { color: #ffffff; }
+    [data-theme="dark"] .border { border-color: #334155 !important; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -2286,12 +2302,12 @@
 
           <!-- RealizationVsEstimation -->
           <section class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-            <div class="flex justify-between items-start mb-6">
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-3 mb-4">
               <div>
                 <h2 class="text-base font-bold text-slate-800">Realisasi vs Estimasi Panen — Nasional</h2>
                 <p class="text-xs text-gray-400"></p>
               </div>
-              <div class="flex items-center space-x-6">
+              <div class="flex flex-wrap items-center gap-4 flex-shrink-0">
                 <div class="flex items-center space-x-4">
                   <div class="flex items-center text-[11px] font-semibold text-slate-600">
                     <span class="w-5 h-0.5 bg-[#10b981] mr-2 inline-flex items-center justify-center">
@@ -2303,6 +2319,11 @@
                     <span class="w-5 border-t-2 border-dashed border-[#ef4444] mr-2 inline-block"></span>
                     Estimasi Panen
                   </div>
+                </div>
+                <div class="flex gap-1 bg-background rounded-lg p-1 border">
+                  <button type="button" id="btnTabHarian" onclick="changeNationalChartTab('harian')" class="px-3 py-1 rounded text-[10px] font-semibold transition-all bg-primary text-primary-foreground shadow">Harian</button>
+                  <button type="button" id="btnTabMingguan" onclick="changeNationalChartTab('mingguan')" class="px-3 py-1 rounded text-[10px] font-semibold transition-all text-muted-foreground hover:text-foreground hover:bg-muted">Mingguan</button>
+                  <button type="button" id="btnTabBulanan" onclick="changeNationalChartTab('bulanan')" class="px-3 py-1 rounded text-[10px] font-semibold transition-all text-muted-foreground hover:text-foreground hover:bg-muted">Bulanan</button>
                 </div>
               </div>
             </div>
@@ -2406,6 +2427,41 @@
       }
 
       var dailyNationalChart = null;
+      var nationalChartActiveTab = 'harian';
+
+      function changeNationalChartTab(tab) {
+        nationalChartActiveTab = tab;
+        
+        // Update button styles
+        const btnHarian = document.getElementById('btnTabHarian');
+        const btnMingguan = document.getElementById('btnTabMingguan');
+        const btnBulanan = document.getElementById('btnTabBulanan');
+        
+        if (!btnHarian || !btnMingguan || !btnBulanan) return;
+        
+        const activeClasses = ['bg-primary', 'text-primary-foreground', 'shadow'];
+        const inactiveClasses = ['text-muted-foreground', 'hover:text-foreground', 'hover:bg-muted'];
+        
+        [btnHarian, btnMingguan, btnBulanan].forEach(btn => {
+          btn.classList.remove(...activeClasses, ...inactiveClasses);
+        });
+        
+        if (tab === 'harian') {
+          btnHarian.classList.add(...activeClasses);
+          btnMingguan.classList.add(...inactiveClasses);
+          btnBulanan.classList.add(...inactiveClasses);
+        } else if (tab === 'mingguan') {
+          btnHarian.classList.add(...inactiveClasses);
+          btnMingguan.classList.add(...activeClasses);
+          btnBulanan.classList.add(...inactiveClasses);
+        } else if (tab === 'bulanan') {
+          btnHarian.classList.add(...inactiveClasses);
+          btnMingguan.classList.add(...inactiveClasses);
+          btnBulanan.classList.add(...activeClasses);
+        }
+        
+        updateDailyNationalChart();
+      }
 
       function updateDailyNationalChart() {
         var s = loadSession();
@@ -2424,7 +2480,7 @@
         var monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         var currentMonthName = monthNames[wibTime.getMonth()];
 
-        // Generate date list from 1st to today
+        // Default: Harian date list
         var dates = [];
         var labels = [];
         var d = new Date(yyyy, wibTime.getMonth(), 1);
@@ -2452,29 +2508,108 @@
               console.log("Waiting for data. realisasiLoaded:", realisasiLoaded, "estimasiLoaded:", estimasiLoaded);
               return;
             }
-            console.log("Both data loaded. Rendering chart.");
+            console.log("Both data loaded. Rendering chart. Tab:", nationalChartActiveTab);
 
-            // Group realisasi daily sum
-            dates.forEach(function (dt, idx) {
-              var sumReal = 0;
-              realRecords.forEach(function (r) {
-                if (r.tanggal === dt) {
-                  sumReal += parseFloat(r.tonase) || 0;
+            var chartLabels = [];
+            var chartRealData = [];
+            var chartEstData = [];
+            var xAxisTitle = "";
+
+            if (nationalChartActiveTab === 'harian') {
+              xAxisTitle = currentMonthName;
+              chartLabels = labels;
+              
+              dates.forEach(function (dt, idx) {
+                var sumReal = 0;
+                realRecords.forEach(function (r) {
+                  if (r.tanggal === dt) {
+                    sumReal += parseFloat(r.tonase) || 0;
+                  }
+                });
+                realisasiData[idx] = sumReal;
+
+                var sumEst = 0;
+                estRecords.forEach(function (r) {
+                  if (r.tanggal === dt) {
+                    var estPanen = parseFloat(r.estimasi_panen_kg) || parseFloat(r.estimasi_kirim_kg) || 0;
+                    sumEst += estPanen / 1000;
+                  }
+                });
+                estimasiData[idx] = sumEst;
+              });
+              
+              chartRealData = realisasiData;
+              chartEstData = estimasiData;
+
+            } else if (nationalChartActiveTab === 'mingguan') {
+              xAxisTitle = "Mingguan - " + currentMonthName;
+              var lastDay = new Date(yyyy, wibTime.getMonth() + 1, 0).getDate();
+              var numWeeks = lastDay > 28 ? 5 : 4;
+              chartLabels = ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4", "Minggu 5"].slice(0, numWeeks);
+              chartRealData = Array(numWeeks).fill(0);
+              chartEstData = Array(numWeeks).fill(0);
+
+              var allMonthDates = [];
+              for (var dayVal = 1; dayVal <= lastDay; dayVal++) {
+                allMonthDates.push(yyyy + "-" + MM + "-" + String(dayVal).padStart(2, '0'));
+              }
+
+              allMonthDates.forEach(function (dt) {
+                var dayNum = parseInt(dt.split('-')[2], 10);
+                var wIdx = 0;
+                if (dayNum >= 1 && dayNum <= 7) wIdx = 0;
+                else if (dayNum >= 8 && dayNum <= 14) wIdx = 1;
+                else if (dayNum >= 15 && dayNum <= 21) wIdx = 2;
+                else if (dayNum >= 22 && dayNum <= 28) wIdx = 3;
+                else wIdx = 4;
+
+                if (wIdx < numWeeks) {
+                  realRecords.forEach(function (r) {
+                    if (r.tanggal === dt) {
+                      chartRealData[wIdx] += parseFloat(r.tonase) || 0;
+                    }
+                  });
+                  estRecords.forEach(function (r) {
+                    if (r.tanggal === dt) {
+                      var estPanen = parseFloat(r.estimasi_panen_kg) || parseFloat(r.estimasi_kirim_kg) || 0;
+                      chartEstData[wIdx] += estPanen / 1000;
+                    }
+                  });
                 }
               });
-              realisasiData[idx] = sumReal;
 
-              var sumEst = 0;
-              estRecords.forEach(function (r) {
-                if (r.tanggal === dt) {
-                  var estPanen = parseFloat(r.estimasi_panen_kg) || parseFloat(r.estimasi_kirim_kg) || 0;
-                  sumEst += estPanen / 1000;
+            } else if (nationalChartActiveTab === 'bulanan') {
+              xAxisTitle = "Tahun " + yyyy;
+              chartLabels = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+              chartRealData = Array(12).fill(0);
+              chartEstData = Array(12).fill(0);
+
+              var monthKeys = Array.from({ length: 12 }, function (_, i) {
+                return yyyy + "-" + String(i + 1).padStart(2, '0');
+              });
+
+              realRecords.forEach(function (rec) {
+                if (rec.tanggal) {
+                  var mStr = rec.tanggal.substring(0, 7);
+                  var mIdx = monthKeys.indexOf(mStr);
+                  if (mIdx !== -1) {
+                    chartRealData[mIdx] += (parseFloat(rec.tonase) || 0);
+                  }
                 }
               });
-              estimasiData[idx] = sumEst;
-            });
 
-            // Render Line Area Chart with gradient
+              estRecords.forEach(function (rec) {
+                if (rec.tanggal) {
+                  var mStr = rec.tanggal.substring(0, 7);
+                  var mIdx = monthKeys.indexOf(mStr);
+                  if (mIdx !== -1) {
+                    var estPanen = parseFloat(rec.estimasi_panen_kg) || parseFloat(rec.estimasi_kirim_kg) || 0;
+                    chartEstData[mIdx] += (estPanen / 1000);
+                  }
+                }
+              });
+            }
+
             var ctx = document.getElementById("realisasiVsEstimasiChart");
             if (!ctx) {
               console.error("Canvas element not found!");
@@ -2488,13 +2623,12 @@
             var chartCtx = ctx.getContext("2d");
             var isDark = document.documentElement.getAttribute("data-theme") === "dark";
 
-            // Create gradients
             var gradientReal = chartCtx.createLinearGradient(0, 0, 0, 300);
-            gradientReal.addColorStop(0, 'rgba(34, 197, 94, 0.6)'); // Green
+            gradientReal.addColorStop(0, 'rgba(34, 197, 94, 0.6)');
             gradientReal.addColorStop(1, 'rgba(34, 197, 94, 0.1)');
 
             var gradientEst = chartCtx.createLinearGradient(0, 0, 0, 300);
-            gradientEst.addColorStop(0, 'rgba(239, 68, 68, 0.6)'); // Red
+            gradientEst.addColorStop(0, 'rgba(239, 68, 68, 0.6)');
             gradientEst.addColorStop(1, 'rgba(239, 68, 68, 0.1)');
 
             var customLineLabels = {
@@ -2512,7 +2646,7 @@
                       ctx.textAlign = 'center';
                       ctx.textBaseline = 'bottom';
                       var padding = -8;
-                      var txt = data.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+                      var txt = data.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
                       ctx.fillText(txt, element.x, element.y + padding);
                       ctx.restore();
                     }
@@ -2522,35 +2656,27 @@
             };
 
             dailyNationalChart = new Chart(chartCtx, {
-              type: 'line',
+              type: 'bar',
               data: {
-                labels: labels,
+                labels: chartLabels,
                 datasets: [
                   {
                     label: 'Realisasi/Aktual: Total Kirim TBS ke PKS (Ton)',
-                    data: realisasiData,
+                    data: chartRealData,
+                    backgroundColor: 'rgba(16, 185, 129, 0.75)', // Green
                     borderColor: '#10b981',
-                    backgroundColor: 'transparent',
-                    fill: false,
-                    tension: 0.4,
-                    borderWidth: 3,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#10b981',
-                    pointBorderWidth: 2
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    borderSkipped: false
                   },
                   {
                     label: 'RKAP: Target Produksi TBS (Ton)',
-                    data: estimasiData,
+                    data: chartEstData,
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)', // Red tint
                     borderColor: '#ef4444',
-                    backgroundColor: 'transparent',
-                    fill: false,
-                    borderDash: [5, 5],
-                    tension: 0,
                     borderWidth: 2,
-                    pointRadius: 0,
-                    pointHoverRadius: 0
+                    borderRadius: 4,
+                    borderSkipped: false
                   }
                 ]
               },
@@ -2583,7 +2709,7 @@
                   x: {
                     title: {
                       display: true,
-                      text: currentMonthName,
+                      text: xAxisTitle,
                       font: { family: '"Times New Roman", Times, serif', weight: 'bold', size: 12 }
                     },
                     grid: {
@@ -2625,9 +2751,17 @@
           }
         }
 
+        var queryStart = startOfMonth;
+        var queryEnd = todayWib;
+
+        if (nationalChartActiveTab === 'bulanan') {
+          queryStart = yyyy + "-01-01";
+          queryEnd = yyyy + "-12-31";
+        }
+
         // Fetch realisasi data
         jsonpRequest(
-          { action: "getData", tanggal: startOfMonth, tanggal_akhir: todayWib, region: s.region },
+          { action: "getData", tanggal: queryStart, tanggal_akhir: queryEnd, region: s.region },
           function (res) {
             realRecords = (res && res.success) ? (res.allRecords || []) : [];
             realisasiLoaded = true;
@@ -2641,7 +2775,7 @@
 
         // Fetch estimasi data
         jsonpRequest(
-          { action: "getEstimasi", tanggal: startOfMonth, tanggal_akhir: todayWib, region: s.region, token: s.token },
+          { action: "getEstimasi", tanggal: queryStart, tanggal_akhir: queryEnd, region: s.region, token: s.token },
           function (res) {
             estRecords = (res && res.success) ? (res.allRecords || []) : [];
             estimasiLoaded = true;
