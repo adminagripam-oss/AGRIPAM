@@ -3748,7 +3748,9 @@
                 <div className="flex flex-col items-center justify-center mb-8 pb-2">
                   <h1 className="text-[14px] font-extrabold tracking-tight uppercase text-center" style={{ margin: 0, color: '#000000' }}>RENCANA & REALISASI PANEN HARIAN</h1>
                   <p className="text-[11px] font-bold mt-1 text-center" style={{ margin: 0, color: '#000000' }}>{formatDateSlash(selectedDate)}</p>
-                  <img src="AGRINAS DANANTARA.png" alt="Logo" className="h-[40px] w-auto object-contain mt-4" />
+                  <div className="w-full flex justify-start mt-4">
+                    <img src="AGRINAS DANANTARA.png" alt="Logo" className="h-[40px] w-auto object-contain" />
+                  </div>
                 </div>
 
                 <table className="text-[10px]">
@@ -3790,18 +3792,18 @@
                         <tr key={idx} style={bgStyle}>
                           <td className={`${weightClass} text-left`}>{row.label}</td>
                           <td className={`text-right font-mono ${monoWeightClass}`}>{formatNumber(row.luas, 0)}</td>
-                          <td className={`text-right font-mono ${monoWeightClass}`}>{formatNumber(row.target, 0)}</td>
-                          <td className={`text-right font-mono ${monoWeightClass}`}>{formatNumber(row.rencanaPanen, 0)}</td>
-                          <td className={`text-right font-mono ${monoWeightClass}`}>{formatNumber(row.tbsPanen, 0)}</td>
-                          <td className={`text-right font-mono ${monoWeightClass}`}>{formatNumber(row.tbsKirim, 0)}</td>
+                          <td className={`text-center font-mono ${monoWeightClass}`}>{formatNumber(row.target, 0)}</td>
+                          <td className={`text-center font-mono ${monoWeightClass}`}>{formatNumber(row.rencanaPanen, 0)}</td>
+                          <td className={`text-center font-mono ${monoWeightClass}`}>{formatNumber(row.tbsPanen, 0)}</td>
+                          <td className={`text-center font-mono ${monoWeightClass}`}>{formatNumber(row.tbsKirim, 0)}</td>
                           
-                          <td className="text-right font-mono font-bold" style={getConditionalStyle(row.pctPanenVsRenc)}>
+                          <td className="text-center font-mono font-bold" style={getConditionalStyle(row.pctPanenVsRenc)}>
                             {formatNumber(row.pctPanenVsRenc, 0)}
                           </td>
-                          <td className="text-right font-mono font-bold" style={getConditionalStyle(row.pctKirimVsRenc)}>
+                          <td className="text-center font-mono font-bold" style={getConditionalStyle(row.pctKirimVsRenc)}>
                             {formatNumber(row.pctKirimVsRenc, 0)}
                           </td>
-                          <td className="text-right font-mono font-bold" style={getConditionalStyle(row.pctKirimVsTarget)}>
+                          <td className="text-center font-mono font-bold" style={getConditionalStyle(row.pctKirimVsTarget)}>
                             {formatNumber(row.pctKirimVsTarget, 0)}
                           </td>
                           
@@ -3810,7 +3812,7 @@
                               type="text" 
                               value={customRemarks[row.label] || ''} 
                               onChange={(e) => handleRemarkChange(row.label, e.target.value)}
-                              className={`text-[9px] ${weightClass}`}
+                              className={`text-[9px] text-center w-full ${weightClass}`}
                               style={{ color: '#000000' }}
                             />
                           </td>
