@@ -2859,59 +2859,278 @@
     }
 
     // ============================================================
+    // TARGET CHALLENGE MODAL COMPONENT
+    // ============================================================
+    function TargetChallengeModal({ isOpen, onClose }) {
+      const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
+      const [targetData, setTargetData] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [uploading, setUploading] = useState(false);
+      const fileInputRef = useRef(null);
+
+      const fetchTarget = async () => {
+        setLoading(true);
+        try {
+          const sessionRaw = sessionStorage.getItem("agripam_session");
+          const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+          const token = session ? session.token : "";
+          const res = await fetch(`/api/targetChallenge?action=getTarget&bulan=${selectedMonth}&token=${token}`);
+          const json = await res.json();
+          if (json.success && json.exists) {
+            setTargetData(json.data);
+          } else {
+            setTargetData(null);
+          }
+        } catch (err) {
+          console.error("Gagal fetch target:", err);
+          setTargetData(null);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      useEffect(() => {
+        if (isOpen) {
+          fetchTarget();
+        }
+      }, [isOpen, selectedMonth]);
+
+      const handleFile = (file) => {
+        if (!file) return;
+        setUploading(true);
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            
+            const parsedData = {};
+            for (let i = 1; i < rows.length; i++) {
+              const row = rows[i];
+              if (!row || !row[0]) continue;
+              const regionName = row[0].toString().trim();
+              if (regionName === "Total Target (Ton)" || regionName === "") continue;
+              
+              const dates = {};
+              for (let d = 1; d <= 31; d++) {
+                dates[d] = parseFloat(row[d]) || 0;
+              }
+              parsedData[regionName] = dates;
+            }
+            
+            setTargetData(parsedData);
+          } catch (err) {
+            alert("Gagal memparsing file Excel: " + err.message);
+          } finally {
+            setUploading(false);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      };
+
+      const saveToDb = async () => {
+        if (!targetData) return;
+        setUploading(true);
+        try {
+          const sessionRaw = sessionStorage.getItem("agripam_session");
+          const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+          const token = session ? session.token : "";
+          const res = await fetch('/api/targetChallenge', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'saveTarget',
+              bulan: selectedMonth,
+              token: token,
+              region: 'ADMIN',
+              data: targetData
+            })
+          });
+          const json = await res.json();
+          if (json.success) {
+            alert("Berhasil menyimpan target bulanan!");
+            fetchTarget();
+          } else {
+            alert(json.message || "Gagal menyimpan.");
+          }
+        } catch (err) {
+          alert("Error: " + err.message);
+        } finally {
+          setUploading(false);
+        }
+      };
+
+      const deleteFromDb = async () => {
+        if (!confirm(`Hapus data target untuk bulan ${selectedMonth}?`)) return;
+        setUploading(true);
+        try {
+          const sessionRaw = sessionStorage.getItem("agripam_session");
+          const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+          const token = session ? session.token : "";
+          const res = await fetch('/api/targetChallenge', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'deleteTarget',
+              bulan: selectedMonth,
+              token: token,
+              region: 'ADMIN'
+            })
+          });
+          const json = await res.json();
+          if (json.success) {
+            alert("Berhasil menghapus target bulanan!");
+            setTargetData(null);
+          } else {
+            alert(json.message || "Gagal menghapus.");
+          }
+        } catch (err) {
+          alert("Error: " + err.message);
+        } finally {
+          setUploading(false);
+        }
+      };
+
+      if (!isOpen) return null;
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn">
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <Icon name="target" size={20} className="text-brand-600" />
+                Kelola Target Challenge Bulanan
+              </h2>
+              <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <Icon name="x" size={20} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-auto p-6 flex flex-col gap-6">
+              
+              <div className="flex items-center gap-4">
+                <div className="flex flex-col">
+                  <label className="text-xs font-bold text-slate-500 uppercase mb-1">Bulan & Tahun</label>
+                  <input type="month" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} className="border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none dark:bg-slate-800 dark:text-white" />
+                </div>
+                
+                {targetData && (
+                  <div className="flex gap-2 mt-5">
+                    <button onClick={saveToDb} disabled={uploading} className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50">
+                      <Icon name="save" size={16} /> Simpan ke Database
+                    </button>
+                    <button onClick={deleteFromDb} disabled={uploading} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50">
+                      <Icon name="trash-2" size={16} /> Hapus Data Bulan Ini
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {!targetData && (
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center cursor-pointer hover:border-brand-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                >
+                  <input ref={fileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={e => handleFile(e.target.files[0])} />
+                  <div className="w-16 h-16 rounded-full bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 mx-auto mb-4">
+                    <Icon name="upload-cloud" size={32} />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Unggah Excel Target Bulanan</h3>
+                  <p className="text-xs text-slate-500">Pilih file berformat .xlsx yang berisi target harian per wilayah (Tgl 1 - Tgl 31)</p>
+                </div>
+              )}
+
+              {loading ? (
+                <div className="flex justify-center p-10"><div className="w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div></div>
+              ) : targetData ? (
+                <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase">
+                      <tr>
+                        <th className="px-3 py-2 border-b dark:border-slate-700 whitespace-nowrap min-w-[120px]">Wilayah</th>
+                        {Array.from({length: 31}, (_, i) => i + 1).map(d => (
+                          <th key={d} className="px-2 py-2 border-b dark:border-slate-700 text-center">Tgl {d}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                      {Object.keys(targetData).map(region => (
+                        <tr key={region} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                          <td className="px-3 py-2 font-medium">{region}</td>
+                          {Array.from({length: 31}, (_, i) => i + 1).map(d => (
+                            <td key={d} className="px-2 py-2 text-center text-slate-600 dark:text-slate-400">{targetData[region][d] || 0}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================================
     // RENCANA & REALISASI PANEN HARIAN PANEL
     // ============================================================
     const RENCANA_REALISASI_ROWS = [
       // CRO I
-      { label: "Sumatera Utara 1", regionKey: "Sumatera Utara 1", luas: 6600, target: 50, type: "detail" },
-      { label: "Sumut 2 Ex Torganda", regionKey: "Sumatera Utara 2 Ex Torganda", luas: 46678, target: 680, type: "detail" },
-      { label: "Aceh", regionKey: "Aceh", luas: 1257, target: 10, type: "detail" },
+      { label: "Sumatera Utara 1", regionKey: "Sumatera Utara 1", luas: 6498.24, target: 50, type: "detail" },
+      { label: "Sumut 2 Ex Torganda", regionKey: "Sumatera Utara 2 Ex Torganda", luas: 46677.70, target: 680, type: "detail" },
+      { label: "Aceh", regionKey: "Aceh", luas: 1257.17, target: 10, type: "detail" },
       { label: "CRO I", type: "subtotal", children: ["Sumatera Utara 1", "Sumut 2 Ex Torganda", "Aceh"] },
 
       // CRO II
-      { label: "Riau 1 Ex Duta Palma", regionKey: "Riau 1", luas: 66610, target: 3025, type: "detail" },
+      { label: "Riau 1 Ex Duta Palma", regionKey: "Riau 1", luas: 66610.43, target: 3025, type: "detail" },
       { label: "CRO II", type: "subtotal", children: ["Riau 1 Ex Duta Palma"] },
 
       // CRO III
-      { label: "Riau 2", regionKey: "Riau 2", luas: 48102, target: 680, type: "detail" },
-      { label: "Riau 3", regionKey: "Riau 3", luas: 4840, target: 55, type: "detail" },
+      { label: "Riau 2", regionKey: "Riau 2", luas: 48101.86, target: 680, type: "detail" },
+      { label: "Riau 3", regionKey: "Riau 3", luas: 4840.18, target: 55, type: "detail" },
       { label: "CRO III", type: "subtotal", children: ["Riau 2", "Riau 3"] },
 
       // CRO IV
-      { label: "Torganda 2 Riau 4", regionKey: "Riau 4", luas: 38121, target: 340, type: "detail" },
+      { label: "Torganda 2 Riau 4", regionKey: "Riau 4", luas: 38121.47, target: 340, type: "detail" },
       { label: "CRO IV", type: "subtotal", children: ["Torganda 2 Riau 4"] },
 
       // CRO V
-      { label: "Bangka Belitung", regionKey: "Bangka Belitung", luas: 568, target: 15, type: "detail" },
-      { label: "Jambi", regionKey: "Jambi", luas: 566, target: 10, type: "detail" },
-      { label: "Sumatera Barat", regionKey: "Sumatera Barat", luas: 2742, target: 100, type: "detail" },
-      { label: "Sumatera Selatan", regionKey: "Sumatera Selatan", luas: 8713, target: 45, type: "detail" },
+      { label: "Bangka Belitung", regionKey: "Bangka Belitung", luas: 568.47, target: 15, type: "detail" },
+      { label: "Jambi", regionKey: "Jambi", luas: 565.59, target: 10, type: "detail" },
+      { label: "Sumatera Barat", regionKey: "Sumatera Barat", luas: 2741.65, target: 100, type: "detail" },
+      { label: "Sumatera Selatan", regionKey: "Sumatera Selatan", luas: 8712.90, target: 45, type: "detail" },
       { label: "CRO V", type: "subtotal", children: ["Bangka Belitung", "Jambi", "Sumatera Barat", "Sumatera Selatan"] },
 
       // CRO VI
-      { label: "Kalbar 1 Ex Duta Palma", regionKey: "Kalimantan Barat 1", luas: 77956, target: 1750, type: "detail" },
-      { label: "Kalimantan Barat 2", regionKey: "Kalimantan Barat 2", luas: 12993, target: 55, type: "detail" },
+      { label: "Kalbar 1 Ex Duta Palma", regionKey: "Kalimantan Barat 1", luas: 77955.99, target: 1750, type: "detail" },
+      { label: "Kalimantan Barat 2", regionKey: "Kalimantan Barat 2", luas: 12993.09, target: 55, type: "detail" },
       { label: "CRO VI", type: "subtotal", children: ["Kalbar 1 Ex Duta Palma", "Kalimantan Barat 2"] },
 
       // CRO VII
-      { label: "Kalimantan Selatan 1", regionKey: "Kalimantan Selatan 1", luas: 4772, target: 85, type: "detail" },
-      { label: "Kalimantan Selatan 2", regionKey: "Kalimantan Selatan 2", luas: 2856, target: 50, type: "detail" },
-      { label: "Kalimantan Timur", regionKey: "Kalimantan Timur", luas: 3562, target: 85, type: "detail" },
-      { label: "Kalimantan Utara", regionKey: "Kalimantan Utara", luas: 1145, target: 5, type: "detail" },
+      { label: "Kalimantan Selatan 1", regionKey: "Kalimantan Selatan 1", luas: 4772.06, target: 85, type: "detail" },
+      { label: "Kalimantan Selatan 2", regionKey: "Kalimantan Selatan 2", luas: 2850.38, target: 50, type: "detail" },
+      { label: "Kalimantan Timur", regionKey: "Kalimantan Timur", luas: 3562.21, target: 85, type: "detail" },
+      { label: "Kalimantan Utara", regionKey: "Kalimantan Utara", luas: 1145.28, target: 5, type: "detail" },
       { label: "CRO VII", type: "subtotal", children: ["Kalimantan Selatan 1", "Kalimantan Selatan 2", "Kalimantan Timur", "Kalimantan Utara"] },
 
       // CRO VIII
-      { label: "Kalimantan Tengah 1", regionKey: "Kalimantan Tengah 1", luas: 63248, target: 845, type: "detail" },
-      { label: "Kalimantan Tengah 3", regionKey: "Kalimantan Tengah 3", luas: 30468, target: 100, type: "detail" },
+      { label: "Kalimantan Tengah 1", regionKey: "Kalimantan Tengah 1", luas: 63248.25, target: 845, type: "detail" },
+      { label: "Kalimantan Tengah 3", regionKey: "Kalimantan Tengah 3", luas: 30467.52, target: 100, type: "detail" },
       { label: "CRO VIII", type: "subtotal", children: ["Kalimantan Tengah 1", "Kalimantan Tengah 3"] },
 
       // CRO IX
-      { label: "Kalimantan Tengah 2", regionKey: "Kalimantan Tengah 2", luas: 17409, target: 565, type: "detail" },
+      { label: "Kalimantan Tengah 2", regionKey: "Kalimantan Tengah 2", luas: 17408.64, target: 565, type: "detail" },
       { label: "CRO IX", type: "subtotal", children: ["Kalimantan Tengah 2"] },
 
       // CRO X
-      { label: "Sulawesi Tenggara", regionKey: "Sulawesi Tenggara", luas: 3232, target: 20, type: "detail" },
-      { label: "Sulawesi Tengah", regionKey: "Sulawesi Tengah", luas: 1860, target: 15, type: "detail" },
+      { label: "Sulawesi Tenggara", regionKey: "Sulawesi Tenggara", luas: 3231.46, target: 20, type: "detail" },
+      { label: "Sulawesi Tengah", regionKey: "Sulawesi Tengah", luas: 2116.83, target: 15, type: "detail" },
       { label: "CRO X", type: "subtotal", children: ["Sulawesi Tenggara", "Sulawesi Tengah"] },
 
       // TOTAL
@@ -2928,7 +3147,35 @@
       const [customRemarks, setCustomRemarks] = useState({});
       const [isDataSaved, setIsDataSaved] = useState(false);
       const [isSaving, setIsSaving] = useState(false);
+      const [isTargetModalOpen, setIsTargetModalOpen] = useState(false);
+      const [targetChallengeData, setTargetChallengeData] = useState({});
       const fileInputRef = useRef(null);
+
+      const fetchTargetChallenge = async (dateStr) => {
+        if (!dateStr) return;
+        const [year, month, day] = dateStr.split('-');
+        const bulan = `${year}-${month}`;
+        const dayInt = parseInt(day, 10);
+        
+        try {
+          const sessionRaw = sessionStorage.getItem("agripam_session");
+          const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+          const token = session ? session.token : "";
+          const res = await fetch(`/api/targetChallenge?action=getTarget&bulan=${bulan}&token=${token}`);
+          const json = await res.json();
+          if (json.success && json.exists) {
+            const todayTargets = {};
+            for (const [region, days] of Object.entries(json.data)) {
+              todayTargets[region] = days[dayInt] || 0;
+            }
+            setTargetChallengeData(todayTargets);
+          } else {
+            setTargetChallengeData({});
+          }
+        } catch (e) {
+          console.error("Gagal fetch target challenge", e);
+        }
+      };
 
       // Fetch estimasi data when date changes (Fallback jika data belum tersimpan)
       const fetchEstimasi = async (date) => {
@@ -3066,6 +3313,7 @@
 
       useEffect(() => {
         checkSavedLaporan(selectedDate);
+        fetchTargetChallenge(selectedDate);
       }, [selectedDate]);
 
       const handleDrag = (e) => {
@@ -3188,10 +3436,13 @@
           
           const pctPanenVsRenc = rencanaPanen > 0 ? (tbsPanen / rencanaPanen) * 100 : 0;
           const pctKirimVsRenc = rencanaPanen > 0 ? (tbsKirim / rencanaPanen) * 100 : 0;
-          const pctKirimVsTarget = rowConfig.target > 0 ? (tbsKirim / rowConfig.target) * 100 : 0;
+          
+          const dynamicTarget = targetChallengeData[rowConfig.label] !== undefined ? targetChallengeData[rowConfig.label] : rowConfig.target;
+          const pctKirimVsTarget = dynamicTarget > 0 ? (tbsKirim / dynamicTarget) * 100 : 0;
           
           return {
             ...rowConfig,
+            target: dynamicTarget,
             rencanaPanen,
             tbsPanen,
             tbsKirim,
@@ -3253,7 +3504,7 @@
           }
         });
         
-        totalRow.luas = 444298; // Update dengan luas TM Planted (Ha) 444298
+        totalRow.luas = luas; // Total otomatis dari subtotal
         totalRow.target = target;
         totalRow.rencanaPanen = rencanaPanen;
         totalRow.tbsPanen = tbsPanen;
@@ -3335,7 +3586,15 @@
               <p className="text-xs text-slate-400 mt-0.5">Unggah berkas LHP untuk menghasilkan laporan rencana vs realisasi</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex flex-col">
+              <button 
+                onClick={() => setIsTargetModalOpen(true)}
+                className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-all duration-200"
+              >
+                <Icon name="target" size={14} />
+                Kelola Target Bulanan
+              </button>
+              
+              <div className="flex flex-col ml-2">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Laporan</span>
                 <input 
                   type="date" 
@@ -3554,6 +3813,8 @@
               <p className="text-[10px] text-slate-400 mt-0.5">Data rencana otomatis dihubungkan dari database estimasi harian.</p>
             </div>
           )}
+          
+          <TargetChallengeModal isOpen={isTargetModalOpen} onClose={() => setIsTargetModalOpen(false)} />
         </div>
       );
     }
