@@ -3293,38 +3293,66 @@
 
           {/* Table Preview */}
           {regionTotals ? (
-            <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl">
-              {/* Printable Area Wrapper */}
-              <div id="rencana-realisasi-print-container" className="bg-white p-6 min-w-[1000px] text-slate-800" style={{ fontFamily: "'Libre Franklin', sans-serif" }}>
+            <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl flex justify-center bg-slate-50 dark:bg-slate-950 p-4">
+              {/* Printable Area Wrapper (Portrait A4 Fit - 794px) */}
+              <div id="rencana-realisasi-print-container" className="bg-white p-6 w-[794px] text-slate-800 shadow-lg">
+                {/* Scoped CSS Injector for 2px thick black borders (#000000) and Libre Franklin Font */}
+                <style dangerouslySetInnerHTML={{__html: `
+                  #rencana-realisasi-print-container {
+                    font-family: 'Libre Franklin', sans-serif !important;
+                  }
+                  #rencana-realisasi-print-container table {
+                    border-collapse: collapse !important;
+                    border: 2px solid #000000 !important;
+                    width: 100% !important;
+                  }
+                  #rencana-realisasi-print-container th,
+                  #rencana-realisasi-print-container td {
+                    border: 2px solid #000000 !important;
+                    padding: 3px 4px !important;
+                    vertical-align: middle !important;
+                    line-height: 1.2 !important;
+                  }
+                  #rencana-realisasi-print-container input {
+                    font-family: 'Libre Franklin', sans-serif !important;
+                    border: 0 !important;
+                    outline: none !important;
+                    background: transparent !important;
+                    width: 100% !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                  }
+                `}} />
+
                 {/* Print Title Header */}
                 <div className="flex items-center justify-between mb-6 border-b border-slate-300 pb-4">
-                  <div style={{ width: '150px' }}>
-                    <img src="AGRINAS DANANTARA.png" alt="Logo" className="h-[45px] w-auto object-contain" />
+                  <div style={{ width: '130px' }}>
+                    <img src="AGRINAS DANANTARA.png" alt="Logo" className="h-[40px] w-auto object-contain" />
                   </div>
                   <div className="text-center flex-1">
-                    <h1 className="text-[15px] font-extrabold text-slate-900 tracking-tight uppercase" style={{ fontFamily: "'Libre Franklin', sans-serif", margin: 0 }}>RENCANA & REALISASI PANEN HARIAN</h1>
-                    <p className="text-[12px] font-bold text-slate-600 mt-1" style={{ fontFamily: "'Libre Franklin', sans-serif", margin: 0 }}>{formatDateSlash(selectedDate)}</p>
+                    <h1 className="text-[14px] font-extrabold text-slate-900 tracking-tight uppercase" style={{ margin: 0 }}>RENCANA & REALISASI PANEN HARIAN</h1>
+                    <p className="text-[11px] font-bold text-slate-600 mt-1" style={{ margin: 0 }}>{formatDateSlash(selectedDate)}</p>
                   </div>
-                  <div style={{ width: '150px' }}></div>
+                  <div style={{ width: '130px' }}></div>
                 </div>
 
-                <table className="w-full border-collapse border border-slate-300 text-[12px]" style={{ fontFamily: "'Libre Franklin', sans-serif" }}>
+                <table className="text-[10px]">
                   <thead>
                     <tr className="font-bold text-center">
-                      <th rowSpan="2" className="border border-slate-300 px-2 py-2 w-[180px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Wilayah</th>
-                      <th rowSpan="2" className="border border-slate-300 px-2 py-2 w-[110px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Luas TM Planted (Ha)</th>
-                      <th rowSpan="2" className="border border-slate-300 px-2 py-2 w-[100px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Target Challenge (Ton)</th>
-                      <th rowSpan="2" className="border border-slate-300 px-2 py-2 w-[100px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Rencana Panen (Ton)</th>
-                      <th colSpan="2" className="border border-slate-300 px-2 py-1 text-white" style={{ backgroundColor: '#137d47' }}>Realisasi (Ton)</th>
-                      <th colSpan="3" className="border border-slate-300 px-2 py-1" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>% Pencapaian</th>
-                      <th rowSpan="2" className="border border-slate-300 px-2 py-2 w-[180px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Keterangan</th>
+                      <th rowSpan="2" className="w-[130px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Wilayah</th>
+                      <th rowSpan="2" className="w-[75px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Luas TM Planted (Ha)</th>
+                      <th rowSpan="2" className="w-[65px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Target Challenge (Ton)</th>
+                      <th rowSpan="2" className="w-[65px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Rencana Panen (Ton)</th>
+                      <th colSpan="2" className="w-[130px] text-white" style={{ backgroundColor: '#137d47' }}>Realisasi (Ton)</th>
+                      <th colSpan="3" className="w-[195px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>% Pencapaian</th>
+                      <th rowSpan="2" className="w-[100px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Keterangan</th>
                     </tr>
                     <tr className="font-bold text-center">
-                      <th className="border border-slate-300 px-2 py-1.5 w-[85px] text-white" style={{ backgroundColor: '#137d47' }}>TBS Panen</th>
-                      <th className="border border-slate-300 px-2 py-1.5 w-[85px] text-white" style={{ backgroundColor: '#137d47' }}>TBS Kirim</th>
-                      <th className="border border-slate-300 px-2 py-1.5 w-[90px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Real Panen Vs Renc Panen</th>
-                      <th className="border border-slate-300 px-2 py-1.5 w-[90px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Real Kirim Vs Renc Panen</th>
-                      <th className="border border-slate-300 px-2 py-1.5 w-[90px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Real Kirim Vs Target</th>
+                      <th className="w-[65px] text-white" style={{ backgroundColor: '#137d47' }}>TBS Panen</th>
+                      <th className="w-[65px] text-white" style={{ backgroundColor: '#137d47' }}>TBS Kirim</th>
+                      <th className="w-[65px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Real Panen Vs Renc Panen</th>
+                      <th className="w-[65px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Real Kirim Vs Renc Panen</th>
+                      <th className="w-[65px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Real Kirim Vs Target</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -3339,36 +3367,35 @@
                         bgStyle = { backgroundColor: '#ffff99', fontWeight: 'bold' };
                         textClass = "text-slate-900";
                       } else if (isTotal) {
-                        bgStyle = { backgroundColor: '#d1f6f5', fontWeight: 'bold', borderTop: '2px solid #64748b' };
+                        bgStyle = { backgroundColor: '#d1f6f5', fontWeight: 'bold' };
                         textClass = "text-slate-900";
                       }
 
                       return (
                         <tr key={idx} style={bgStyle} className={textClass}>
-                          <td className="border border-slate-300 px-2 py-1.5 font-medium">{row.label}</td>
-                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono">{formatNumber(row.luas, 0)}</td>
-                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono">{formatNumber(row.target, 0)}</td>
-                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono">{formatNumber(row.rencanaPanen, 0)}</td>
-                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono">{formatNumber(row.tbsPanen, 0)}</td>
-                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono">{formatNumber(row.tbsKirim, 0)}</td>
+                          <td className="font-medium text-left">{row.label}</td>
+                          <td className="text-right font-mono">{formatNumber(row.luas, 0)}</td>
+                          <td className="text-right font-mono">{formatNumber(row.target, 0)}</td>
+                          <td className="text-right font-mono">{formatNumber(row.rencanaPanen, 0)}</td>
+                          <td className="text-right font-mono">{formatNumber(row.tbsPanen, 0)}</td>
+                          <td className="text-right font-mono">{formatNumber(row.tbsKirim, 0)}</td>
                           
-                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono font-bold" style={getConditionalStyle(row.pctPanenVsRenc)}>
+                          <td className="text-right font-mono font-bold" style={getConditionalStyle(row.pctPanenVsRenc)}>
                             {formatNumber(row.pctPanenVsRenc, 0)}
                           </td>
-                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono font-bold" style={getConditionalStyle(row.pctKirimVsRenc)}>
+                          <td className="text-right font-mono font-bold" style={getConditionalStyle(row.pctKirimVsRenc)}>
                             {formatNumber(row.pctKirimVsRenc, 0)}
                           </td>
-                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono font-bold" style={getConditionalStyle(row.pctKirimVsTarget)}>
+                          <td className="text-right font-mono font-bold" style={getConditionalStyle(row.pctKirimVsTarget)}>
                             {formatNumber(row.pctKirimVsTarget, 0)}
                           </td>
                           
-                          <td className="border border-slate-300 px-1 py-1">
+                          <td>
                             <input 
                               type="text" 
                               value={customRemarks[row.label] || ''} 
                               onChange={(e) => handleRemarkChange(row.label, e.target.value)}
-                              placeholder="Tambah catatan..."
-                              className="w-full bg-transparent border-0 outline-none text-[11px] text-slate-700 placeholder-slate-300 focus:bg-slate-50 px-1 rounded-sm py-0.5"
+                              className="text-[9px] text-slate-800"
                             />
                           </td>
                         </tr>
