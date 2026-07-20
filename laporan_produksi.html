@@ -111,6 +111,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
 
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -127,6 +129,9 @@
 
   <!-- SheetJS for client-side Excel Parsing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- html2pdf.js for client-side PDF Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
     html,
@@ -657,6 +662,7 @@
             <div className="space-y-0.5 px-1">
               <NavItem icon="layout-dashboard" label="PANEN MONITORING" active={activeNav === 'dashboard' || activeNav === 'laporan-jam'} onClick={() => setActiveNav('dashboard')} collapsed={collapsed} />
               <NavItem icon="check-square" label="VALIDASI DATA" active={activeNav === 'validasi'} onClick={() => setActiveNav('validasi')} collapsed={collapsed} />
+              <NavItem icon="calendar" label="RENCANA & REALISASI" active={activeNav === 'rencana-realisasi'} onClick={() => setActiveNav('rencana-realisasi')} collapsed={collapsed} />
               <NavItem icon="trending-up" label="Estimasi Panen" active={activeNav === 'estimasi'} onClick={() => window.location.href = 'login.html?show=infografis'} collapsed={collapsed} />
               <NavItem icon="archive" label="SAP Persuratan (Arsip)" active={activeNav === 'sap'} onClick={() => window.location.href = 'sap_admin.html'} collapsed={collapsed} />
             </div>
@@ -2853,6 +2859,524 @@
     }
 
     // ============================================================
+    // RENCANA & REALISASI PANEN HARIAN PANEL
+    // ============================================================
+    const RENCANA_REALISASI_ROWS = [
+      // CRO I
+      { label: "Sumatera Utara 1", regionKey: "Sumatera Utara 1", luas: 6600.12, target: 50, type: "detail" },
+      { label: "Sumut 2 Ex Torganda", regionKey: "Sumatera Utara 2 Ex Torganda", luas: 46677.70, target: 680, type: "detail" },
+      { label: "Aceh", regionKey: "Aceh", luas: 1257.1584829626875, target: 10, type: "detail" },
+      { label: "CRO I", type: "subtotal", children: ["Sumatera Utara 1", "Sumut 2 Ex Torganda", "Aceh"] },
+
+      // CRO II
+      { label: "Riau 1 Ex Duta Palma", regionKey: "Riau 1", luas: 66610.42775, target: 3025, type: "detail" },
+      { label: "CRO II", type: "subtotal", children: ["Riau 1 Ex Duta Palma"] },
+
+      // CRO III
+      { label: "Riau 2", regionKey: "Riau 2", luas: 48101.56528383054, target: 680, type: "detail" },
+      { label: "Riau 3", regionKey: "Riau 3", luas: 4840.18, target: 55, type: "detail" },
+      { label: "CRO III", type: "subtotal", children: ["Riau 2", "Riau 3"] },
+
+      // CRO IV
+      { label: "Torganda 2 Riau 4", regionKey: "Riau 4", luas: 38121.469999999994, target: 340, type: "detail" },
+      { label: "CRO IV", type: "subtotal", children: ["Torganda 2 Riau 4"] },
+
+      // CRO V
+      { label: "Bangka Belitung", regionKey: "Bangka Belitung", luas: 568.47, target: 15, type: "detail" },
+      { label: "Jambi", regionKey: "Jambi", luas: 565.5899999999999, target: 10, type: "detail" },
+      { label: "Sumatera Barat", regionKey: "Sumatera Barat", luas: 2741.655, target: 100, type: "detail" },
+      { label: "Sumatera Selatan", regionKey: "Sumatera Selatan", luas: 8712.899999999998, target: 45, type: "detail" },
+      { label: "CRO V", type: "subtotal", children: ["Bangka Belitung", "Jambi", "Sumatera Barat", "Sumatera Selatan"] },
+
+      // CRO VI
+      { label: "Kalbar 1 Ex Duta Palma", regionKey: "Kalimantan Barat 1", luas: 72574.99406162466, target: 1750, type: "detail" },
+      { label: "Kalimantan Barat 2", regionKey: "Kalimantan Barat 2", luas: 12993.089999999997, target: 55, type: "detail" },
+      { label: "CRO VI", type: "subtotal", children: ["Kalbar 1 Ex Duta Palma", "Kalimantan Barat 2"] },
+
+      // CRO VII
+      { label: "Kalimantan Selatan 1", regionKey: "Kalimantan Selatan 1", luas: 4772.056923389085, target: 85, type: "detail" },
+      { label: "Kalimantan Selatan 2", regionKey: "Kalimantan Selatan 2", luas: 2855.5937488043796, target: 50, type: "detail" },
+      { label: "Kalimantan Timur", regionKey: "Kalimantan Timur", luas: 3562.206877107497, target: 85, type: "detail" },
+      { label: "Kalimantan Utara", regionKey: "Kalimantan Utara", luas: 1145.28, target: 5, type: "detail" },
+      { label: "CRO VII", type: "subtotal", children: ["Kalimantan Selatan 1", "Kalimantan Selatan 2", "Kalimantan Timur", "Kalimantan Utara"] },
+
+      // CRO VIII
+      { label: "Kalimantan Tengah 1", regionKey: "Kalimantan Tengah 1", luas: 63248.29517524975, target: 845, type: "detail" },
+      { label: "Kalimantan Tengah 3", regionKey: "Kalimantan Tengah 3", luas: 30467.56, target: 100, type: "detail" },
+      { label: "CRO VIII", type: "subtotal", children: ["Kalimantan Tengah 1", "Kalimantan Tengah 3"] },
+
+      // CRO IX
+      { label: "Kalimantan Tengah 2", regionKey: "Kalimantan Tengah 2", luas: 17408.792, target: 565, type: "detail" },
+      { label: "CRO IX", type: "subtotal", children: ["Kalimantan Tengah 2"] },
+
+      // CRO X
+      { label: "Sulawesi Tenggara", regionKey: "Sulawesi Tenggara", luas: 3231.5, target: 20, type: "detail" },
+      { label: "Sulawesi Tengah", regionKey: "Sulawesi Tengah", luas: 1859.96, target: 15, type: "detail" },
+      { label: "CRO X", type: "subtotal", children: ["Sulawesi Tenggara", "Sulawesi Tengah"] },
+
+      // TOTAL
+      { label: "Jumlah", type: "total" }
+    ];
+
+    function RencanaRealisasiPanel() {
+      const [selectedDate, setSelectedDate] = useState(getTodayWIB());
+      const [dbEstimasi, setDbEstimasi] = useState({});
+      const [regionTotals, setRegionTotals] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [fileName, setFileName] = useState("");
+      const [dragActive, setDragActive] = useState(false);
+      const [customRemarks, setCustomRemarks] = useState({});
+      const fileInputRef = useRef(null);
+
+      // Fetch estimasi data when date changes
+      const fetchEstimasi = async (date) => {
+        setLoading(true);
+        try {
+          const sessionRaw = sessionStorage.getItem("agripam_session");
+          const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+          const token = session ? session.token : "";
+          const res = await fetch(`/api/estimasi?action=getEstimasi&tanggal=${date}&region=ALL&token=${token}`);
+          const json = await res.json();
+          if (json.success) {
+            setDbEstimasi(json.allEstimasi || {});
+          } else {
+            setDbEstimasi({});
+          }
+        } catch (e) {
+          console.error("Gagal mengambil estimasi:", e);
+          setDbEstimasi({});
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      useEffect(() => {
+        fetchEstimasi(selectedDate);
+      }, [selectedDate]);
+
+      const handleDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+          setDragActive(true);
+        } else if (e.type === "dragleave") {
+          setDragActive(false);
+        }
+      };
+
+      const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handleFile(e.dataTransfer.files[0]);
+        }
+      };
+
+      const handleFileInputChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handleFile(e.target.files[0]);
+        }
+      };
+
+      const triggerFileInput = () => {
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
+      };
+
+      const handleFile = async (file) => {
+        if (!file) return;
+        setFileName(file.name);
+        setLoading(true);
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', blankrows: true });
+
+            // Extract date from Row 2
+            let detectedDate = selectedDate;
+            const b2Val = rows[1] ? rows[1][0] : '';
+            const match = b2Val && b2Val.toString().match(/(\d{2})\/(\d{2})\/(\d{4})/);
+            if (match) {
+              detectedDate = `${match[3]}-${match[2]}-${match[1]}`;
+              setSelectedDate(detectedDate);
+            }
+
+            // Fetch estimasi for the detected date immediately to make sure it matches
+            const sessionRaw = sessionStorage.getItem("agripam_session");
+            const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+            const token = session ? session.token : "";
+            const estRes = await fetch(`/api/estimasi?action=getEstimasi&tanggal=${detectedDate}&region=ALL&token=${token}`);
+            const estJson = await estRes.json();
+            const activeEstimasi = estJson.success ? (estJson.allEstimasi || {}) : {};
+            setDbEstimasi(activeEstimasi);
+
+            // Compute LHP totals
+            const totals = {};
+            ALL_REGIONS.forEach(reg => {
+              totals[reg] = { kgPanen: 0, realProduksi: 0 };
+            });
+
+            for (let r = 6; r < rows.length; r++) {
+              const row = rows[r];
+              if (!row || !Array.isArray(row) || row.length < 12) continue;
+              const rawReg = row[1]; // Column B (Wilayah)
+              if (!rawReg) continue;
+              const matchedReg = findRegionMatch(rawReg);
+              if (matchedReg) {
+                let valKgPanen = row[11]; // Column L
+                let valRealProd = row[6]; // Column G
+                if (typeof valKgPanen === 'string') {
+                  valKgPanen = valKgPanen.replace(/[^\d.,]/g, '').replace(/,/g, '');
+                }
+                if (typeof valRealProd === 'string') {
+                  valRealProd = valRealProd.replace(/[^\d.,]/g, '').replace(/,/g, '');
+                }
+                const numKgPanen = valKgPanen !== null && valKgPanen !== '' ? parseFloat(valKgPanen) : 0;
+                const numRealProd = valRealProd !== null && valRealProd !== '' ? parseFloat(valRealProd) : 0;
+                if (!isNaN(numKgPanen)) totals[matchedReg].kgPanen += numKgPanen;
+                if (!isNaN(numRealProd)) totals[matchedReg].realProduksi += numRealProd;
+              }
+            }
+
+            setRegionTotals(totals);
+          } catch (err) {
+            console.error("Gagal membaca Excel LHP:", err);
+            alert("Gagal memproses file Excel LHP: " + err.message);
+          } finally {
+            setLoading(false);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      };
+
+      const handleRemarkChange = (label, val) => {
+        setCustomRemarks(prev => ({
+          ...prev,
+          [label]: val
+        }));
+      };
+
+      // Process rows to display
+      const processedRows = RENCANA_REALISASI_ROWS.map(rowConfig => {
+        if (rowConfig.type === 'detail') {
+          const officialReg = rowConfig.regionKey;
+          const estRow = dbEstimasi[officialReg];
+          const rencanaPanen = estRow ? (parseFloat(estRow.estPanen) || 0) / 1000 : 0;
+          
+          const tbsPanen = regionTotals && regionTotals[officialReg] ? regionTotals[officialReg].kgPanen / 1000 : 0;
+          const tbsKirim = regionTotals && regionTotals[officialReg] ? regionTotals[officialReg].realProduksi / 1000 : 0;
+          
+          const pctPanenVsRenc = rencanaPanen > 0 ? (tbsPanen / rencanaPanen) * 100 : 0;
+          const pctKirimVsRenc = rencanaPanen > 0 ? (tbsKirim / rencanaPanen) * 100 : 0;
+          const pctKirimVsTarget = rowConfig.target > 0 ? (tbsKirim / rowConfig.target) * 100 : 0;
+          
+          return {
+            ...rowConfig,
+            rencanaPanen,
+            tbsPanen,
+            tbsKirim,
+            pctPanenVsRenc,
+            pctKirimVsRenc,
+            pctKirimVsTarget
+          };
+        }
+        return rowConfig;
+      });
+
+      // Compute subtotals
+      processedRows.forEach(row => {
+        if (row.type === 'subtotal') {
+          let luas = 0;
+          let target = 0;
+          let rencanaPanen = 0;
+          let tbsPanen = 0;
+          let tbsKirim = 0;
+          
+          row.children.forEach(childLabel => {
+            const childRow = processedRows.find(r => r.type === 'detail' && r.label === childLabel);
+            if (childRow) {
+              luas += childRow.luas || 0;
+              target += childRow.target || 0;
+              rencanaPanen += childRow.rencanaPanen || 0;
+              tbsPanen += childRow.tbsPanen || 0;
+              tbsKirim += childRow.tbsKirim || 0;
+            }
+          });
+          
+          row.luas = luas;
+          row.target = target;
+          row.rencanaPanen = rencanaPanen;
+          row.tbsPanen = tbsPanen;
+          row.tbsKirim = tbsKirim;
+          row.pctPanenVsRenc = rencanaPanen > 0 ? (tbsPanen / rencanaPanen) * 100 : 0;
+          row.pctKirimVsRenc = rencanaPanen > 0 ? (tbsKirim / rencanaPanen) * 100 : 0;
+          row.pctKirimVsTarget = target > 0 ? (tbsKirim / target) * 100 : 0;
+        }
+      });
+
+      // Compute total Jumlah
+      const totalRow = processedRows.find(r => r.type === 'total');
+      if (totalRow) {
+        let luas = 0;
+        let target = 0;
+        let rencanaPanen = 0;
+        let tbsPanen = 0;
+        let tbsKirim = 0;
+        
+        processedRows.forEach(row => {
+          if (row.type === 'subtotal') {
+            luas += row.luas || 0;
+            target += row.target || 0;
+            rencanaPanen += row.rencanaPanen || 0;
+            tbsPanen += row.tbsPanen || 0;
+            tbsKirim += row.tbsKirim || 0;
+          }
+        });
+        
+        totalRow.luas = 444298; // Update dengan luas TM Planted (Ha) 444298
+        totalRow.target = target;
+        totalRow.rencanaPanen = rencanaPanen;
+        totalRow.tbsPanen = tbsPanen;
+        totalRow.tbsKirim = tbsKirim;
+        totalRow.pctPanenVsRenc = rencanaPanen > 0 ? (tbsPanen / rencanaPanen) * 100 : 0;
+        totalRow.pctKirimVsRenc = rencanaPanen > 0 ? (tbsKirim / rencanaPanen) * 100 : 0;
+        totalRow.pctKirimVsTarget = target > 0 ? (tbsKirim / target) * 100 : 0;
+      }
+
+      const getConditionalStyle = (val) => {
+        if (val === undefined || val === null || isNaN(val)) return {};
+        const num = parseFloat(val);
+        if (num > 100) {
+          return { backgroundColor: '#c6efce', color: '#006100' };
+        } else if (num >= 90) {
+          return { backgroundColor: '#ffeb9c', color: '#9c6500' };
+        } else {
+          return { backgroundColor: '#ffc7ce', color: '#9c0006' };
+        }
+      };
+
+      const formatDateIndo = (dateStr) => {
+        if (!dateStr) return '';
+        const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const parts = dateStr.split('-');
+        if (parts.length !== 3) return dateStr;
+        return `${parseInt(parts[2], 10)} ${months[parseInt(parts[1], 10) - 1]} ${parts[0]}`;
+      };
+
+      const handleExportPdf = () => {
+        const element = document.getElementById("rencana-realisasi-print-container");
+        if (!element) return;
+        
+        const opt = {
+          margin: [8, 8, 8, 8],
+          filename: `RENCANA_REALISASI_PANEN_HARIAN_${selectedDate}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2.5, useCORS: true, letterRendering: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+        
+        const btn = document.getElementById("btn-pdf-export");
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<span class="inline-block animate-spin mr-1">⚙️</span> Generating PDF...`;
+        btn.disabled = true;
+
+        html2pdf().from(element).set(opt).save().then(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }).catch(err => {
+          console.error("PDF export error:", err);
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          alert("Gagal mengekspor PDF: " + err.message);
+        });
+      };
+
+      const formatNumber = (num, decimals = 2) => {
+        if (num === undefined || num === null) return '-';
+        return Number(num).toLocaleString('id-ID', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: decimals
+        });
+      };
+
+      return (
+        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col gap-6 animate-fadeIn">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div>
+              <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">RENCANA & REALISASI PANEN HARIAN</h2>
+              <p className="text-xs text-slate-400 mt-0.5">Unggah berkas LHP untuk menghasilkan laporan rencana vs realisasi</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Laporan</span>
+                <input 
+                  type="date" 
+                  value={selectedDate} 
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value);
+                    setRegionTotals(null);
+                    setFileName("");
+                  }} 
+                  className="border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs font-medium text-slate-700 dark:text-slate-300 dark:bg-slate-800 focus:outline-none focus:border-brand-500" 
+                />
+              </div>
+              <button 
+                id="btn-pdf-export" 
+                onClick={handleExportPdf}
+                disabled={!regionTotals}
+                className="mt-5 inline-flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-all duration-200"
+              >
+                <Icon name="file-text" size={14} />
+                Export ke PDF
+              </button>
+            </div>
+          </div>
+
+          {/* Upload Area */}
+          <div 
+            onDragEnter={handleDrag}
+            onDragOver={handleDrag}
+            onDragLeave={handleDrag}
+            onDrop={handleDrop}
+            onClick={triggerFileInput}
+            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center min-h-[140px] ${
+              dragActive 
+                ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20' 
+                : 'border-slate-200 dark:border-slate-800 hover:border-brand-400 dark:hover:border-brand-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50'
+            }`}
+          >
+            <input 
+              ref={fileInputRef} 
+              type="file" 
+              accept=".xlsx,.xls" 
+              onChange={handleFileInputChange} 
+              className="hidden" 
+            />
+            
+            {loading ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Memproses data laporan...</p>
+              </div>
+            ) : fileName ? (
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600 mb-3 shadow-sm">
+                  <Icon name="check" size={24} />
+                </div>
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{fileName}</p>
+                <p className="text-[10px] text-slate-400">File berhasil dimuat. Klik atau seret file lain untuk mengganti.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center text-brand-600 mb-3 shadow-sm">
+                  <Icon name="upload-cloud" size={24} />
+                </div>
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Unggah File Excel LHP</p>
+                <p className="text-[10px] text-slate-400">Seret & taruh berkas di sini atau klik untuk menelusuri folder</p>
+              </div>
+            )}
+          </div>
+
+          {/* Table Preview */}
+          {regionTotals ? (
+            <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl">
+              {/* Printable Area Wrapper */}
+              <div id="rencana-realisasi-print-container" className="bg-white p-6 min-w-[1000px] text-slate-800" style={{ fontFamily: "'Libre Franklin', sans-serif" }}>
+                {/* Print Title Header */}
+                <div className="text-center mb-6">
+                  <h1 className="text-[15px] font-extrabold text-slate-900 tracking-tight uppercase" style={{ fontFamily: "'Libre Franklin', sans-serif" }}>RENCANA & REALISASI PANEN HARIAN</h1>
+                  <p className="text-[12px] font-bold text-slate-600 mt-1" style={{ fontFamily: "'Libre Franklin', sans-serif" }}>Tanggal Data: {formatDateIndo(selectedDate)}</p>
+                </div>
+
+                <table className="w-full border-collapse border border-slate-300 text-[12px]" style={{ fontFamily: "'Libre Franklin', sans-serif" }}>
+                  <thead>
+                    <tr className="font-bold text-center">
+                      <th rowSpan="2" className="border border-slate-300 px-2 py-2 w-[180px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Wilayah</th>
+                      <th rowSpan="2" className="border border-slate-300 px-2 py-2 w-[110px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Luas TM Planted (Ha)</th>
+                      <th rowSpan="2" className="border border-slate-300 px-2 py-2 w-[100px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Target Challenge (Ton)</th>
+                      <th rowSpan="2" className="border border-slate-300 px-2 py-2 w-[100px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Rencana Panen (Ton)</th>
+                      <th colSpan="2" className="border border-slate-300 px-2 py-1 text-white" style={{ backgroundColor: '#137d47' }}>Realisasi (Ton)</th>
+                      <th colSpan="3" className="border border-slate-300 px-2 py-1" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>% Pencapaian</th>
+                      <th rowSpan="2" className="border border-slate-300 px-2 py-2 w-[180px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Keterangan</th>
+                    </tr>
+                    <tr className="font-bold text-center">
+                      <th className="border border-slate-300 px-2 py-1.5 w-[85px] text-white" style={{ backgroundColor: '#137d47' }}>TBS Panen</th>
+                      <th className="border border-slate-300 px-2 py-1.5 w-[85px] text-white" style={{ backgroundColor: '#137d47' }}>TBS Kirim</th>
+                      <th className="border border-slate-300 px-2 py-1.5 w-[90px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Real Panen Vs Renc Panen</th>
+                      <th className="border border-slate-300 px-2 py-1.5 w-[90px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Real Kirim Vs Renc Panen</th>
+                      <th className="border border-slate-300 px-2 py-1.5 w-[90px]" style={{ backgroundColor: '#d1f6f5', color: '#1e293b' }}>Real Kirim Vs Target</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {processedRows.map((row, idx) => {
+                      const isSubtotal = row.type === 'subtotal';
+                      const isTotal = row.type === 'total';
+                      
+                      let bgStyle = {};
+                      let textClass = "text-slate-700";
+                      
+                      if (isSubtotal) {
+                        bgStyle = { backgroundColor: '#ffff99', fontWeight: 'bold' };
+                        textClass = "text-slate-900";
+                      } else if (isTotal) {
+                        bgStyle = { backgroundColor: '#d1f6f5', fontWeight: 'bold', borderTop: '2px solid #64748b' };
+                        textClass = "text-slate-900";
+                      }
+
+                      return (
+                        <tr key={idx} style={bgStyle} className={textClass}>
+                          <td className="border border-slate-300 px-2 py-1.5 font-medium">{row.label}</td>
+                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono">{formatNumber(row.luas)}</td>
+                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono">{formatNumber(row.target, 0)}</td>
+                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono">{formatNumber(row.rencanaPanen, 1)}</td>
+                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono">{formatNumber(row.tbsPanen, 2)}</td>
+                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono">{formatNumber(row.tbsKirim, 2)}</td>
+                          
+                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono font-bold" style={getConditionalStyle(row.pctPanenVsRenc)}>
+                            {formatNumber(row.pctPanenVsRenc)}%
+                          </td>
+                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono font-bold" style={getConditionalStyle(row.pctKirimVsRenc)}>
+                            {formatNumber(row.pctKirimVsRenc)}%
+                          </td>
+                          <td className="border border-slate-300 px-2 py-1.5 text-right font-mono font-bold" style={getConditionalStyle(row.pctKirimVsTarget)}>
+                            {formatNumber(row.pctKirimVsTarget)}%
+                          </td>
+                          
+                          <td className="border border-slate-300 px-1 py-1">
+                            <input 
+                              type="text" 
+                              value={customRemarks[row.label] || ''} 
+                              onChange={(e) => handleRemarkChange(row.label, e.target.value)}
+                              placeholder="Tambah catatan..."
+                              className="w-full bg-transparent border-0 outline-none text-[11px] text-slate-700 placeholder-slate-300 focus:bg-slate-50 px-1 rounded-sm py-0.5"
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-10 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800/80">
+              <Icon name="file-text" size={32} className="text-slate-300 mx-auto mb-2" />
+              <p className="text-xs text-slate-500 font-medium">Unggah berkas Excel LHP Anda untuk memuat preview rencana & realisasi.</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">Data rencana otomatis dihubungkan dari database estimasi harian.</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ============================================================
     // ROOT APP
     // ============================================================
     function App() {
@@ -3013,6 +3537,8 @@
                     filters={filters}
                     setFilters={setFilters}
                   />
+                ) : activeNav === 'rencana-realisasi' ? (
+                  <RencanaRealisasiPanel />
                 ) : (
                   <>
                     <FilterBar filters={filters} setFilters={setFilters} />
