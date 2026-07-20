@@ -2464,31 +2464,37 @@
         var s = loadSession();
         if (!s) return;
 
-        // Calculate start of current month and today's date in WIB
-        var now = new Date();
-        var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-        var wibTime = new Date(utc + (7 * 3600000));
-        var yyyy = wibTime.getFullYear();
-        var MM = String(wibTime.getMonth() + 1).padStart(2, '0');
-        var dd = String(wibTime.getDate()).padStart(2, '0');
-        var todayWib = yyyy + "-" + MM + "-" + dd;
+        // Read selected date from filterTanggalStart, or fallback to WIB Today
+        var refDate = document.getElementById("filterTanggalStart") ? document.getElementById("filterTanggalStart").value : "";
+        var refDateObj;
+        
+        if (refDate) {
+          var parts = refDate.split('-');
+          refDateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        } else {
+          var now = new Date();
+          var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+          refDateObj = new Date(utc + (7 * 3600000));
+        }
+
+        var yyyy = refDateObj.getFullYear();
+        var MM = String(refDateObj.getMonth() + 1).padStart(2, '0');
         var startOfMonth = yyyy + "-" + MM + "-01";
+        
+        var lastDay = new Date(yyyy, refDateObj.getMonth() + 1, 0).getDate();
+        var endOfMonth = yyyy + "-" + MM + "-" + String(lastDay).padStart(2, '0');
 
         var monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        var currentMonthName = monthNames[wibTime.getMonth()];
+        var currentMonthName = monthNames[refDateObj.getMonth()];
 
-        // Default: Harian date list
+        // Generate date list from 1st to last day of selected month
         var dates = [];
         var labels = [];
-        var d = new Date(yyyy, wibTime.getMonth(), 1);
-        while (d <= wibTime) {
-          var y = d.getFullYear();
-          var m = String(d.getMonth() + 1).padStart(2, '0');
-          var day = String(d.getDate()).padStart(2, '0');
-          var dateStr = y + "-" + m + "-" + day;
+        for (var i = 1; i <= lastDay; i++) {
+          var dayStr = String(i).padStart(2, '0');
+          var dateStr = yyyy + "-" + MM + "-" + dayStr;
           dates.push(dateStr);
-          labels.push(day);
-          d.setDate(d.getDate() + 1);
+          labels.push(dayStr);
         }
 
         var realisasiData = Array(dates.length).fill(0);
@@ -2540,7 +2546,6 @@
 
             } else if (nationalChartActiveTab === 'mingguan') {
               xAxisTitle = "Mingguan - " + currentMonthName;
-              var lastDay = new Date(yyyy, wibTime.getMonth() + 1, 0).getDate();
               var numWeeks = lastDay > 28 ? 5 : 4;
               chartLabels = ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4", "Minggu 5"].slice(0, numWeeks);
               chartRealData = Array(numWeeks).fill(0);
@@ -2785,7 +2790,7 @@
         }
 
         var queryStart = startOfMonth;
-        var queryEnd = todayWib;
+        var queryEnd = endOfMonth;
 
         if (nationalChartActiveTab === 'bulanan') {
           queryStart = yyyy + "-01-01";
