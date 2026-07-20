@@ -3271,7 +3271,7 @@
         } else if (num >= 90) {
           return { backgroundColor: '#ffff00', color: '#000000', fontWeight: 'bold' };
         } else {
-          return { backgroundColor: '#ff0000', color: '#000000', fontWeight: 'bold' };
+          return { backgroundColor: '#ff0000', color: '#ffffff', fontWeight: 'bold' };
         }
       };
 
@@ -3439,12 +3439,13 @@
                 <style dangerouslySetInnerHTML={{__html: `
                   #rencana-realisasi-print-container {
                     font-family: 'Libre Franklin', sans-serif !important;
-                    color: #000000 !important;
+                    color: #000000;
                   }
                   #rencana-realisasi-print-container table {
                     border-collapse: collapse !important;
                     border: 1px solid #000000 !important;
                     width: 100% !important;
+                    color: #000000;
                   }
                   #rencana-realisasi-print-container th,
                   #rencana-realisasi-print-container td {
@@ -3452,11 +3453,10 @@
                     padding: 3px 4px !important;
                     vertical-align: middle !important;
                     line-height: 1.2 !important;
-                    color: #000000 !important;
                   }
                   #rencana-realisasi-print-container input {
                     font-family: 'Libre Franklin', sans-serif !important;
-                    color: #000000 !important;
+                    color: inherit;
                     border: 0 !important;
                     outline: none !important;
                     background: transparent !important;
@@ -3485,13 +3485,13 @@
                       <th rowSpan="2" className="w-[75px]" style={{ backgroundColor: '#d1f6f5', color: '#000000' }}>Luas TM Planted (Ha)</th>
                       <th rowSpan="2" className="w-[65px]" style={{ backgroundColor: '#d1f6f5', color: '#000000' }}>Target Challenge (Ton)</th>
                       <th rowSpan="2" className="w-[65px]" style={{ backgroundColor: '#d1f6f5', color: '#000000' }}>Rencana Panen (Ton)</th>
-                      <th colSpan="2" className="w-[130px]" style={{ backgroundColor: '#137d47', color: '#000000' }}>Realisasi (Ton)</th>
+                      <th colSpan="2" className="w-[130px]" style={{ backgroundColor: '#137d47', color: '#ffffff' }}>Realisasi (Ton)</th>
                       <th colSpan="3" className="w-[195px]" style={{ backgroundColor: '#d1f6f5', color: '#000000' }}>% Pencapaian</th>
                       <th rowSpan="2" className="w-[100px]" style={{ backgroundColor: '#d1f6f5', color: '#000000' }}>Keterangan</th>
                     </tr>
                     <tr className="font-bold text-center">
-                      <th className="w-[65px]" style={{ backgroundColor: '#137d47', color: '#000000' }}>TBS Panen</th>
-                      <th className="w-[65px]" style={{ backgroundColor: '#137d47', color: '#000000' }}>TBS Kirim</th>
+                      <th className="w-[65px]" style={{ backgroundColor: '#137d47', color: '#ffffff' }}>TBS Panen</th>
+                      <th className="w-[65px]" style={{ backgroundColor: '#137d47', color: '#ffffff' }}>TBS Kirim</th>
                       <th className="w-[65px]" style={{ backgroundColor: '#d1f6f5', color: '#000000' }}>Real Panen Vs Renc Panen</th>
                       <th className="w-[65px]" style={{ backgroundColor: '#d1f6f5', color: '#000000' }}>Real Kirim Vs Renc Panen</th>
                       <th className="w-[65px]" style={{ backgroundColor: '#d1f6f5', color: '#000000' }}>Real Kirim Vs Target</th>
