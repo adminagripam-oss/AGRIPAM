@@ -3069,6 +3069,15 @@
                           </tr>
                         ))}
                       </tbody>
+                      <tr className="bg-slate-100 dark:bg-slate-900 font-bold">
+                        <td className="px-3 py-2">TOTAL</td>
+                        {Array.from({length: 31}, (_, i) => i + 1).map(d => {
+                          const sum = Object.values(targetData).reduce((acc, curr) => acc + (curr[d] || 0), 0);
+                          return (
+                            <td key={d} className="px-2 py-2 text-center text-slate-800 dark:text-slate-200">{sum}</td>
+                          )
+                        })}
+                      </tr>
                     </table>
                   </div>
                   <div className="flex justify-end mt-2">
@@ -3090,55 +3099,55 @@
     // ============================================================
     const RENCANA_REALISASI_ROWS = [
       // CRO I
-      { label: "Sumatera Utara 1", regionKey: "Sumatera Utara 1", luas: 6498.24, target: 50, type: "detail" },
-      { label: "Sumut 2 Ex Torganda", regionKey: "Sumatera Utara 2 Ex Torganda", luas: 46677.70, target: 680, type: "detail" },
-      { label: "Aceh", regionKey: "Aceh", luas: 1257.17, target: 10, type: "detail" },
+      { label: "Sumatera Utara 1", regionKey: "Sumatera Utara 1", excelKey: "Sumut 1", luas: 6498.24, target: 50, type: "detail" },
+      { label: "Sumut 2 Ex Torganda", regionKey: "Sumatera Utara 2 Ex Torganda", excelKey: "Sumut 2", luas: 46677.70, target: 680, type: "detail" },
+      { label: "Aceh", regionKey: "Aceh", excelKey: "Aceh", luas: 1257.17, target: 10, type: "detail" },
       { label: "CRO I", type: "subtotal", children: ["Sumatera Utara 1", "Sumut 2 Ex Torganda", "Aceh"] },
 
       // CRO II
-      { label: "Riau 1 Ex Duta Palma", regionKey: "Riau 1", luas: 66610.43, target: 3025, type: "detail" },
+      { label: "Riau 1 Ex Duta Palma", regionKey: "Riau 1", excelKey: "Riau 1", luas: 66610.43, target: 3025, type: "detail" },
       { label: "CRO II", type: "subtotal", children: ["Riau 1 Ex Duta Palma"] },
 
       // CRO III
-      { label: "Riau 2", regionKey: "Riau 2", luas: 48101.86, target: 680, type: "detail" },
-      { label: "Riau 3", regionKey: "Riau 3", luas: 4840.18, target: 55, type: "detail" },
+      { label: "Riau 2", regionKey: "Riau 2", excelKey: "Riau 2", luas: 48101.86, target: 680, type: "detail" },
+      { label: "Riau 3", regionKey: "Riau 3", excelKey: "Riau 3", luas: 4840.18, target: 55, type: "detail" },
       { label: "CRO III", type: "subtotal", children: ["Riau 2", "Riau 3"] },
 
       // CRO IV
-      { label: "Torganda 2 Riau 4", regionKey: "Riau 4", luas: 38121.47, target: 340, type: "detail" },
+      { label: "Torganda 2 Riau 4", regionKey: "Riau 4", excelKey: "Riau 4", luas: 38121.47, target: 340, type: "detail" },
       { label: "CRO IV", type: "subtotal", children: ["Torganda 2 Riau 4"] },
 
       // CRO V
-      { label: "Bangka Belitung", regionKey: "Bangka Belitung", luas: 568.47, target: 15, type: "detail" },
-      { label: "Jambi", regionKey: "Jambi", luas: 565.59, target: 10, type: "detail" },
-      { label: "Sumatera Barat", regionKey: "Sumatera Barat", luas: 2741.65, target: 100, type: "detail" },
-      { label: "Sumatera Selatan", regionKey: "Sumatera Selatan", luas: 8712.90, target: 45, type: "detail" },
+      { label: "Bangka Belitung", regionKey: "Bangka Belitung", excelKey: "Babel", luas: 568.47, target: 15, type: "detail" },
+      { label: "Jambi", regionKey: "Jambi", excelKey: "Jambi", luas: 565.59, target: 10, type: "detail" },
+      { label: "Sumatera Barat", regionKey: "Sumatera Barat", excelKey: "Sumbar", luas: 2741.65, target: 100, type: "detail" },
+      { label: "Sumatera Selatan", regionKey: "Sumatera Selatan", excelKey: "Sumsel", luas: 8712.90, target: 45, type: "detail" },
       { label: "CRO V", type: "subtotal", children: ["Bangka Belitung", "Jambi", "Sumatera Barat", "Sumatera Selatan"] },
 
       // CRO VI
-      { label: "Kalbar 1 Ex Duta Palma", regionKey: "Kalimantan Barat 1", luas: 77955.99, target: 1750, type: "detail" },
-      { label: "Kalimantan Barat 2", regionKey: "Kalimantan Barat 2", luas: 12993.09, target: 55, type: "detail" },
+      { label: "Kalbar 1 Ex Duta Palma", regionKey: "Kalimantan Barat 1", excelKey: "Kalbar 1", luas: 77955.99, target: 1750, type: "detail" },
+      { label: "Kalimantan Barat 2", regionKey: "Kalimantan Barat 2", excelKey: "Kalbar 2", luas: 12993.09, target: 55, type: "detail" },
       { label: "CRO VI", type: "subtotal", children: ["Kalbar 1 Ex Duta Palma", "Kalimantan Barat 2"] },
 
       // CRO VII
-      { label: "Kalimantan Selatan 1", regionKey: "Kalimantan Selatan 1", luas: 4772.06, target: 85, type: "detail" },
-      { label: "Kalimantan Selatan 2", regionKey: "Kalimantan Selatan 2", luas: 2850.38, target: 50, type: "detail" },
-      { label: "Kalimantan Timur", regionKey: "Kalimantan Timur", luas: 3562.21, target: 85, type: "detail" },
-      { label: "Kalimantan Utara", regionKey: "Kalimantan Utara", luas: 1145.28, target: 5, type: "detail" },
+      { label: "Kalimantan Selatan 1", regionKey: "Kalimantan Selatan 1", excelKey: "Kalsel 1", luas: 4772.06, target: 85, type: "detail" },
+      { label: "Kalimantan Selatan 2", regionKey: "Kalimantan Selatan 2", excelKey: "Kalsel 2", luas: 2850.38, target: 50, type: "detail" },
+      { label: "Kalimantan Timur", regionKey: "Kalimantan Timur", excelKey: "Kaltim", luas: 3562.21, target: 85, type: "detail" },
+      { label: "Kalimantan Utara", regionKey: "Kalimantan Utara", excelKey: "Kaltara", luas: 1145.28, target: 5, type: "detail" },
       { label: "CRO VII", type: "subtotal", children: ["Kalimantan Selatan 1", "Kalimantan Selatan 2", "Kalimantan Timur", "Kalimantan Utara"] },
 
       // CRO VIII
-      { label: "Kalimantan Tengah 1", regionKey: "Kalimantan Tengah 1", luas: 63248.25, target: 845, type: "detail" },
-      { label: "Kalimantan Tengah 3", regionKey: "Kalimantan Tengah 3", luas: 30467.52, target: 100, type: "detail" },
+      { label: "Kalimantan Tengah 1", regionKey: "Kalimantan Tengah 1", excelKey: "Kalteng 1", luas: 63248.25, target: 845, type: "detail" },
+      { label: "Kalimantan Tengah 3", regionKey: "Kalimantan Tengah 3", excelKey: "Kalteng 3", luas: 30467.52, target: 100, type: "detail" },
       { label: "CRO VIII", type: "subtotal", children: ["Kalimantan Tengah 1", "Kalimantan Tengah 3"] },
 
       // CRO IX
-      { label: "Kalimantan Tengah 2", regionKey: "Kalimantan Tengah 2", luas: 17408.64, target: 565, type: "detail" },
+      { label: "Kalimantan Tengah 2", regionKey: "Kalimantan Tengah 2", excelKey: "Kalteng 2", luas: 17408.64, target: 565, type: "detail" },
       { label: "CRO IX", type: "subtotal", children: ["Kalimantan Tengah 2"] },
 
       // CRO X
-      { label: "Sulawesi Tenggara", regionKey: "Sulawesi Tenggara", luas: 3231.46, target: 20, type: "detail" },
-      { label: "Sulawesi Tengah", regionKey: "Sulawesi Tengah", luas: 2116.83, target: 15, type: "detail" },
+      { label: "Sulawesi Tenggara", regionKey: "Sulawesi Tenggara", excelKey: "Sultra", luas: 3231.46, target: 20, type: "detail" },
+      { label: "Sulawesi Tengah", regionKey: "Sulawesi Tengah", excelKey: "Sulteng", luas: 2116.83, target: 15, type: "detail" },
       { label: "CRO X", type: "subtotal", children: ["Sulawesi Tenggara", "Sulawesi Tengah"] },
 
       // TOTAL
@@ -3445,7 +3454,9 @@
           const pctPanenVsRenc = rencanaPanen > 0 ? (tbsPanen / rencanaPanen) * 100 : 0;
           const pctKirimVsRenc = rencanaPanen > 0 ? (tbsKirim / rencanaPanen) * 100 : 0;
           
-          const dynamicTarget = targetChallengeData[rowConfig.label] !== undefined ? targetChallengeData[rowConfig.label] : rowConfig.target;
+          const dynamicTarget = (rowConfig.excelKey && targetChallengeData[rowConfig.excelKey] !== undefined) 
+            ? targetChallengeData[rowConfig.excelKey] 
+            : rowConfig.target;
           const pctKirimVsTarget = dynamicTarget > 0 ? (tbsKirim / dynamicTarget) * 100 : 0;
           
           return {
