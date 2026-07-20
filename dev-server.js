@@ -34,8 +34,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON and URL-encoded bodies
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
 // Log requests
 app.use((req, res, next) => {

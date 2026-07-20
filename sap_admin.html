@@ -449,10 +449,10 @@
                 const fileInput = document.getElementById('admin_file_surat');
                 const file = fileInput.files[0];
 
-                // Validasi ukuran file (Max 5 MB)
-                const maxSize = 5 * 1024 * 1024; // 5 MB
+                // Validasi ukuran file (Max 50 MB)
+                const maxSize = 50 * 1024 * 1024; // 50 MB
                 if (file && file.size > maxSize) {
-                    msg.textContent = "Error: Ukuran file melebihi batas maksimal 5 MB.";
+                    msg.textContent = "Error: Ukuran file melebihi batas maksimal 50 MB.";
                     msg.className = "text-sm p-3 rounded mt-2 bg-red-50 text-red-700 border border-red-200";
                     msg.classList.remove('hidden');
                     btn.disabled = false;
