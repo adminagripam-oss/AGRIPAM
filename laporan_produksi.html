@@ -2101,33 +2101,41 @@
               // ── PEMBACAAN DINAMIS KHUSUS LHP ──
               // Karena baris subtotal di LHP hasil export seringkali kosong datanya,
               // kita loop semua baris data kebun (dimulai setelah baris header)
-              // Kolom B (index 1) = Regional, Kolom L (index 11) = Kg Panen
+              // Kolom B (index 1) = Regional, Kolom L (index 11) = Kg Panen, Kolom G (index 6) = Kg Kirim
               for (let r = 5; r < rows.length; r++) {
                 const row = rows[r];
                 if (!row || !Array.isArray(row)) continue;
 
                 const rawReg = row[1]; // Kolom B
-                let rawVal = row[11]; // Kolom L
+                let rawValPanen = row[11]; // Kolom L (Panen)
+                let rawValKirim = row[6]; // Kolom G (Kirim)
 
                 if (!rawReg) continue;
 
                 const matched = findRegionMatch(rawReg);
                 if (matched) {
-                  if (typeof rawVal === 'string') {
-                    rawVal = rawVal.replace(/[^\d.,]/g, '');
-                    rawVal = rawVal.replace(/,/g, '');
+                  if (!parsedTotals[matched]) parsedTotals[matched] = { panen: 0, kirim: 0 };
+
+                  // Proses Panen (Kolom L)
+                  if (typeof rawValPanen === 'string') {
+                    rawValPanen = rawValPanen.replace(/[^\d.,]/g, '').replace(/,/g, '');
                   }
-                  const numVal = rawVal !== null && rawVal !== '' ? parseFloat(rawVal) : 0;
-                  if (!isNaN(numVal)) {
-                    if (!parsedTotals[matched]) parsedTotals[matched] = 0;
-                    parsedTotals[matched] += numVal;
+                  const numPanen = rawValPanen !== null && rawValPanen !== undefined && rawValPanen !== '' ? parseFloat(rawValPanen) : 0;
+                  if (!isNaN(numPanen)) parsedTotals[matched].panen += numPanen;
+
+                  // Proses Kirim (Kolom G)
+                  if (typeof rawValKirim === 'string') {
+                    rawValKirim = rawValKirim.replace(/[^\d.,]/g, '').replace(/,/g, '');
                   }
+                  const numKirim = rawValKirim !== null && rawValKirim !== undefined && rawValKirim !== '' ? parseFloat(rawValKirim) : 0;
+                  if (!isNaN(numKirim)) parsedTotals[matched].kirim += numKirim;
                 }
               }
 
               // Nilai LHP dalam Kg → bagi 1000 → Ton
               for (const reg in parsedTotals) {
-                parsedTotals[reg] = Math.round((parsedTotals[reg] / 1000) * 100) / 100;
+                parsedTotals[reg].panen = Math.round((parsedTotals[reg].panen / 1000) * 100) / 100;
+                parsedTotals[reg].kirim = Math.round((parsedTotals[reg].kirim / 1000) * 100) / 100;
               }
 
             } else {
@@ -2187,7 +2195,7 @@
                 const row = rows[r];
                 if (!row) continue;
                 const rawReg = row[regionColIdx];
-                const rawVal = row[tonaseColIdx];
+                let tonVal = row[tonaseColIdx];
                 if (!rawReg) continue;
 
                 const firstCell = (row[0] || '').toString().toLowerCase();
@@ -2195,18 +2203,25 @@
 
                 const matched = findRegionMatch(rawReg);
                 if (matched) {
-                  const numVal = parseFloat(rawVal) || 0;
-                  if (!parsedTotals[matched]) parsedTotals[matched] = 0;
-                  parsedTotals[matched] += numVal;
+                  if (typeof tonVal === 'string') {
+                    tonVal = tonVal.replace(/[^\d.,]/g, '').replace(/,/g, '');
+                  }
+                  const numVal = tonVal !== null && tonVal !== undefined && tonVal !== '' ? parseFloat(tonVal) : 0;
+                  if (!isNaN(numVal)) {
+                    if (!parsedTotals[matched]) parsedTotals[matched] = { panen: 0, kirim: 0 };
+                    parsedTotals[matched].panen += numVal;
+                    parsedTotals[matched].kirim += numVal; // Fallback untuk non-LHP: kirim = panen
+                  }
                 }
               }
 
               // Auto-konversi Kg → Ton jika nilai besar
               const vals = Object.values(parsedTotals);
-              const isKg = vals.some(v => v > 5000) || vals.reduce((s, v) => s + v, 0) > 10000;
+              const isKg = vals.some(v => v.panen > 5000 || v.kirim > 5000) || vals.reduce((s, v) => s + v.panen, 0) > 10000;
               if (isKg) {
                 for (const reg in parsedTotals) {
-                  parsedTotals[reg] = Math.round((parsedTotals[reg] / 1000) * 100) / 100;
+                  parsedTotals[reg].panen = Math.round((parsedTotals[reg].panen / 1000) * 100) / 100;
+                  parsedTotals[reg].kirim = Math.round((parsedTotals[reg].kirim / 1000) * 100) / 100;
                 }
               }
             }
@@ -2272,7 +2287,9 @@
 
           const records = Object.keys(dataToSave).map(region => ({
             region,
-            tonase: dataToSave[region]
+            panen: dataToSave[region].panen,
+            kirim: dataToSave[region].kirim,
+            tonase: dataToSave[region].panen // Legacy support
           }));
 
           const res = await fetch('/api/palmops', {
@@ -2355,7 +2372,7 @@
           .filter(r => r.region === region)
           .reduce((sum, r) => sum + (parseFloat(r.tonase) || 0), 0);
 
-        const palmopsTotal = activePalmopsSource ? (activePalmopsSource[region] || 0) : null;
+        const palmopsTotal = activePalmopsSource ? (activePalmopsSource[region]?.panen || 0) : null;
         const hasExcelVal = palmopsTotal !== null;
 
         let selisih = null;
@@ -3398,7 +3415,7 @@
             // Compute LHP totals
             const totals = {};
             ALL_REGIONS.forEach(reg => {
-              totals[reg] = { kgPanen: 0, realProduksi: 0 };
+              totals[reg] = { panen: 0, kirim: 0 };
             });
 
             for (let r = 6; r < rows.length; r++) {
@@ -3408,18 +3425,17 @@
               if (!rawReg) continue;
               const matchedReg = findRegionMatch(rawReg);
               if (matchedReg) {
-                let valKgPanen = row[11]; // Column L
-                let valRealProd = row[6]; // Column G
-                if (typeof valKgPanen === 'string') {
-                  valKgPanen = valKgPanen.replace(/[^\d.,]/g, '').replace(/,/g, '');
-                }
-                if (typeof valRealProd === 'string') {
-                  valRealProd = valRealProd.replace(/[^\d.,]/g, '').replace(/,/g, '');
-                }
-                const numKgPanen = valKgPanen !== null && valKgPanen !== '' ? parseFloat(valKgPanen) : 0;
-                const numRealProd = valRealProd !== null && valRealProd !== '' ? parseFloat(valRealProd) : 0;
-                if (!isNaN(numKgPanen)) totals[matchedReg].kgPanen += numKgPanen;
-                if (!isNaN(numRealProd)) totals[matchedReg].realProduksi += numRealProd;
+                let valPanen = row[11]; // Column L
+                let valKirim = row[6]; // Column G
+                
+                if (typeof valPanen === 'string') valPanen = valPanen.replace(/[^\d.,]/g, '').replace(/,/g, '');
+                if (typeof valKirim === 'string') valKirim = valKirim.replace(/[^\d.,]/g, '').replace(/,/g, '');
+                
+                const numPanen = valPanen !== null && valPanen !== '' ? parseFloat(valPanen) : 0;
+                const numKirim = valKirim !== null && valKirim !== '' ? parseFloat(valKirim) : 0;
+                
+                if (!isNaN(numPanen)) totals[matchedReg].panen += (numPanen / 1000);
+                if (!isNaN(numKirim)) totals[matchedReg].kirim += (numKirim / 1000);
               }
             }
 
@@ -3448,8 +3464,8 @@
           const estRow = dbEstimasi[officialReg];
           const rencanaPanen = estRow ? (parseFloat(estRow.estPanen) || 0) / 1000 : 0;
           
-          const tbsPanen = regionTotals && regionTotals[officialReg] ? regionTotals[officialReg].kgPanen / 1000 : 0;
-          const tbsKirim = regionTotals && regionTotals[officialReg] ? regionTotals[officialReg].realProduksi / 1000 : 0;
+          let tbsPanen = regionTotals && regionTotals[rowConfig.regionKey] ? (regionTotals[rowConfig.regionKey].panen || 0) : 0;
+          let tbsKirim = regionTotals && regionTotals[rowConfig.regionKey] ? (regionTotals[rowConfig.regionKey].kirim || 0) : 0;
           
           const pctPanenVsRenc = rencanaPanen > 0 ? (tbsPanen / rencanaPanen) * 100 : 0;
           const pctKirimVsRenc = rencanaPanen > 0 ? (tbsKirim / rencanaPanen) * 100 : 0;
