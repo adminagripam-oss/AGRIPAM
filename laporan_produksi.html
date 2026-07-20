@@ -2926,9 +2926,11 @@
       const [fileName, setFileName] = useState("");
       const [dragActive, setDragActive] = useState(false);
       const [customRemarks, setCustomRemarks] = useState({});
+      const [isDataSaved, setIsDataSaved] = useState(false);
+      const [isSaving, setIsSaving] = useState(false);
       const fileInputRef = useRef(null);
 
-      // Fetch estimasi data when date changes
+      // Fetch estimasi data when date changes (Fallback jika data belum tersimpan)
       const fetchEstimasi = async (date) => {
         setLoading(true);
         try {
@@ -2950,8 +2952,120 @@
         }
       };
 
+      const checkSavedLaporan = async (date) => {
+        setLoading(true);
+        try {
+          const sessionRaw = sessionStorage.getItem("agripam_session");
+          const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+          const token = session ? session.token : "";
+          const res = await fetch(`/api/laporanRealisasi?action=getLaporan&tanggal=${date}&token=${token}`);
+          const json = await res.json();
+          
+          if (json.success && json.exists && json.data) {
+            setRegionTotals(json.data.regionTotals);
+            setCustomRemarks(json.data.customRemarks || {});
+            setDbEstimasi(json.data.dbEstimasi || {});
+            setIsDataSaved(true);
+            setFileName("Data dimuat dari Database");
+          } else {
+            setIsDataSaved(false);
+            setRegionTotals(null);
+            setCustomRemarks({});
+            setFileName("");
+            await fetchEstimasi(date);
+          }
+        } catch (e) {
+          console.error("Gagal mengecek laporan:", e);
+          setIsDataSaved(false);
+          await fetchEstimasi(date);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const saveLaporan = async () => {
+        if (!regionTotals) {
+          alert("Belum ada data untuk disimpan.");
+          return;
+        }
+        setIsSaving(true);
+        try {
+          const sessionRaw = sessionStorage.getItem("agripam_session");
+          const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+          const token = session ? session.token : "";
+          
+          const payloadData = {
+            regionTotals,
+            customRemarks,
+            dbEstimasi
+          };
+
+          const res = await fetch(`/api/laporanRealisasi`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'saveLaporan',
+              tanggal: selectedDate,
+              token: token,
+              region: 'ADMIN',
+              data: payloadData
+            })
+          });
+          const json = await res.json();
+          if (json.success) {
+            alert("Laporan berhasil disimpan ke database!");
+            setIsDataSaved(true);
+            setFileName("Data dimuat dari Database");
+          } else {
+            alert(json.message || "Gagal menyimpan laporan.");
+          }
+        } catch (e) {
+          console.error("Error saving laporan:", e);
+          alert("Terjadi kesalahan saat menyimpan laporan.");
+        } finally {
+          setIsSaving(false);
+        }
+      };
+
+      const deleteLaporan = async () => {
+        if (!confirm("Apakah Anda yakin ingin menghapus data laporan untuk tanggal ini? Anda harus mengunggah ulang file LHP jika ingin menampilkan datanya lagi.")) return;
+        setIsSaving(true);
+        try {
+          const sessionRaw = sessionStorage.getItem("agripam_session");
+          const session = sessionRaw ? JSON.parse(sessionRaw) : null;
+          const token = session ? session.token : "";
+          
+          const res = await fetch(`/api/laporanRealisasi`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'deleteLaporan',
+              tanggal: selectedDate,
+              token: token,
+              region: 'ADMIN'
+            })
+          });
+          const json = await res.json();
+          if (json.success) {
+            alert("Laporan berhasil dihapus.");
+            setIsDataSaved(false);
+            setRegionTotals(null);
+            setCustomRemarks({});
+            setFileName("");
+            await fetchEstimasi(selectedDate);
+          } else {
+            alert(json.message || "Gagal menghapus laporan.");
+          }
+        } catch (e) {
+          console.error("Error deleting laporan:", e);
+          alert("Terjadi kesalahan saat menghapus laporan.");
+        } finally {
+          setIsSaving(false);
+        }
+      };
+
       useEffect(() => {
-        fetchEstimasi(selectedDate);
+        checkSavedLaporan(selectedDate);
       }, [selectedDate]);
 
       const handleDrag = (e) => {
@@ -3220,7 +3334,7 @@
               <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">RENCANA & REALISASI PANEN HARIAN</h2>
               <p className="text-xs text-slate-400 mt-0.5">Unggah berkas LHP untuk menghasilkan laporan rencana vs realisasi</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <div className="flex flex-col">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Laporan</span>
                 <input 
@@ -3228,68 +3342,93 @@
                   value={selectedDate} 
                   onChange={(e) => {
                     setSelectedDate(e.target.value);
-                    setRegionTotals(null);
-                    setFileName("");
                   }} 
                   className="border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs font-medium text-slate-700 dark:text-slate-300 dark:bg-slate-800 focus:outline-none focus:border-brand-500" 
                 />
               </div>
-              <button 
-                id="btn-pdf-export" 
-                onClick={handleExportPdf}
-                disabled={!regionTotals}
-                className="mt-5 inline-flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-all duration-200"
-              >
-                <Icon name="file-text" size={14} />
-                Export ke PDF
-              </button>
+              
+              {/* Conditional Buttons based on data state */}
+              {regionTotals && (
+                <div className="flex flex-wrap items-center gap-2 mt-5">
+                  {isDataSaved ? (
+                    <button 
+                      onClick={deleteLaporan}
+                      disabled={isSaving}
+                      className="inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-all duration-200"
+                    >
+                      <Icon name="trash-2" size={14} />
+                      {isSaving ? "Menghapus..." : "Hapus & Upload Ulang"}
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={saveLaporan}
+                      disabled={isSaving}
+                      className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-all duration-200"
+                    >
+                      <Icon name="save" size={14} />
+                      {isSaving ? "Menyimpan..." : "Simpan ke Database"}
+                    </button>
+                  )}
+                  <button 
+                    id="btn-pdf-export" 
+                    onClick={handleExportPdf}
+                    disabled={!regionTotals || isSaving}
+                    className="inline-flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-all duration-200"
+                  >
+                    <Icon name="file-text" size={14} />
+                    Export ke PDF
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Upload Area */}
-          <div 
-            onDragEnter={handleDrag}
-            onDragOver={handleDrag}
-            onDragLeave={handleDrag}
-            onDrop={handleDrop}
-            onClick={triggerFileInput}
-            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center min-h-[140px] ${
-              dragActive 
-                ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20' 
-                : 'border-slate-200 dark:border-slate-800 hover:border-brand-400 dark:hover:border-brand-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50'
-            }`}
-          >
-            <input 
-              ref={fileInputRef} 
-              type="file" 
-              accept=".xlsx,.xls" 
-              onChange={handleFileInputChange} 
-              className="hidden" 
-            />
-            
-            {loading ? (
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Memproses data laporan...</p>
-              </div>
-            ) : fileName ? (
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600 mb-3 shadow-sm">
-                  <Icon name="check" size={24} />
+          {!isDataSaved && (
+            <div 
+              onDragEnter={handleDrag}
+              onDragOver={handleDrag}
+              onDragLeave={handleDrag}
+              onDrop={handleDrop}
+              onClick={triggerFileInput}
+              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center min-h-[140px] ${
+                dragActive 
+                  ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20' 
+                  : 'border-slate-200 dark:border-slate-800 hover:border-brand-400 dark:hover:border-brand-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50'
+              }`}
+            >
+              <input 
+                ref={fileInputRef} 
+                type="file" 
+                accept=".xlsx,.xls" 
+                onChange={handleFileInputChange} 
+                className="hidden" 
+              />
+              
+              {loading ? (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Memproses data laporan...</p>
                 </div>
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{fileName}</p>
-                <p className="text-[10px] text-slate-400">File berhasil dimuat. Klik atau seret file lain untuk mengganti.</p>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center text-brand-600 mb-3 shadow-sm">
-                  <Icon name="upload-cloud" size={24} />
+              ) : fileName ? (
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600 mb-3 shadow-sm">
+                    <Icon name="check" size={24} />
+                  </div>
+                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{fileName}</p>
+                  <p className="text-[10px] text-slate-400">File berhasil dimuat. Klik atau seret file lain untuk mengganti.</p>
                 </div>
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Unggah File Excel LHP</p>
-                <p className="text-[10px] text-slate-400">Seret & taruh berkas di sini atau klik untuk menelusuri folder</p>
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center text-brand-600 mb-3 shadow-sm">
+                    <Icon name="upload-cloud" size={24} />
+                  </div>
+                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Unggah File Excel LHP</p>
+                  <p className="text-[10px] text-slate-400">Seret & taruh berkas di sini atau klik untuk menelusuri folder</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Table Preview */}
           {regionTotals ? (
