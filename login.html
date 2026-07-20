@@ -2641,7 +2641,7 @@
                     var data = dataset.data[index];
                     if (data > 0) {
                       ctx.save();
-                      ctx.fillStyle = i === 0 ? '#000000' : '#ef4444';
+                      ctx.fillStyle = i === 0 ? (isDark ? '#cbd5e1' : '#1e293b') : '#ef4444';
                       ctx.font = 'bold 11px sans-serif';
                       ctx.textAlign = 'center';
                       ctx.textBaseline = 'bottom';
@@ -2655,30 +2655,66 @@
               }
             };
 
+            var isHarian = nationalChartActiveTab === 'harian';
+            var chartDatasets = [];
+
+            if (isHarian) {
+              chartDatasets = [
+                {
+                  label: 'Realisasi/Aktual: Total Kirim TBS ke PKS (Ton)',
+                  data: chartRealData,
+                  borderColor: '#10b981',
+                  backgroundColor: gradientReal,
+                  fill: true,
+                  tension: 0.4,
+                  borderWidth: 3,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  pointBackgroundColor: '#ffffff',
+                  pointBorderColor: '#10b981',
+                  pointBorderWidth: 2
+                },
+                {
+                  label: 'RKAP: Target Produksi TBS (Ton)',
+                  data: chartEstData,
+                  borderColor: '#ef4444',
+                  backgroundColor: gradientEst,
+                  fill: true,
+                  borderDash: [5, 5],
+                  tension: 0.4,
+                  borderWidth: 2,
+                  pointRadius: 0,
+                  pointHoverRadius: 0
+                }
+              ];
+            } else {
+              chartDatasets = [
+                {
+                  label: 'Realisasi/Aktual: Total Kirim TBS ke PKS (Ton)',
+                  data: chartRealData,
+                  backgroundColor: 'rgba(16, 185, 129, 0.75)', // Green
+                  borderColor: '#10b981',
+                  borderWidth: 1,
+                  borderRadius: 4,
+                  borderSkipped: false
+                },
+                {
+                  label: 'RKAP: Target Produksi TBS (Ton)',
+                  data: chartEstData,
+                  backgroundColor: 'rgba(239, 68, 68, 0.15)', // Red tint
+                  borderColor: '#ef4444',
+                  borderWidth: 2,
+                  borderRadius: 4,
+                  borderSkipped: false
+                }
+              ];
+            }
+
             dailyNationalChart = new Chart(chartCtx, {
-              type: 'bar',
+              type: isHarian ? 'line' : 'bar',
               data: {
                 labels: chartLabels,
-                datasets: [
-                  {
-                    label: 'Realisasi/Aktual: Total Kirim TBS ke PKS (Ton)',
-                    data: chartRealData,
-                    backgroundColor: 'rgba(16, 185, 129, 0.75)', // Green
-                    borderColor: '#10b981',
-                    borderWidth: 1,
-                    borderRadius: 4,
-                    borderSkipped: false
-                  },
-                  {
-                    label: 'RKAP: Target Produksi TBS (Ton)',
-                    data: chartEstData,
-                    backgroundColor: 'rgba(239, 68, 68, 0.15)', // Red tint
-                    borderColor: '#ef4444',
-                    borderWidth: 2,
-                    borderRadius: 4,
-                    borderSkipped: false
-                  }
-                ]
+                datasets: chartDatasets
               },
               options: {
                 responsive: true,
