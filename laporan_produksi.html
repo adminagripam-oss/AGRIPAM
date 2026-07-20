@@ -2095,13 +2095,13 @@
               // ── PEMBACAAN DINAMIS KHUSUS LHP ──
               // Karena baris subtotal di LHP hasil export seringkali kosong datanya,
               // kita loop semua baris data kebun (dimulai setelah baris header)
-              // Kolom B (index 1) = Regional, Kolom G (index 6) = Produksi Kg Real Hari Ini
+              // Kolom B (index 1) = Regional, Kolom L (index 11) = Kg Panen
               for (let r = 5; r < rows.length; r++) {
                 const row = rows[r];
                 if (!row || !Array.isArray(row)) continue;
 
                 const rawReg = row[1]; // Kolom B
-                let rawVal = row[6]; // Kolom G
+                let rawVal = row[11]; // Kolom L
 
                 if (!rawReg) continue;
 
