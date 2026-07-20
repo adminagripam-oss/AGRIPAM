@@ -42,9 +42,9 @@ module.exports = async (req, res) => {
       try {
         const buffer = Buffer.from(p.fileData, 'base64');
 
-        // Validasi ukuran berkas di backend (Maksimal 5 MB)
-        if (buffer.length > 5 * 1024 * 1024) {
-          return res.json({ success: false, message: 'Gagal: Ukuran file melebihi batas maksimal 5 MB.' });
+        // Validasi ukuran berkas di backend (Maksimal 50 MB)
+        if (buffer.length > 50 * 1024 * 1024) {
+          return res.json({ success: false, message: 'Gagal: Ukuran file melebihi batas maksimal 50 MB.' });
         }
 
         const { data: uploadData, error: uploadError } = await supabase.storage
