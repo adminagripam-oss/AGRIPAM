@@ -1838,10 +1838,18 @@
                 document.getElementById("adminApprovalLoading").classList.add("hidden");
                 let allRequests = [];
                 if (resDelete.success && resDelete.data) {
-                    resDelete.data.forEach(d => { d._api = 'delete'; allRequests.push(d); });
+                    resDelete.data.forEach(d => { 
+                        d._api = 'delete'; 
+                        if (d.type === 'UNLOCK_REALISASI') {
+                            d.displayType = 'Buka Akses Realisasi';
+                        } else {
+                            d.displayType = 'Hapus ' + d.type;
+                        }
+                        allRequests.push(d); 
+                    });
                 }
                 if (resUnlock.success && resUnlock.data) {
-                    resUnlock.data.forEach(d => { d._api = 'unlock'; d.type = 'Buka Akses Estimasi'; allRequests.push(d); });
+                    resUnlock.data.forEach(d => { d._api = 'unlock'; d.displayType = 'Buka Akses Estimasi'; allRequests.push(d); });
                 }
                 
                 if (allRequests.length > 0) {
@@ -1859,7 +1867,7 @@
                         const typeColor = req._api === 'unlock' ? 'text-amber-600 dark:text-amber-400' : 'text-primary dark:text-emerald-400';
                         
                         tr.innerHTML = `
-                            <td class="p-3 text-sm font-bold ${typeColor}">${req.type}</td>
+                            <td class="p-3 text-sm font-bold ${typeColor}">${req.displayType || req.type}</td>
                             <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.region}</td>
                             <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.tanggal}</td>
                             <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.jam || '-'}</td>

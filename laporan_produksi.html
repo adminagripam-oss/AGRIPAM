@@ -59,8 +59,17 @@
   <meta name="description"
     content="Dashboard administratif Laporan Produksi On-Farm AGRI-PAM — monitoring realisasi dan estimasi panen harian per regional." />
 
-  <!-- Tailwind CSS CDN -->
+  <!-- TailwindCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Flatpickr (Shadcn Date Picker) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <!-- Shadcn Overrides (Alerts, Date, Select) -->
+  <link rel="stylesheet" href="shadcn_overrides.css">
+  <script src="shadcn_overrides.js"></script>
+
   <script>
     tailwind.config = {
       darkMode: ['class', '[data-theme="dark"]'],
@@ -2362,7 +2371,8 @@
       };
 
       const handleDeleteFromDb = async () => {
-        if (!confirm("Apakah Anda yakin ingin menghapus data PalmOps tanggal ini dari database?")) return;
+        const confirmed = await window.showConfirm("Konfirmasi Hapus", "Apakah Anda yakin ingin menghapus data PalmOps tanggal ini dari database?");
+        if (!confirmed) return;
 
         setSaving(true);
         try {
@@ -3361,7 +3371,8 @@
       };
 
       const deleteLaporan = async () => {
-        if (!confirm("Apakah Anda yakin ingin menghapus data laporan untuk tanggal ini? Anda harus mengunggah ulang file LHP jika ingin menampilkan datanya lagi.")) return;
+        const confirmed = await window.showConfirm("Konfirmasi Hapus", "Apakah Anda yakin ingin menghapus data laporan untuk tanggal ini?\nAnda harus mengunggah ulang file LHP jika ingin menampilkan datanya lagi.");
+        if (!confirmed) return;
         setIsSaving(true);
         try {
           const sessionRaw = sessionStorage.getItem("agripam_session");

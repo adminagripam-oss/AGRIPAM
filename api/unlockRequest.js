@@ -35,23 +35,45 @@ module.exports = async (req, res) => {
 
   if (actionCall === 'checkUnlock') {
     const tanggal = (p.tanggal || '').trim();
+    const jam = (p.jam || '').trim();
     if (!tanggal || !region) {
       return res.json({ success: false, message: 'Data tidak lengkap.' });
     }
     
-    const { data, error } = await supabase.from('unlock_requests')
-      .select('status')
-      .eq('region', region)
-      .eq('tanggal', tanggal)
-      .order('requested_at', { ascending: false })
-      .limit(1);
+    if (jam) {
+      // Check Realisasi unlock in delete_requests table
+      const { data, error } = await supabase.from('delete_requests')
+        .select('status')
+        .eq('type', 'UNLOCK_REALISASI')
+        .eq('region', region)
+        .eq('tanggal', tanggal)
+        .eq('jam', jam)
+        .order('requested_at', { ascending: false })
+        .limit(1);
 
-    if (error) return res.json({ success: false, message: 'Gagal mengecek status unlock: ' + error.message });
+      if (error) return res.json({ success: false, message: 'Gagal mengecek status unlock: ' + error.message });
 
-    if (data && data.length > 0) {
-      return res.json({ success: true, status: data[0].status });
+      if (data && data.length > 0) {
+        return res.json({ success: true, status: data[0].status });
+      } else {
+        return res.json({ success: true, status: 'NONE' });
+      }
     } else {
-      return res.json({ success: true, status: 'NONE' });
+      // Check Estimasi unlock in unlock_requests table
+      const { data, error } = await supabase.from('unlock_requests')
+        .select('status')
+        .eq('region', region)
+        .eq('tanggal', tanggal)
+        .order('requested_at', { ascending: false })
+        .limit(1);
+
+      if (error) return res.json({ success: false, message: 'Gagal mengecek status unlock: ' + error.message });
+
+      if (data && data.length > 0) {
+        return res.json({ success: true, status: data[0].status });
+      } else {
+        return res.json({ success: true, status: 'NONE' });
+      }
     }
   }
 

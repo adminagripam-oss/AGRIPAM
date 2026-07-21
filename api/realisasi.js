@@ -137,14 +137,31 @@ module.exports = async (req, res) => {
     const diffMins = Math.abs(diffMs / (60 * 1000));
     
     if (diffMins > 90) {
-       const localNow = new Date(Date.now() + offsetMs);
-       const localNowStr = localNow.getUTCHours().toString().padStart(2, '0') + ':' + localNow.getUTCMinutes().toString().padStart(2, '0');
-       const tzName = isWita ? 'WITA' : 'WIB';
-       
-       return res.json({
-         success: false,
-         message: `❌ Gagal: Jam ${jam} hanya dapat diisi antara pukul ${formatTimeWindow(jam)} ${tzName}. Waktu server Anda saat ini adalah ${localNowStr} ${tzName}.`
-       });
+       // Cek apakah ada request UNLOCK_REALISASI yang disetujui (APPROVED)
+       const { data: unlockData, error: unlockError } = await supabase.from('delete_requests')
+         .select('status')
+         .eq('type', 'UNLOCK_REALISASI')
+         .eq('region', region)
+         .eq('tanggal', tanggal)
+         .eq('jam', jam)
+         .order('requested_at', { ascending: false })
+         .limit(1);
+
+       let isUnlocked = false;
+       if (!unlockError && unlockData && unlockData.length > 0 && unlockData[0].status === 'APPROVED') {
+         isUnlocked = true;
+       }
+
+       if (!isUnlocked) {
+         const localNow = new Date(Date.now() + offsetMs);
+         const localNowStr = localNow.getUTCHours().toString().padStart(2, '0') + ':' + localNow.getUTCMinutes().toString().padStart(2, '0');
+         const tzName = isWita ? 'WITA' : 'WIB';
+         
+         return res.json({
+           success: false,
+           message: `❌ Gagal: Jam ${jam} hanya dapat diisi antara pukul ${formatTimeWindow(jam)} ${tzName}. Waktu server Anda saat ini adalah ${localNowStr} ${tzName}.`
+         });
+       }
     }
 
     const tonaseNum = parseFloat(tonase);

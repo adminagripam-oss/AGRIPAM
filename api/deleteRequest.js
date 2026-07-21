@@ -25,15 +25,15 @@ module.exports = async (req, res) => {
     }
 
     let query = supabase.from('delete_requests').select('id').eq('type', type).eq('region', region).eq('tanggal', tanggal).eq('status', 'PENDING');
-    if (type === 'REALISASI' && jam) query = query.eq('jam', jam);
+    if ((type === 'REALISASI' || type === 'UNLOCK_REALISASI') && jam) query = query.eq('jam', jam);
 
     const { data: existing } = await query.maybeSingle();
-    if (existing) return res.json({ success: false, message: 'Permintaan hapus data untuk ini sudah diajukan dan sedang menunggu persetujuan Admin.' });
+    if (existing) return res.json({ success: false, message: 'Permintaan untuk ini sudah diajukan dan sedang menunggu persetujuan Admin.' });
 
-    const { error } = await supabase.from('delete_requests').insert({ type, region, tanggal, jam: type === 'REALISASI' ? jam : null, status: 'PENDING' });
-    if (error) return res.json({ success: false, message: 'Gagal mengirim permintaan hapus: ' + error.message });
+    const { error } = await supabase.from('delete_requests').insert({ type, region, tanggal, jam: (type === 'REALISASI' || type === 'UNLOCK_REALISASI') ? jam : null, status: 'PENDING' });
+    if (error) return res.json({ success: false, message: 'Gagal mengirim permintaan: ' + error.message });
 
-    return res.json({ success: true, message: 'Permintaan hapus data telah dikirim ke Admin untuk diverifikasi.' });
+    return res.json({ success: true, message: 'Permintaan telah dikirim ke Admin untuk diverifikasi.' });
   }
 
   if (actionCall === 'getDeleteRequests') {
