@@ -12,6 +12,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- SheetJS for Excel export -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Shadcn Overrides (Alerts, Dialogs) -->
+    <link rel="stylesheet" href="shadcn_overrides.css">
+    <script src="shadcn_overrides.js"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@600&amp;display=swap"
         rel="stylesheet" />
@@ -1894,9 +1897,20 @@
             if (!raw) return;
             const s = JSON.parse(raw);
 
-            const confirmMsg = actionStr === 'APPROVE' ? "Apakah Anda yakin ingin MENERIMA permintaan hapus data ini?\nData akan dihapus secara permanen." : "Apakah Anda yakin ingin MENOLAK permintaan hapus data ini?";
-            if (!confirm(confirmMsg)) return;
+            let confirmMsg = actionStr === 'APPROVE' ? "Apakah Anda yakin ingin MENERIMA permintaan ini?" : "Apakah Anda yakin ingin MENOLAK permintaan ini?";
+            let dialogType = actionStr === 'APPROVE' ? 'success' : 'destructive';
+            
+            // If showConfirm is available, use it, otherwise fallback to native confirm
+            if (window.showConfirm) {
+                window.showConfirm(actionStr === 'APPROVE' ? "Konfirmasi Persetujuan" : "Konfirmasi Penolakan", confirmMsg, dialogType).then(confirmed => {
+                    if (confirmed) executeResolveDelete(id, actionStr, s);
+                });
+            } else {
+                if (confirm(confirmMsg)) executeResolveDelete(id, actionStr, s);
+            }
+        }
 
+        function executeResolveDelete(id, actionStr, s) {
             if (window.parent && window.parent.setLoading) {
                 window.parent.setLoading(true, "Memproses persetujuan...");
             }
@@ -1929,9 +1943,19 @@
             if (!raw) return;
             const s = JSON.parse(raw);
 
-            const confirmMsg = actionStr === 'APPROVE' ? "Apakah Anda yakin ingin MENERIMA permintaan Buka Akses ini?" : "Apakah Anda yakin ingin MENOLAK permintaan Buka Akses ini?";
-            if (!confirm(confirmMsg)) return;
+            let confirmMsg = actionStr === 'APPROVE' ? "Apakah Anda yakin ingin MENERIMA permintaan buka akses ini?" : "Apakah Anda yakin ingin MENOLAK permintaan buka akses ini?";
+            let dialogType = actionStr === 'APPROVE' ? 'success' : 'destructive';
+            
+            if (window.showConfirm) {
+                window.showConfirm(actionStr === 'APPROVE' ? "Konfirmasi Persetujuan" : "Konfirmasi Penolakan", confirmMsg, dialogType).then(confirmed => {
+                    if (confirmed) executeResolveUnlock(id, actionStr, s);
+                });
+            } else {
+                if (confirm(confirmMsg)) executeResolveUnlock(id, actionStr, s);
+            }
+        }
 
+        function executeResolveUnlock(id, actionStr, s) {
             if (window.parent && window.parent.setLoading) {
                 window.parent.setLoading(true, "Memproses persetujuan...");
             }
