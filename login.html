@@ -1719,7 +1719,7 @@
 
   <!-- TailwindCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
+
   <!-- Flatpickr (Shadcn Date Picker) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -1876,20 +1876,57 @@
     }
 
     /* Transition Tab classes */
-    .bg-background { background-color: #f8fafc; }
-    .text-muted-foreground { color: #64748b; }
-    .hover\:text-foreground:hover { color: #1e293b; }
-    .hover\:bg-muted:hover { background-color: #f1f5f9; }
-    .bg-primary { background-color: #16a34a; }
-    .text-primary-foreground { color: #ffffff; }
+    .bg-background {
+      background-color: #f8fafc;
+    }
 
-    [data-theme="dark"] .bg-background { background-color: #0f172a; }
-    [data-theme="dark"] .text-muted-foreground { color: #94a3b8; }
-    [data-theme="dark"] .hover\:text-foreground:hover { color: #f8fafc; }
-    [data-theme="dark"] .hover\:bg-muted:hover { background-color: #334155; }
-    [data-theme="dark"] .bg-primary { background-color: #22c55e; }
-    [data-theme="dark"] .text-primary-foreground { color: #ffffff; }
-    [data-theme="dark"] .border { border-color: #334155 !important; }
+    .text-muted-foreground {
+      color: #64748b;
+    }
+
+    .hover\:text-foreground:hover {
+      color: #1e293b;
+    }
+
+    .hover\:bg-muted:hover {
+      background-color: #f1f5f9;
+    }
+
+    .bg-primary {
+      background-color: #16a34a;
+    }
+
+    .text-primary-foreground {
+      color: #ffffff;
+    }
+
+    [data-theme="dark"] .bg-background {
+      background-color: #0f172a;
+    }
+
+    [data-theme="dark"] .text-muted-foreground {
+      color: #94a3b8;
+    }
+
+    [data-theme="dark"] .hover\:text-foreground:hover {
+      color: #f8fafc;
+    }
+
+    [data-theme="dark"] .hover\:bg-muted:hover {
+      background-color: #334155;
+    }
+
+    [data-theme="dark"] .bg-primary {
+      background-color: #22c55e;
+    }
+
+    [data-theme="dark"] .text-primary-foreground {
+      color: #ffffff;
+    }
+
+    [data-theme="dark"] .border {
+      border-color: #334155 !important;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -2327,9 +2364,12 @@
                   </div>
                 </div>
                 <div class="flex gap-1 bg-background rounded-lg p-1 border">
-                  <button type="button" id="btnTabHarian" onclick="changeNationalChartTab('harian')" class="px-3 py-1 rounded text-[10px] font-semibold transition-all bg-primary text-primary-foreground shadow">Harian</button>
-                  <button type="button" id="btnTabMingguan" onclick="changeNationalChartTab('mingguan')" class="px-3 py-1 rounded text-[10px] font-semibold transition-all text-muted-foreground hover:text-foreground hover:bg-muted">Mingguan</button>
-                  <button type="button" id="btnTabBulanan" onclick="changeNationalChartTab('bulanan')" class="px-3 py-1 rounded text-[10px] font-semibold transition-all text-muted-foreground hover:text-foreground hover:bg-muted">Bulanan</button>
+                  <button type="button" id="btnTabHarian" onclick="changeNationalChartTab('harian')"
+                    class="px-3 py-1 rounded text-[10px] font-semibold transition-all bg-primary text-primary-foreground shadow">Harian</button>
+                  <button type="button" id="btnTabMingguan" onclick="changeNationalChartTab('mingguan')"
+                    class="px-3 py-1 rounded text-[10px] font-semibold transition-all text-muted-foreground hover:text-foreground hover:bg-muted">Mingguan</button>
+                  <button type="button" id="btnTabBulanan" onclick="changeNationalChartTab('bulanan')"
+                    class="px-3 py-1 rounded text-[10px] font-semibold transition-all text-muted-foreground hover:text-foreground hover:bg-muted">Bulanan</button>
                 </div>
               </div>
             </div>
@@ -2437,21 +2477,21 @@
 
       function changeNationalChartTab(tab) {
         nationalChartActiveTab = tab;
-        
+
         // Update button styles
         const btnHarian = document.getElementById('btnTabHarian');
         const btnMingguan = document.getElementById('btnTabMingguan');
         const btnBulanan = document.getElementById('btnTabBulanan');
-        
+
         if (!btnHarian || !btnMingguan || !btnBulanan) return;
-        
+
         const activeClasses = ['bg-primary', 'text-primary-foreground', 'shadow'];
         const inactiveClasses = ['text-muted-foreground', 'hover:text-foreground', 'hover:bg-muted'];
-        
+
         [btnHarian, btnMingguan, btnBulanan].forEach(btn => {
           btn.classList.remove(...activeClasses, ...inactiveClasses);
         });
-        
+
         if (tab === 'harian') {
           btnHarian.classList.add(...activeClasses);
           btnMingguan.classList.add(...inactiveClasses);
@@ -2465,7 +2505,7 @@
           btnMingguan.classList.add(...inactiveClasses);
           btnBulanan.classList.add(...activeClasses);
         }
-        
+
         updateDailyNationalChart();
       }
 
@@ -2476,7 +2516,7 @@
         // Read selected date from filterTanggalStart, or fallback to WIB Today
         var refDate = document.getElementById("filterTanggalStart") ? document.getElementById("filterTanggalStart").value : "";
         var refDateObj;
-        
+
         if (refDate) {
           var parts = refDate.split('-');
           refDateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
@@ -2489,7 +2529,7 @@
         var yyyy = refDateObj.getFullYear();
         var MM = String(refDateObj.getMonth() + 1).padStart(2, '0');
         var startOfMonth = yyyy + "-" + MM + "-01";
-        
+
         var lastDay = new Date(yyyy, refDateObj.getMonth() + 1, 0).getDate();
         var endOfMonth = yyyy + "-" + MM + "-" + String(lastDay).padStart(2, '0');
 
@@ -2530,7 +2570,7 @@
             if (nationalChartActiveTab === 'harian') {
               xAxisTitle = currentMonthName;
               chartLabels = labels;
-              
+
               dates.forEach(function (dt, idx) {
                 var sumReal = 0;
                 realRecords.forEach(function (r) {
@@ -2549,7 +2589,7 @@
                 });
                 estimasiData[idx] = sumEst;
               });
-              
+
               chartRealData = realisasiData;
               chartEstData = estimasiData;
 
@@ -4392,20 +4432,20 @@
 
       if (s && s.region) {
         var witaRegions = [
-          'Kalimantan Selatan 1', 'Kalimantan Selatan 2', 
-          'Kalimantan Timur', 'Kalimantan Utara', 
+          'Kalimantan Selatan 1', 'Kalimantan Selatan 2',
+          'Kalimantan Timur', 'Kalimantan Utara',
           'Sulawesi Tenggara', 'Sulawesi Tengah'
         ];
         isWita = witaRegions.includes(s.region);
         tzName = isWita ? 'WITA' : 'WIB';
         var offsetMs = (isWita ? 8 : 7) * 60 * 60 * 1000;
-        
+
         var timeParts = jam.split('.');
         var h = parseInt(timeParts[0], 10);
         var m = parseInt(timeParts[1], 10);
         var totalMins = h * 60 + m;
-        
-        var toStr = function(mins) {
+
+        var toStr = function (mins) {
           var hh = Math.floor(mins / 60);
           var mm = mins % 60;
           if (hh < 0) hh += 24;
@@ -4413,14 +4453,14 @@
           return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
         };
         windowStr = toStr(totalMins - 90) + ' - ' + toStr(totalMins + 90);
-        
+
         var tanggal = document.getElementById("tanggal").value;
         if (tanggal) {
           var dateParts = tanggal.split('-');
           var yyyy = parseInt(dateParts[0], 10);
           var mmNum = parseInt(dateParts[1], 10) - 1;
           var dd = parseInt(dateParts[2], 10);
-          
+
           var targetUtcTimestamp = Date.UTC(yyyy, mmNum, dd, h, m, 0);
           var targetRealUnixTimestamp = targetUtcTimestamp - offsetMs;
           var diffMins = Math.abs((Date.now() - targetRealUnixTimestamp) / (60 * 1000));
@@ -4436,15 +4476,15 @@
         msg = "Jam " + jam + " belum ada data.";
         hint.style.color = outOfWindow ? "#dc3545" : "#28a745";
       }
-      
+
       if (outOfWindow) {
         msg += "<br/><br/>⚠️ <strong>Waktu pengisian di luar batas!</strong><br/>Jam " + jam + " hanya dapat diisi pada pukul " + windowStr + " " + tzName + ".";
       } else if (windowStr) {
         msg += "<br/><span class='text-xs opacity-70'>(Batas pengisian: " + windowStr + " " + tzName + ")</span>";
       }
-      
+
       // Render immediately
-      var renderMsg = function(m, btnHtml) {
+      var renderMsg = function (m, btnHtml) {
         if (window.renderInlineAlert) {
           var inlineAlert = window.renderInlineAlert(m);
           if (inlineAlert) {
@@ -4462,29 +4502,29 @@
       if (outOfWindow) {
         var reqUrl = "/api/unlockRequest?action=checkUnlock&tanggal=" + tanggal + "&jam=" + jam + "&region=" + encodeURIComponent(s.region) + "&token=" + encodeURIComponent(s.token);
         fetch(reqUrl).then(res => res.json()).then(data => {
-            var st = data.status || 'NONE';
-            if (st === 'APPROVED') {
-               outOfWindow = false; // Bypass
-               msg = (currentJamData.hasOwnProperty(jam) ? "<strong>Jam " + jam + " sudah terisi: " + currentJamData[jam] + " Ton.</strong>" : "Jam " + jam + " belum ada data.") + "<br/><br/>✅ <strong>Akses Khusus Disetujui Admin.</strong>";
-               hint.innerHTML = msg;
-               hint.style.color = "#28a745";
-            } else {
-               var btnText = st === 'PENDING' ? "Menunggu Persetujuan" : "Ajukan Request";
-               var btnDisabled = st === 'PENDING' ? "disabled" : "";
-               var btnAction = st === 'PENDING' ? "" : `onclick="requestUnlockRealisasi('${tanggal}', '${jam}')"`;
-               
-               var btnHtml = `
+          var st = data.status || 'NONE';
+          if (st === 'APPROVED') {
+            outOfWindow = false; // Bypass
+            msg = (currentJamData.hasOwnProperty(jam) ? "<strong>Jam " + jam + " sudah terisi: " + currentJamData[jam] + " Ton.</strong>" : "Jam " + jam + " belum ada data.") + "<br/><br/>✅ <strong>Akses Khusus Disetujui Admin.</strong>";
+            hint.innerHTML = msg;
+            hint.style.color = "#28a745";
+          } else {
+            var btnText = st === 'PENDING' ? "Menunggu Persetujuan" : "Ajukan Request";
+            var btnDisabled = st === 'PENDING' ? "disabled" : "";
+            var btnAction = st === 'PENDING' ? "" : `onclick="requestUnlockRealisasi('${tanggal}', '${jam}')"`;
+
+            var btnHtml = `
                  <button ${btnDisabled} ${btnAction} type="button" class="mt-3 inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 transition-colors hover:bg-slate-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-50/90 dark:focus-visible:ring-slate-300">
                    ${btnText}
                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2 h-4 w-4"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                  </button>
                `;
-               renderMsg(msg, btnHtml);
-            }
+            renderMsg(msg, btnHtml);
+          }
         }).catch(e => console.error(e));
       }
     }
-    
+
     function requestUnlockRealisasi(tanggal, jam) {
       var s = loadSession();
       if (!s) return;
@@ -4503,17 +4543,17 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       })
-      .then(res => res.json())
-      .catch(e => ({ success: false, message: "Terjadi kesalahan jaringan." }))
-      .then(data => {
-        setLoading(false);
-        if (data.success) {
-          alert(data.message || "Permohonan berhasil diajukan.");
-          updateJamHint();
-        } else {
-          alert("Gagal: " + (data.message || "Permohonan ditolak."));
-        }
-      });
+        .then(res => res.json())
+        .catch(e => ({ success: false, message: "Terjadi kesalahan jaringan." }))
+        .then(data => {
+          setLoading(false);
+          if (data.success) {
+            alert(data.message || "Permohonan berhasil diajukan.");
+            updateJamHint();
+          } else {
+            alert("Gagal: " + (data.message || "Permohonan ditolak."));
+          }
+        });
     }
 
     function formatNumberId(num) {

@@ -230,7 +230,13 @@ window.initShadcnDate = function() {
     input.className = input.className.replace(/p-2/g, '').replace(/bg-gray-100/g, 'bg-white');
     input.classList.add('w-full', 'pl-10', 'pr-3', 'py-2', 'h-10', 'rounded-xl', 'border', 'border-gray-200', 'text-sm', 'font-medium', 'text-slate-700', 'transition-colors', 'focus:outline-none', 'focus:ring-2', 'focus:ring-green-500');
     
-    if (!input.disabled && !input.readOnly && input.type === 'date') {
+    // Hide native icon and convert to text to prevent internal shadow DOM from ignoring padding
+    const isDate = input.type === 'date' || input.type === 'month';
+    if (isDate) {
+      input.setAttribute('type', 'text');
+    }
+    
+    if (!input.disabled && !input.readOnly) {
       input.classList.add('cursor-pointer', 'hover:bg-slate-50');
       flatpickr(input, {
         dateFormat: "Y-m-d",
