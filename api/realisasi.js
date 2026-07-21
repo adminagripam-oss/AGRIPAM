@@ -5,6 +5,28 @@ const { applyCors } = require('./lib/cors');
 const MIN_TONASE = 0;
 const MAX_TONASE = 5000;
 
+const WITA_REGIONS = [
+  'Kalimantan Selatan 1', 'Kalimantan Selatan 2', 
+  'Kalimantan Timur', 'Kalimantan Utara', 
+  'Sulawesi Tenggara', 'Sulawesi Tengah'
+];
+
+function formatTimeWindow(jamStr) {
+  const [h, m] = jamStr.split('.').map(Number);
+  const totalMins = h * 60 + m;
+  const minStart = totalMins - 90;
+  const minEnd = totalMins + 90;
+  
+  const toStr = (mins) => {
+    let hh = Math.floor(mins / 60);
+    let mm = mins % 60;
+    if (hh < 0) hh += 24;
+    if (hh >= 24) hh -= 24;
+    return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+  };
+  return `${toStr(minStart)} - ${toStr(minEnd)}`;
+}
+
 /**
  * Kembalikan prefix bulan berjalan dalam zona WIB (UTC+7).
  * Contoh: '2026-07'
@@ -96,6 +118,33 @@ module.exports = async (req, res) => {
         success: false,
         message: `❌ Input ditolak! Tanggal yang Anda masukkan (${tanggal}) berada di luar bulan berjalan. Hanya data bulan ${bulanIni} yang diizinkan.`
       });
+    }
+
+    // ✅ Validasi Batas Waktu Input Per-Jam berdasarkan Zona Waktu
+    const isWita = WITA_REGIONS.includes(region);
+    const offsetHours = isWita ? 8 : 7;
+    const offsetMs = offsetHours * 60 * 60 * 1000;
+    
+    // Parse tanggal and jam
+    const [yyyy, mm, dd] = tanggal.split('-').map(Number);
+    const [hh, min] = jam.split('.').map(Number);
+    
+    // Target time in true UTC timestamp
+    const targetUtcTimestamp = Date.UTC(yyyy, mm - 1, dd, hh, min, 0);
+    const targetRealUnixTimestamp = targetUtcTimestamp - offsetMs;
+    
+    const diffMs = Date.now() - targetRealUnixTimestamp;
+    const diffMins = Math.abs(diffMs / (60 * 1000));
+    
+    if (diffMins > 90) {
+       const localNow = new Date(Date.now() + offsetMs);
+       const localNowStr = localNow.getUTCHours().toString().padStart(2, '0') + ':' + localNow.getUTCMinutes().toString().padStart(2, '0');
+       const tzName = isWita ? 'WITA' : 'WIB';
+       
+       return res.json({
+         success: false,
+         message: `❌ Gagal: Jam ${jam} hanya dapat diisi antara pukul ${formatTimeWindow(jam)} ${tzName}. Waktu server Anda saat ini adalah ${localNowStr} ${tzName}.`
+       });
     }
 
     const tonaseNum = parseFloat(tonase);

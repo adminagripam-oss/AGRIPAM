@@ -4374,14 +4374,67 @@
       var hint = document.getElementById("jamHint");
       if (!jam) { hint.textContent = ""; return; }
 
-      if (currentJamData.hasOwnProperty(jam)) {
-        hint.textContent = "Jam " + jam + " sudah terisi: " + currentJamData[jam] + " Ton. "
-          + "Gunakan 'Hapus Jam Ini' jika ingin merevisi.";
-        hint.style.color = "#28a745";
-      } else {
-        hint.textContent = "Jam " + jam + " belum ada data.";
-        hint.style.color = "#28a745";
+      // Cek Jendela Waktu
+      var s = loadSession();
+      var isWita = false;
+      var windowStr = "";
+      var tzName = "WIB";
+      var outOfWindow = false;
+
+      if (s && s.region) {
+        var witaRegions = [
+          'Kalimantan Selatan 1', 'Kalimantan Selatan 2', 
+          'Kalimantan Timur', 'Kalimantan Utara', 
+          'Sulawesi Tenggara', 'Sulawesi Tengah'
+        ];
+        isWita = witaRegions.includes(s.region);
+        tzName = isWita ? 'WITA' : 'WIB';
+        var offsetMs = (isWita ? 8 : 7) * 60 * 60 * 1000;
+        
+        var timeParts = jam.split('.');
+        var h = parseInt(timeParts[0], 10);
+        var m = parseInt(timeParts[1], 10);
+        var totalMins = h * 60 + m;
+        
+        var toStr = function(mins) {
+          var hh = Math.floor(mins / 60);
+          var mm = mins % 60;
+          if (hh < 0) hh += 24;
+          if (hh >= 24) hh -= 24;
+          return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+        };
+        windowStr = toStr(totalMins - 90) + ' - ' + toStr(totalMins + 90);
+        
+        var tanggal = document.getElementById("tanggal").value;
+        if (tanggal) {
+          var dateParts = tanggal.split('-');
+          var yyyy = parseInt(dateParts[0], 10);
+          var mmNum = parseInt(dateParts[1], 10) - 1;
+          var dd = parseInt(dateParts[2], 10);
+          
+          var targetUtcTimestamp = Date.UTC(yyyy, mmNum, dd, h, m, 0);
+          var targetRealUnixTimestamp = targetUtcTimestamp - offsetMs;
+          var diffMins = Math.abs((Date.now() - targetRealUnixTimestamp) / (60 * 1000));
+          outOfWindow = diffMins > 90;
+        }
       }
+
+      var msg = "";
+      if (currentJamData.hasOwnProperty(jam)) {
+        msg = "Jam " + jam + " sudah terisi: " + currentJamData[jam] + " Ton. Gunakan 'Hapus Jam Ini' jika ingin merevisi.";
+        hint.style.color = outOfWindow ? "#dc3545" : "#28a745";
+      } else {
+        msg = "Jam " + jam + " belum ada data.";
+        hint.style.color = outOfWindow ? "#dc3545" : "#28a745";
+      }
+      
+      if (outOfWindow) {
+        msg += " ⚠️ Waktu pengisian di luar batas! Jam " + jam + " hanya dapat diisi pada pukul " + windowStr + " " + tzName + ".";
+      } else if (windowStr) {
+        msg += " (Batas pengisian: " + windowStr + " " + tzName + ")";
+      }
+      
+      hint.textContent = msg;
     }
 
     function formatNumberId(num) {
