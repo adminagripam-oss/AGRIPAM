@@ -1745,8 +1745,8 @@
                 <button
                   onClick={() => setActiveTab('harian')}
                   className={`px-3 py-1 rounded text-[10px] font-semibold transition-all ${activeTab === 'harian'
-                      ? 'bg-primary text-primary-foreground shadow'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    ? 'bg-primary text-primary-foreground shadow'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                     }`}
                 >
                   Harian
@@ -1754,8 +1754,8 @@
                 <button
                   onClick={() => setActiveTab('mingguan')}
                   className={`px-3 py-1 rounded text-[10px] font-semibold transition-all ${activeTab === 'mingguan'
-                      ? 'bg-primary text-primary-foreground shadow'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    ? 'bg-primary text-primary-foreground shadow'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                     }`}
                 >
                   Mingguan
@@ -1763,8 +1763,8 @@
                 <button
                   onClick={() => setActiveTab('bulanan')}
                   className={`px-3 py-1 rounded text-[10px] font-semibold transition-all ${activeTab === 'bulanan'
-                      ? 'bg-primary text-primary-foreground shadow'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    ? 'bg-primary text-primary-foreground shadow'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                     }`}
                 >
                   Bulanan
@@ -1997,7 +1997,9 @@
     const REGION_ALIASES = {
       'sumut 1': 'Sumatera Utara 1',
       'sumut 2': 'Sumatera Utara 2 Ex Torganda',
+      'sumut 2 ex torganda': 'Sumatera Utara 2 Ex Torganda',
       'kalbar 1': 'Kalimantan Barat 1',
+      'kalbar 1 ex duta palma': 'Kalimantan Barat 1',
       'kalbar 2': 'Kalimantan Barat 2',
       'kalsel 1': 'Kalimantan Selatan 1',
       'kalsel 2': 'Kalimantan Selatan 2',
@@ -2013,7 +2015,9 @@
       'sumsel': 'Sumatera Selatan',
       'kalut': 'Kalimantan Utara',
       'kaltara': 'Kalimantan Utara',
-      'kaltim': 'Kalimantan Timur'
+      'kaltim': 'Kalimantan Timur',
+      'riau 1 ex duta palma': 'Riau 1',
+      'torganda 2 riau 4': 'Riau 4'
     };
 
     function findRegionMatch(rawName) {
@@ -2406,10 +2410,10 @@
           .filter(r => r.region === region)
           .reduce((sum, r) => sum + (parseFloat(r.tonase) || 0), 0);
 
-        const palmopsTotal = activePalmopsSource 
-          ? (typeof activePalmopsSource[region] === 'object' 
-              ? (activePalmopsSource[region]?.panen || 0) 
-              : (parseFloat(activePalmopsSource[region]) || 0))
+        const palmopsTotal = activePalmopsSource
+          ? (typeof activePalmopsSource[region] === 'object'
+            ? (activePalmopsSource[region]?.panen || 0)
+            : (parseFloat(activePalmopsSource[region]) || 0))
           : null;
         const hasExcelVal = palmopsTotal !== null;
 
@@ -3249,6 +3253,16 @@
         }
       };
 
+      const normalizeEstimasiData = (rawEstimasi) => {
+        if (!rawEstimasi) return {};
+        const normalized = {};
+        for (const key in rawEstimasi) {
+          const matched = findRegionMatch(key) || key;
+          normalized[matched] = rawEstimasi[key];
+        }
+        return normalized;
+      };
+
       // Fetch estimasi data when date changes (Fallback jika data belum tersimpan)
       const fetchEstimasi = async (date) => {
         setLoading(true);
@@ -3259,7 +3273,7 @@
           const res = await fetch(`/api/estimasi?action=getEstimasi&tanggal=${date}&region=ALL&token=${token}`);
           const json = await res.json();
           if (json.success) {
-            setDbEstimasi(json.allEstimasi || {});
+            setDbEstimasi(normalizeEstimasiData(json.allEstimasi || {}));
           } else {
             setDbEstimasi({});
           }
@@ -3283,7 +3297,7 @@
           if (json.success && json.exists && json.data) {
             setRegionTotals(json.data.regionTotals);
             setCustomRemarks(json.data.customRemarks || {});
-            setDbEstimasi(json.data.dbEstimasi || {});
+            setDbEstimasi(normalizeEstimasiData(json.data.dbEstimasi || {}));
             setIsDataSaved(true);
             setFileName("Data dimuat dari Database");
           } else {
@@ -3448,7 +3462,7 @@
             const estRes = await fetch(`/api/estimasi?action=getEstimasi&tanggal=${detectedDate}&region=ALL&token=${token}`);
             const estJson = await estRes.json();
             const activeEstimasi = estJson.success ? (estJson.allEstimasi || {}) : {};
-            setDbEstimasi(activeEstimasi);
+            setDbEstimasi(normalizeEstimasiData(activeEstimasi));
 
             // Compute LHP totals
             const totals = {};
@@ -3724,8 +3738,8 @@
               onDrop={handleDrop}
               onClick={triggerFileInput}
               className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center min-h-[140px] ${dragActive
-                  ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20'
-                  : 'border-slate-200 dark:border-slate-800 hover:border-brand-400 dark:hover:border-brand-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50'
+                ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20'
+                : 'border-slate-200 dark:border-slate-800 hover:border-brand-400 dark:hover:border-brand-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50'
                 }`}
             >
               <input
