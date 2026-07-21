@@ -2216,7 +2216,7 @@
           </section>
 
           <!-- ProductionTrends & Input Grid -->
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 items-start">
             <!-- Chart Area -->
             <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col">
               <div class="flex justify-between items-start mb-6">
@@ -4430,7 +4430,7 @@
 
       var msg = "";
       if (currentJamData.hasOwnProperty(jam)) {
-        msg = "Jam " + jam + " sudah terisi: " + currentJamData[jam] + " Ton. Gunakan 'Hapus Jam Ini' jika ingin merevisi.";
+        msg = "<strong>Jam " + jam + " sudah terisi: " + currentJamData[jam] + " Ton.</strong><br/>Gunakan 'Hapus Jam Ini' jika ingin merevisi.";
         hint.style.color = outOfWindow ? "#dc3545" : "#28a745";
       } else {
         msg = "Jam " + jam + " belum ada data.";
@@ -4438,9 +4438,9 @@
       }
       
       if (outOfWindow) {
-        msg += " ⚠️ Waktu pengisian di luar batas! Jam " + jam + " hanya dapat diisi pada pukul " + windowStr + " " + tzName + ".";
+        msg += "<br/><br/>⚠️ <strong>Waktu pengisian di luar batas!</strong><br/>Jam " + jam + " hanya dapat diisi pada pukul " + windowStr + " " + tzName + ".";
       } else if (windowStr) {
-        msg += " (Batas pengisian: " + windowStr + " " + tzName + ")";
+        msg += "<br/><span class='text-xs opacity-70'>(Batas pengisian: " + windowStr + " " + tzName + ")</span>";
       }
       
       // Render immediately
@@ -4465,7 +4465,7 @@
             var st = data.status || 'NONE';
             if (st === 'APPROVED') {
                outOfWindow = false; // Bypass
-               msg = (currentJamData.hasOwnProperty(jam) ? "Jam " + jam + " sudah terisi: " + currentJamData[jam] + " Ton." : "Jam " + jam + " belum ada data.") + " ✅ Akses Khusus Disetujui Admin.";
+               msg = (currentJamData.hasOwnProperty(jam) ? "<strong>Jam " + jam + " sudah terisi: " + currentJamData[jam] + " Ton.</strong>" : "Jam " + jam + " belum ada data.") + "<br/><br/>✅ <strong>Akses Khusus Disetujui Admin.</strong>";
                hint.innerHTML = msg;
                hint.style.color = "#28a745";
             } else {
