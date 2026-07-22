@@ -4452,7 +4452,7 @@
 
           var targetUtcTimestamp = Date.UTC(yyyy, mmNum, dd, h, m, 0);
           var targetRealUnixTimestamp = targetUtcTimestamp - offsetMs;
-          
+
           // Only block if selected time is IN THE FUTURE
           outOfWindow = targetRealUnixTimestamp > Date.now();
         }
@@ -4485,7 +4485,7 @@
         if (!window.renderInlineAlert) hint.style.color = outOfWindow ? "#dc3545" : "#28a745";
       };
       renderMsg(msg);
-      
+
       // Form button disabling
       var submitBtn = document.getElementById("submitBtn");
       var deleteBtn = document.getElementById("deleteBtn");

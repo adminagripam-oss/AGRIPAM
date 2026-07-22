@@ -11,14 +11,14 @@ window.showAlert = function(variant, title, message) {
   const alertEl = document.createElement('div');
   alertEl.className = 'shadcn-alert shadcn-alert-' + variant;
   let iconSvg = '';
-  if (variant === 'success') {
-    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>';
+  if (variant === 'success' || variant === 'invert') {
+    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>';
   } else if (variant === 'warning') {
     iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
   } else {
     iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>';
   }
-  alertEl.innerHTML = iconSvg + '<h5 class="shadcn-alert-title">' + title + '</h5><div class="shadcn-alert-desc">' + message + '</div>';
+  alertEl.innerHTML = iconSvg + '<h5 class="shadcn-alert-title">' + (title || 'Notification! All good') + '</h5><div class="shadcn-alert-desc">' + message + '</div>';
   container.appendChild(alertEl);
   setTimeout(function() {
     alertEl.classList.add('hiding');
@@ -33,15 +33,18 @@ window.alert = function(msg) {
      try { msg = JSON.stringify(msg); } catch(e){}
   }
   const lower = String(msg).toLowerCase();
-  let variant = 'warning';
-  let title = 'Warning! Something is wrong';
+  let variant = 'invert';
+  let title = 'Notification! All good';
   
-  if (lower.includes('berhasil') || lower.includes('sukses')) {
-    variant = 'success';
-    title = 'Success! All good';
+  if (lower.includes('berhasil') || lower.includes('sukses') || lower.includes('disetujui') || lower.includes('dihapus')) {
+    variant = 'invert';
+    title = 'Notification! All good';
   } else if (lower.includes('gagal') || lower.includes('error') || lower.includes('kesalahan') || lower.includes('tidak ditemukan') || lower.includes('tidak valid') || lower.includes('berakhir') || lower.includes('ditutup')) {
     variant = 'destructive';
     title = 'Error! Something went wrong';
+  } else if (lower.includes('peringatan') || lower.includes('warning') || lower.includes('di luar batas')) {
+    variant = 'warning';
+    title = 'Warning! Something is wrong';
   }
   
   window.showAlert(variant, title, msg);
@@ -369,6 +372,18 @@ window.renderInlineAlert = function(msg) {
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-4 top-4 h-5 w-5 text-amber-600 dark:text-amber-500"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
         <h5 class="mb-1 ml-8 font-medium leading-none tracking-tight text-amber-800 dark:text-amber-300">Warning! Di Luar Batas</h5>
         <div class="text-sm ml-8 opacity-90 leading-relaxed">${cleanMsg}</div>
+      </div>
+    `;
+  }
+
+  // Invert Variant (Notification Alert)
+  if (lower.includes('disetujui') || lower.includes('dihapus') || lower.includes('berhasil') || lower.includes('sukses') || lower.includes('notification')) {
+    const cleanMsg = msg.replace('✅ ', '').replace('❌ ', '');
+    return `
+      <div class="relative w-full rounded-xl border border-slate-800 bg-slate-900 text-slate-50 p-4 text-left mt-2 shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-4 top-4 h-5 w-5 text-emerald-500"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+        <h5 class="mb-1 ml-8 font-semibold leading-none tracking-tight text-white">Notification! All good</h5>
+        <div class="text-sm ml-8 text-slate-300 opacity-90 leading-relaxed">${cleanMsg}</div>
       </div>
     `;
   }
