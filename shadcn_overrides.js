@@ -18,7 +18,7 @@ window.showAlert = function(variant, title, message) {
   } else {
     iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>';
   }
-  alertEl.innerHTML = iconSvg + '<h5 class="shadcn-alert-title">' + (title || 'Notification! All good') + '</h5><div class="shadcn-alert-desc">' + message + '</div>';
+  alertEl.innerHTML = iconSvg + '<h5 class="shadcn-alert-title">' + (title || 'Notification!') + '</h5><div class="shadcn-alert-desc">' + message + '</div>';
   container.appendChild(alertEl);
   setTimeout(function() {
     alertEl.classList.add('hiding');
@@ -34,17 +34,17 @@ window.alert = function(msg) {
   }
   const lower = String(msg).toLowerCase();
   let variant = 'invert';
-  let title = 'Notification! All good';
+  let title = 'Notification!';
   
   if (lower.includes('berhasil') || lower.includes('sukses') || lower.includes('disetujui') || lower.includes('dihapus')) {
     variant = 'invert';
-    title = 'Notification! All good';
+    title = 'Notification!';
   } else if (lower.includes('gagal') || lower.includes('error') || lower.includes('kesalahan') || lower.includes('tidak ditemukan') || lower.includes('tidak valid') || lower.includes('berakhir') || lower.includes('ditutup')) {
     variant = 'destructive';
-    title = 'Error! Something went wrong';
+    title = 'Error!';
   } else if (lower.includes('peringatan') || lower.includes('warning') || lower.includes('di luar batas')) {
     variant = 'warning';
-    title = 'Warning! Something is wrong';
+    title = 'Warning!';
   }
   
   window.showAlert(variant, title, msg);
@@ -382,7 +382,7 @@ window.renderInlineAlert = function(msg) {
     return `
       <div class="relative w-full rounded-xl border border-slate-800 bg-slate-900 text-slate-50 p-4 text-left mt-2 shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-4 top-4 h-5 w-5 text-emerald-500"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
-        <h5 class="mb-1 ml-8 font-semibold leading-none tracking-tight text-white">Notification! All good</h5>
+        <h5 class="mb-1 ml-8 font-semibold leading-none tracking-tight text-white">Notification!</h5>
         <div class="text-sm ml-8 text-slate-300 opacity-90 leading-relaxed">${cleanMsg}</div>
       </div>
     `;
