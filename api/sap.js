@@ -36,6 +36,7 @@ module.exports = async (req, res) => {
     const nomor_surat = p.nomor_surat;
     const jenis_surat = p.jenis_surat;
     const perihal = p.perihal;
+    const tanggal_surat = p.tanggal_surat || null;
 
     let file_url = p.file_url;
     if (p.fileData && p.fileName) {
@@ -64,7 +65,7 @@ module.exports = async (req, res) => {
     }
 
     const { error } = await supabase.from('surat').insert({
-      nomor_surat, jenis_surat, perihal, file_url, regional_pengirim: region, status: 'menunggu'
+      nomor_surat, jenis_surat, perihal, file_url, regional_pengirim: region, status: 'menunggu', tanggal_surat: tanggal_surat
     });
 
     if (error) return res.json({ success: false, message: error.message });
@@ -79,10 +80,12 @@ module.exports = async (req, res) => {
     const status = p.status;
     const catatan = p.catatan || '';
     const tujuan = p.tujuan || null;
+    const tanggal_surat = p.tanggal_surat || null;
 
     const updateData = { status: status };
     if (tujuan) updateData.tujuan = tujuan;
     if (catatan) updateData.catatan = catatan; // Tambahkan catatan ke tabel surat
+    if (tanggal_surat !== null) updateData.tanggal_surat = tanggal_surat;
 
     let updateError;
     // Coba update semua field yang ada
