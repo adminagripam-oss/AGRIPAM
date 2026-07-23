@@ -66,29 +66,22 @@ module.exports = async (req, res) => {
     if (!tanggal) return res.json({ success: false, message: 'Tanggal wajib diisi.' });
     const tanggal_akhir = (p.tanggal_akhir || '').trim();
     
-    let allData = [];
-    let page = 0;
-    const pageSize = 1000;
-    
-    while (true) {
-      let query = supabase.from('database_input').select('tanggal, region, jam, tonase').order('jam', { ascending: true });
-      if (tanggal_akhir) {
-        query = query.gte('tanggal', tanggal).lte('tanggal', tanggal_akhir);
-      } else {
-        query = query.eq('tanggal', tanggal);
-      }
-      if (region && region.toUpperCase() !== 'ALL') query = query.eq('region', region);
-      
-      query = query.range(page * pageSize, (page + 1) * pageSize - 1);
-      
-      const { data, error } = await query;
-      if (error) return res.json({ success: false, message: 'Gagal mengambil data: ' + error.message });
-      if (!data || data.length === 0) break;
-      
-      allData = allData.concat(data);
-      if (data.length < pageSize) break;
-      page++;
+    // Single query with high limit to avoid Vercel 10s timeout from while(true) loop
+    let query = supabase
+      .from('database_input')
+      .select('tanggal, region, jam, tonase')
+      .order('jam', { ascending: true })
+      .limit(5000);
+
+    if (tanggal_akhir) {
+      query = query.gte('tanggal', tanggal).lte('tanggal', tanggal_akhir);
+    } else {
+      query = query.eq('tanggal', tanggal);
     }
+    if (region && region.toUpperCase() !== 'ALL') query = query.eq('region', region);
+
+    const { data: allData, error } = await query;
+    if (error) return res.json({ success: false, message: 'Gagal mengambil data: ' + error.message });
 
     const { jamData, total } = computeJamDataAndTotal(allData);
     const allRecords = allData.map(r => ({ tanggal: r.tanggal, region: r.region, jam: r.jam, tonase: parseFloat(r.tonase) || 0 }));
