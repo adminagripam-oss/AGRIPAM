@@ -1318,47 +1318,14 @@
         return `${d} ${m}`;
       };
 
-      // ---- HARIAN: re-process whenever realisasiRecords (App state) changes ----
+      // Fetch and process data for Harian, Mingguan, Bulanan
       useEffect(() => {
-        if (activeTab !== 'harian') return;
         const refDate = filters.tanggal_akhir || filters.tanggal || getTodayWIB();
         const parts = refDate.split('-');
         if (parts.length !== 3) return;
 
         const y = parseInt(parts[0], 10);
-        const m = parseInt(parts[1], 10) - 1;
-        const lastDay = new Date(y, m + 1, 0).getDate();
-        const startDate = `${parts[0]}-${parts[1]}-01`;
-        const endDateQuery = `${parts[0]}-${parts[1]}-${String(lastDay).padStart(2, '0')}`;
-        const dates = getDatesInRange(startDate, endDateQuery);
-        const labels = dates.map(d => formatDateLabel(d));
-
-        let allowedRegions = [...ALL_REGIONS];
-        if (filters.cro !== 'Semua CRO') allowedRegions = CRO_MAP[filters.cro] || [];
-
-        const realRecordsAll = realisasiRecords || [];
-
-        const realisasi = dates.map(dt => {
-          // For selected date: use App state (exact same data as Tren Produksi)
-          // For other dates in month: also from same source (fetched with tanggal_akhir)
-          return realRecordsAll
-            .filter(rec => rec.tanggal === dt && (filters.regional === 'Semua Regional' ? allowedRegions.includes(rec.region) : rec.region === filters.regional))
-            .reduce((sum, rec) => sum + (parseFloat(rec.tonase) || 0), 0);
-        });
-
-        // Estimasi still comes from estimasiData prop (already fetched by App)
-        setChartData(prev => ({ ...prev, labels, realisasi }));
-      }, [activeTab, filters, realisasiRecords]);
-
-      // ---- MINGGUAN/BULANAN: fetch independently ----
-      useEffect(() => {
-        if (activeTab === 'harian') return;
-        const refDate = filters.tanggal_akhir || filters.tanggal || getTodayWIB();
-        const parts = refDate.split('-');
-        if (parts.length !== 3) return;
-
-        const y = parseInt(parts[0], 10);
-        const m = parseInt(parts[1], 10) - 1;
+        const m = parseInt(parts[1], 10) - 1; // 0-indexed
         const lastDay = new Date(y, m + 1, 0).getDate();
 
         let active = true;
@@ -1372,7 +1339,7 @@
             let startDate = "";
             let endDateQuery = "";
 
-            if (activeTab === 'mingguan') {
+            if (activeTab === 'harian' || activeTab === 'mingguan') {
               startDate = `${parts[0]}-${parts[1]}-01`;
               endDateQuery = `${parts[0]}-${parts[1]}-${String(lastDay).padStart(2, '0')}`;
             } else if (activeTab === 'bulanan') {
@@ -1400,7 +1367,34 @@
                 allowedRegions = CRO_MAP[filters.cro] || [];
               }
 
-              if (activeTab === 'mingguan') {
+              // ----------------------------------------------------
+              // CASE 1: Tab Harian (Seluruh Hari dalam Bulan Terpilih)
+              // ----------------------------------------------------
+              if (activeTab === 'harian') {
+                const dates = getDatesInRange(startDate, endDateQuery);
+                const labels = dates.map(d => formatDateLabel(d));
+
+                const realisasi = dates.map(dt => {
+                  return realRecords
+                    .filter(rec => rec.tanggal === dt && (filters.regional === 'Semua Regional' ? allowedRegions.includes(rec.region) : rec.region === filters.regional))
+                    .reduce((sum, rec) => sum + (parseFloat(rec.tonase) || 0), 0);
+                });
+
+                const estimasi = dates.map(dt => {
+                  return estRecords
+                    .filter(rec => rec.tanggal === dt && (filters.regional === 'Semua Regional' ? allowedRegions.includes(rec.region) : rec.region === filters.regional))
+                    .reduce((sum, rec) => {
+                      const estPanen = parseFloat(rec.estimasi_panen_kg) || parseFloat(rec.estimasi_kirim_kg) || 0;
+                      return sum + (estPanen / 1000);
+                    }, 0);
+                });
+
+                setChartData({ labels, realisasi, estimasi });
+
+              // ----------------------------------------------------
+              // CASE 2: Tab Mingguan
+              // ----------------------------------------------------
+              } else if (activeTab === 'mingguan') {
                 const targetRegion = filters.regional;
                 const numWeeks = lastDay > 28 ? 5 : 4;
                 const weekLabels = ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4", "Minggu 5"].slice(0, numWeeks);
@@ -1436,9 +1430,9 @@
 
                 setChartData({ labels: weekLabels, realisasi: weekRealValues, estimasi: weekEstValues });
 
-                // ----------------------------------------------------
-                // CASE 3: Tab Bulanan
-                // ----------------------------------------------------
+              // ----------------------------------------------------
+              // CASE 3: Tab Bulanan
+              // ----------------------------------------------------
               } else if (activeTab === 'bulanan') {
                 const monthLabels = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
                 const monthKeys = Array.from({ length: 12 }, (_, i) => `${parts[0]}-${String(i + 1).padStart(2, '0')}`);

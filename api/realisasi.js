@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
       .select('tanggal, region, jam, tonase')
       .order('tanggal', { ascending: true })
       .order('jam', { ascending: true })
-      .limit(15000);
+      .limit(25000);
 
     if (tanggal_akhir) {
       query = query.gte('tanggal', tanggal).lte('tanggal', tanggal_akhir);
