@@ -480,11 +480,11 @@
 
     const MOCK_BAR_DATA = {
       labels: [
-        'Kalteng 1', 'Sumut 2', 'Kalbar 1', 'Riau 2', 'Kalteng 2',
+        'Kalteng 1', 'Sumut 2', 'Kalbar 1A', 'Kalbar 1B', 'Riau 2', 'Kalteng 2',
         'Kaltim', 'Riau 3', 'Kalsel 1', 'Sumsel', 'Jambi'
       ],
-      estimasi: [900, 900, 900, 600, 560, 400, 350, 300, 280, 250],
-      realisasi: [848, 721, 613, 534, 499, 326, 275, 241, 195, 178],
+      estimasi: [900, 900, 450, 450, 600, 560, 400, 350, 300, 280, 250],
+      realisasi: [848, 721, 306, 307, 534, 499, 326, 275, 241, 195, 178],
     };
 
     const MOCK_RENCANA_PANEN = {
@@ -525,7 +525,8 @@
     const REGIONAL_DETAIL = [
       { region: 'Kalimantan Tengah 1', shortLabel: 'Kalteng 1', estimasi: 900, realisasi: 848, restan: 1247.0, tonase: 847.5, color: '#16a34a' },
       { region: 'Sumatera Utara 2 Ex Torganda', shortLabel: 'Sumut 2', estimasi: 900, realisasi: 721, restan: 312.0, tonase: 721.3, color: '#2563eb' },
-      { region: 'Kalimantan Barat 1A', shortLabel: 'Kalbar 1', estimasi: 900, realisasi: 613, restan: 718.3, tonase: 612.8, color: '#d97706' },
+      { region: 'Kalimantan Barat 1A', shortLabel: 'Kalbar 1A', estimasi: 450, realisasi: 306, restan: 359.1, tonase: 306.4, color: '#d97706' },
+      { region: 'Kalimantan Barat 1B', shortLabel: 'Kalbar 1B', estimasi: 450, realisasi: 307, restan: 359.2, tonase: 306.4, color: '#fbbf24' },
       { region: 'Riau 2', shortLabel: 'Riau 2', estimasi: 600, realisasi: 534, restan: 198.0, tonase: 534.0, color: '#7c3aed' },
       { region: 'Kalimantan Tengah 2', shortLabel: 'Kalteng 2', estimasi: 560, realisasi: 499, restan: 421.5, tonase: 498.9, color: '#db2777' },
       { region: 'Kalimantan Timur', shortLabel: 'Kaltim', estimasi: 400, realisasi: 326, restan: 187.0, tonase: 326.4, color: '#0891b2' },
@@ -3193,9 +3194,10 @@
       { label: "CRO V", type: "subtotal", children: ["Bangka Belitung", "Jambi", "Sumatera Barat", "Sumatera Selatan"] },
 
       // CRO VI
-      { label: "Kalbar 1A Ex Duta Palma", regionKey: "Kalimantan Barat 1A", excelKey: "Kalbar 1A", luas: 38978, target: 875, type: "detail" }, { label: "Kalbar 1B", regionKey: "Kalimantan Barat 1B", excelKey: "Kalbar 1B", luas: 38978, target: 875, type: "detail" },
+      { label: "Kalbar 1A Ex Duta Palma", regionKey: "Kalimantan Barat 1A", excelKey: "Kalbar 1A", luas: 38978, target: 875, type: "detail" },
+      { label: "Kalbar 1B", regionKey: "Kalimantan Barat 1B", excelKey: "Kalbar 1B", luas: 38978, target: 875, type: "detail" },
       { label: "Kalimantan Barat 2", regionKey: "Kalimantan Barat 2", excelKey: "Kalbar 2", luas: 12993.09, target: 55, type: "detail" },
-      { label: "CRO VI", type: "subtotal", children: ["Kalimantan Barat 1A", "Kalimantan Barat 1B", "Kalimantan Barat 2"] },
+      { label: "CRO VI", type: "subtotal", children: ["Kalbar 1A Ex Duta Palma", "Kalbar 1B", "Kalimantan Barat 2"] },
 
       // CRO VII
       { label: "Kalimantan Selatan 1", regionKey: "Kalimantan Selatan 1", excelKey: "Kalsel 1", luas: 4772.06, target: 85, type: "detail" },
@@ -3561,7 +3563,7 @@
           let tbsKirim = 0;
 
           row.children.forEach(childLabel => {
-            const childRow = processedRows.find(r => r.type === 'detail' && r.label === childLabel);
+            const childRow = processedRows.find(r => r.type === 'detail' && (r.label === childLabel || r.regionKey === childLabel));
             if (childRow) {
               luas += childRow.luas || 0;
               target += childRow.target || 0;

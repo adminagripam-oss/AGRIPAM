@@ -1,0 +1,4725 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Input Laporan Panen TBS</title>
+  <link rel="icon" type="image/jpeg" href="LOGO AGRIPAM.jpeg">
+  <style>
+    :root {
+      /* Light Mode Default */
+      --bg-overlay-color: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.55));
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-bg-solid: #ffffff;
+      --text-primary: #111111;
+      --text-secondary: #555555;
+      --text-muted: #888888;
+      --border-color: rgba(0, 0, 0, 0.08);
+      --input-bg: #ffffff;
+      --input-text: #111111;
+      --input-border: #cccccc;
+      --clock-bg: rgba(255, 255, 255, 0.45);
+      --shadow-color: rgba(0, 0, 0, 0.25);
+      --sidebar-btn-bg: #e2e8f0;
+      --sidebar-btn-hover: #cbd5e1;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Mode Variables */
+      --bg-overlay-color: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.85));
+      --card-bg: rgba(30, 41, 59, 0.85);
+      --card-bg-solid: #1e293b;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --input-bg: #334155;
+      --input-text: #f8fafc;
+      --input-border: #475569;
+      --clock-bg: rgba(15, 23, 42, 0.45);
+      --shadow-color: rgba(0, 0, 0, 0.55);
+      --sidebar-btn-bg: #334155;
+      --sidebar-btn-hover: #475569;
+    }
+
+    body {
+      font-family: 'Trebuchet MS', sans-serif;
+      margin: 0;
+      padding: 20px 20px 60px 20px;
+      min-height: 100vh;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--card-bg-solid);
+      transition: background-color 0.3s ease;
+    }
+
+    /* Background Slider Container */
+    .bg-slider {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .bg-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    .bg-slide.active {
+      opacity: 1;
+    }
+
+    /* Overlay to keep the page content readable */
+    .bg-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      background: var(--bg-overlay-color);
+      transition: background 0.3s ease;
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 30px 25px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px var(--shadow-color);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--text-primary);
+      font-size: 20px;
+      transition: color 0.3s ease;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      transition: color 0.3s ease;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 6px 12px;
+      margin-top: 5px;
+      border: 1px solid var(--input-border);
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 15px;
+      font-weight: bold;
+      background-color: var(--input-bg);
+      color: var(--input-text);
+      transition: all 0.3s ease;
+    }
+
+    select option {
+      background-color: var(--input-bg);
+      color: var(--input-text);
+    }
+
+    .readonly-input {
+      background-color: var(--input-bg);
+      opacity: 0.6;
+      color: var(--input-text);
+      cursor: not-allowed;
+    }
+
+    /* Welcome Title Login */
+    .welcome-title {
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--text-primary);
+      margin-top: 5px;
+      margin-bottom: 15px;
+      font-family: 'Trebuchet MS', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: color 0.3s ease;
+    }
+
+    /* Logo */
+    .logo-wrapper {
+      text-align: center;
+      margin-bottom: 18px;
+      margin-top: 4px;
+    }
+
+    .logo-wrapper img {
+      max-width: 400px;
+      width: 100%;
+      height: auto;
+    }
+
+    /* Divider tipis di bawah logo */
+    .logo-divider {
+      border: none;
+      border-top: 1px solid #e0e0e0;
+      margin: 0 0 16px 0;
+    }
+
+    /* Gaya Tombol */
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn-submit {
+      background-color: #28a745;
+    }
+
+    .btn-submit:hover {
+      background-color: #218838;
+    }
+
+    .btn-delete {
+      background-color: #ffa600;
+    }
+
+    .btn-delete:hover {
+      background-color: #c82333;
+    }
+
+    .btn-refresh {
+      background-color: #007bff;
+      flex: 0 0 auto;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+    .btn-refresh:hover {
+      background-color: #0069d9;
+    }
+
+    .btn-logout {
+      background-color: #ca0000;
+      margin-top: 30px;
+      font-size: 13px;
+      padding: 8px;
+    }
+
+    .btn-logout:hover {
+      background-color: #5a6268;
+    }
+
+    /* Scale effect for form buttons like macOS */
+    #panenInputFields button,
+    #estimasiForm button {
+      transition: transform 0.12s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.3s, box-shadow 0.2s;
+    }
+
+    #panenInputFields button:hover,
+    #estimasiForm button:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    #panenInputFields button:active,
+    #estimasiForm button:active {
+      transform: scale(0.92) !important;
+    }
+
+    /* Fade transitions for section switches */
+    .fade-out-anim {
+      animation: fadeOut 0.25s ease forwards;
+    }
+
+    .fade-in-anim {
+      animation: fadeIn 0.25s ease forwards;
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      to {
+        opacity: 0;
+        transform: scale(0.98);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .btn-screenshot-harian {
+      background-color: #e67e22;
+      transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-screenshot-harian:hover {
+      background-color: #d35400;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(230, 126, 34, 0.4);
+    }
+
+    .btn-screenshot-sore {
+      background-color: #2980b9;
+      transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-screenshot-sore:hover {
+      background-color: #2471a3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(41, 128, 185, 0.4);
+    }
+
+    button:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+
+    #status {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    .akumulasi-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .akumulasi-row .field-wrap {
+      flex: 1;
+    }
+
+    small.hint {
+      color: var(--text-muted);
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      transition: color 0.3s ease;
+    }
+
+    /* Informasi Region Aktif */
+    .active-region {
+      text-align: center;
+      color: #007bff;
+      font-weight: bold;
+      margin-top: -10px;
+      margin-bottom: 15px;
+      font-size: 15px;
+    }
+
+    [data-theme="dark"] .active-region {
+      color: #38bdf8;
+    }
+
+    /* Jam Digital Server WIB */
+    .wib-clock-container {
+      text-align: center;
+      background: var(--clock-bg);
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin: 10px 0 15px 0;
+      border: 1px solid var(--border-color);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    .wib-clock-time {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--text-primary);
+      font-family: 'Courier New', Courier, monospace;
+      letter-spacing: 1px;
+      transition: color 0.3s ease;
+    }
+
+    .wib-clock-date {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      transition: color 0.3s ease;
+    }
+
+    .wib-clock-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+
+    /* Tata Letak Dua Kolom Responsif */
+    .layout-wrapper {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      max-width: 1400px;
+      box-sizing: border-box;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .column-left {
+      flex: 1;
+      min-width: 320px;
+      max-width: 420px;
+    }
+
+    .column-right {
+      flex: 2.2;
+      min-width: 320px;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      padding: 30px 25px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px var(--shadow-color);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .layout-wrapper.admin-layout {
+      max-width: 100%;
+      padding: 0 40px;
+    }
+
+    .layout-wrapper.admin-layout .column-left {
+      max-width: 100%;
+    }
+
+    .layout-wrapper.admin-layout .column-right {
+      flex: 3;
+    }
+
+    @media (min-width: 769px) {
+      body.dashboard-active {
+        height: 100vh;
+        overflow: hidden;
+        padding: 20px 20px 50px 20px !important;
+        box-sizing: border-box;
+      }
+
+      body.dashboard-active .layout-wrapper {
+        height: calc(100vh - 70px);
+        box-sizing: border-box;
+        position: relative;
+      }
+
+      body.dashboard-active .column-left {
+        position: absolute;
+        left: 60px;
+        top: 0;
+        bottom: 0;
+        width: 370px;
+        max-width: 370px;
+        height: 100%;
+        max-height: 100%;
+        box-sizing: border-box;
+        overflow-y: auto;
+        scrollbar-width: none;
+        /* Firefox */
+        -ms-overflow-style: none;
+        /* IE/Edge */
+        z-index: 10;
+        margin: 0 !important;
+        border-radius: 12px 0 0 12px;
+        box-shadow: 2px 0 10px var(--shadow-color);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease !important;
+      }
+
+      body.dashboard-active .column-left::-webkit-scrollbar {
+        display: none;
+        /* Chrome, Safari, Opera */
+      }
+
+      body.dashboard-active .column-right {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100%;
+        max-height: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+        padding-left: 460px !important;
+        border-radius: 12px;
+        transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative;
+      }
+
+      /* Collapsed Sidebar Styles */
+      body.dashboard-active .sidebar-collapsed .column-left {
+        transform: translateX(-110%);
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      body.dashboard-active .sidebar-collapsed .column-right {
+        padding-left: 85px !important;
+      }
+
+      /* Sidetrack Styles */
+      .sidetrack {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 60px;
+        background: #4bacc6;
+        border-right: 1px solid var(--border-color);
+        z-index: 60;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+        gap: 15px;
+        border-radius: 12px 0 0 12px;
+        box-shadow: 2px 0 10px var(--shadow-color);
+      }
+
+      #sidebarToggleBtn {
+        position: relative;
+        background: var(--sidebar-btn-bg);
+        color: var(--text-primary);
+        border: 1px solid transparent;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 50;
+        border-radius: 8px;
+      }
+
+      #btnOpenSAP {
+        position: relative;
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid transparent;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 50;
+      }
+
+      #btnOpenSAP {
+        color: #000000;
+      }
+
+      #sidebarToggleBtn:hover {
+        transform: scale(1.1);
+        background: var(--sidebar-btn-hover);
+      }
+
+      #btnOpenSAP:hover {
+        transform: scale(1.1);
+        background: var(--clock-bg);
+      }
+
+      /* Notification Badge Styling */
+      #sapNotifBadge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        display: flex;
+        height: 16px;
+        min-width: 16px;
+      }
+
+      #sapNotifBadge.hidden {
+        display: none !important;
+      }
+
+      #sapNotifBadge .ping-glow {
+        position: absolute;
+        display: inline-flex;
+        height: 100%;
+        width: 100%;
+        border-radius: 8px;
+        background-color: #f87171;
+        /* red-400 */
+        opacity: 0.75;
+        animation: badge-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+      }
+
+      #sapNotifBadge .ping-dot {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        height: 16px;
+        min-width: 16px;
+        padding: 0 4px;
+        background-color: #ef4444;
+        /* red-500 */
+        border: 1px solid #ffffff;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1;
+        font-family: 'Trebuchet MS', sans-serif;
+      }
+
+      [data-theme="dark"] #sapNotifBadge .ping-dot {
+        border-color: #1e293b;
+        /* slate-800 or var(--card-bg-solid) */
+      }
+
+      @keyframes badge-ping {
+
+        75%,
+        100% {
+          transform: scale(2.5);
+          opacity: 0;
+        }
+      }
+
+      .sidebar-collapsed #sidebarToggleBtn svg {
+        transform: scaleX(-1);
+      }
+
+      body.dashboard-active #chartContainer {
+        position: relative;
+        flex: 1 1 0%;
+        min-height: 0;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        aspect-ratio: auto !important;
+        margin: 10px 0;
+      }
+
+      body.dashboard-active #realisasiChart {
+        width: 100% !important;
+        height: 100% !important;
+      }
+    }
+
+    /* Floating Theme Toggle Button */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 12px var(--shadow-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.08) rotate(15deg);
+      box-shadow: 0 6px 16px var(--shadow-color);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.95);
+    }
+
+    .theme-toggle-icon-wrapper {
+      position: relative;
+      width: 22px;
+      height: 22px;
+    }
+
+    .theme-toggle svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--text-primary);
+    }
+
+    [data-theme="light"] .theme-toggle .sun-icon {
+      opacity: 0;
+      transform: scale(0.5) rotate(-90deg);
+    }
+
+    [data-theme="light"] .theme-toggle .moon-icon {
+      opacity: 1;
+      transform: scale(1) rotate(0);
+    }
+
+    [data-theme="dark"] .theme-toggle .sun-icon {
+      opacity: 1;
+      transform: scale(1) rotate(0);
+    }
+
+    [data-theme="dark"] .theme-toggle .moon-icon {
+      opacity: 0;
+      transform: scale(0.5) rotate(90deg);
+    }
+
+    /* Session Info Styles */
+    .session-info {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 15px;
+      text-align: center;
+      transition: color 0.3s ease;
+    }
+
+    .session-info.warning {
+      color: #ffa600;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .layout-wrapper {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .column-left,
+      .column-right {
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .sidetrack {
+        position: static;
+        width: 100%;
+        max-width: 400px;
+        box-sizing: border-box;
+        background: #4bacc6;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 10px;
+        margin: 0 auto 12px;
+      }
+
+      #sidebarToggleBtn {
+        position: relative;
+        background: var(--sidebar-btn-bg);
+        color: var(--text-primary);
+        border-radius: 8px;
+      }
+
+      #btnOpenSAP {
+        position: relative;
+        background: transparent;
+        color: #000000;
+      }
+    }
+
+    /* Loading Overlay Premium & Smooth */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle, rgba(16, 42, 23, 0.55) 0%, rgba(5, 15, 8, 0.75) 100%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    .loading-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .loading-spinner-container {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 35px 50px;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4),
+        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transform: scale(0.9);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .loading-overlay.active .loading-spinner-container {
+      transform: scale(1);
+    }
+
+    .loading-spinner-wrap {
+      position: relative;
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 20px auto;
+    }
+
+    .loading-spinner-outer {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 4px solid transparent;
+      border-top: 4px solid #28a745;
+      border-left: 4px solid #28a745;
+      border-radius: 50%;
+      animation: spin-clockwise 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+      box-shadow: 0 0 15px rgba(40, 167, 69, 0.4);
+    }
+
+    .loading-spinner-inner {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 50px;
+      height: 50px;
+      border: 4px solid transparent;
+      border-bottom: 4px solid #8cc540;
+      border-right: 4px solid #8cc540;
+      border-radius: 50%;
+      animation: spin-counter-clockwise 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+      box-shadow: 0 0 10px rgba(140, 197, 64, 0.3);
+    }
+
+    .loading-spinner-center {
+      position: absolute;
+      top: 25px;
+      left: 25px;
+      width: 20px;
+      height: 20px;
+      background: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #ffffff;
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    .loading-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0;
+      font-family: 'Trebuchet MS', sans-serif;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes spin-clockwise {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes spin-counter-clockwise {
+      0% {
+        transform: rotate(360deg);
+      }
+
+      100% {
+        transform: rotate(0deg);
+      }
+    }
+
+    @keyframes pulse-glow {
+
+      0%,
+      100% {
+        transform: scale(0.85);
+        opacity: 0.6;
+      }
+
+      50% {
+        transform: scale(1.15);
+        opacity: 1;
+      }
+    }
+
+    /* Running Text Hasil Produksi Ticker */
+    .running-text-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 8px 0;
+      overflow: hidden;
+      z-index: 9999;
+      font-size: 13px;
+      box-shadow: 0 -2px 10px var(--shadow-color);
+      transition: background 0.3s ease, border 0.3s ease;
+    }
+
+    .running-text-content {
+      display: inline-block;
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: marquee 75s linear infinite;
+    }
+
+    .running-text-content:hover {
+      animation-play-state: paused;
+    }
+
+    .running-text-item {
+      display: inline-block;
+      padding-right: 40px;
+    }
+
+    .running-text-item strong {
+      color: #28a745;
+    }
+
+    [data-theme="dark"] .running-text-item strong {
+      color: #4ade80;
+    }
+
+    @keyframes marquee {
+      0% {
+        transform: translateX(0);
+      }
+
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+
+    /* Scale Effect Animations */
+    .scale-in {
+      animation: scaleInAnim 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      transform-origin: center center;
+    }
+
+    .scale-out {
+      animation: scaleOutAnim 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
+      transform-origin: center center;
+    }
+
+    @keyframes scaleInAnim {
+      0% {
+        transform: translate(var(--scale-x, 0px), var(--scale-y, 0px)) scale(0.01);
+        opacity: 0;
+      }
+
+      100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes scaleOutAnim {
+      0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(var(--scale-x, 0px), var(--scale-y, 0px)) scale(0.01);
+        opacity: 0;
+      }
+    }
+
+    /* Floating navigation button for Infografis */
+    .floating-nav-btn {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50px;
+      height: 50px;
+      background-color: var(--card-bg-solid);
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 15px var(--shadow-color);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 100;
+    }
+
+    .floating-nav-btn:hover {
+      background-color: #004d33;
+      border-color: #004d33;
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .floating-nav-btn:hover .nav-arrow-icon {
+      stroke: #ffffff;
+    }
+
+    .nav-arrow-icon {
+      width: 24px;
+      height: 24px;
+      stroke: var(--text-primary);
+      transition: stroke 0.3s ease;
+    }
+
+    /* iOS-style Modal Animation & Backdrop */
+    #estimasiBackdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    #estimasiBackdrop.show {
+      opacity: 1;
+    }
+
+    .ios-modal-enter {
+      animation: iosModalSlideIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .ios-modal-leave {
+      animation: iosModalSlideOut 0.4s ease-in forwards;
+    }
+
+    @keyframes iosModalSlideIn {
+      0% {
+        top: -100%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+      }
+
+      100% {
+        top: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 1;
+      }
+    }
+
+    @keyframes iosModalSlideOut {
+      0% {
+        top: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 1;
+      }
+
+      100% {
+        top: -100%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+      }
+    }
+
+    /* =========================================================================
+     PREMIUM LOGIN PAGE STYLES (ADDED)
+     ========================================================================= */
+    .layout {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 40px;
+      align-items: center;
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+      padding: 40px 20px;
+      box-sizing: border-box;
+    }
+
+    .intro {
+      padding: 20px 12px;
+      text-align: left;
+    }
+
+    .eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13.5px;
+      font-weight: bold;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #E8A93B;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
+      margin: 0 0 18px;
+      opacity: 0;
+      animation: fadeSlideUp .7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      animation-delay: .05s;
+    }
+
+    [data-theme="light"] .eyebrow {
+      color: #111111;
+      background-color: rgba(255, 255, 255, 0.6);
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      text-shadow: none;
+    }
+
+    .headline {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: clamp(30px, 4.2vw, 50px);
+      line-height: 1.08;
+      margin: 0 0 18px;
+      letter-spacing: -.01em;
+      color: #F4EFE3;
+      opacity: 0;
+      animation: fadeSlideUp .7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      animation-delay: .15s;
+    }
+
+    .headline span {
+      color: #E8A93B;
+    }
+
+    .sub {
+      color: #B9C9BC;
+      font-size: 15.5px;
+      line-height: 1.6;
+      max-width: 420px;
+      margin: 0 0 34px;
+      opacity: 0;
+      animation: fadeSlideUp .7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      animation-delay: .25s;
+    }
+
+    .ticker {
+      border: 1px solid rgba(244, 239, 227, 0.14);
+      border-radius: 8px;
+      background: rgba(18, 38, 26, 0.72);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      overflow: hidden;
+      max-width: 460px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      animation: fadeSlideUp .7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      animation-delay: .35s;
+    }
+
+    .ticker__clock {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px dashed rgba(244, 239, 227, 0.14);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: #e2b35c;
+    }
+
+    .ticker__clock .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #E8A93B;
+      animation: blink 1.6s ease-in-out infinite;
+      box-shadow: 0 0 8px #E8A93B;
+    }
+
+    .ticker__clock .tz {
+      color: #7C9081;
+      margin-left: auto;
+      letter-spacing: .08em;
+    }
+
+    .ticker__track {
+      position: relative;
+      overflow: hidden;
+      padding: 11px 0;
+    }
+
+    .ticker__list {
+      display: flex;
+      white-space: nowrap;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12.5px;
+      color: #B9C9BC;
+      animation: tickerScroll 10s linear infinite;
+      width: max-content;
+    }
+
+    .ticker__list span {
+      padding: 0 14px;
+    }
+
+    .ticker__list span.sep {
+      color: #E8A93B;
+    }
+
+    .card-wrap {
+      display: flex;
+      justify-content: center;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 392px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 32px 28px 26px;
+      box-shadow: 0 24px 60px var(--shadow-color);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #8cc540, #E8A93B, #9b1c1c);
+      background-size: 200% 100%;
+      animation: shimmerLine 6s linear infinite;
+    }
+
+    .logo-chip {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .logo-chip img {
+      height: 40px;
+      object-fit: contain;
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      margin: 0 0 8px;
+      color: var(--text-primary);
+    }
+
+    .card-sub {
+      font-size: 14px;
+      text-align: center;
+      color: var(--text-secondary);
+      margin: 0 0 28px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .field__label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap select {
+      width: 100%;
+      padding: 12px 40px 12px 16px;
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      font-size: 14.5px;
+      background: var(--input-bg);
+      color: var(--input-text);
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.25s ease;
+      box-sizing: border-box;
+    }
+
+    .select-wrap select:focus {
+      outline: none;
+      border-color: #E8A93B;
+      background: var(--card-bg-solid);
+    }
+
+    .select-wrap .chevron {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+      color: var(--text-muted);
+      transition: transform 0.25s ease;
+    }
+
+    .field--password input {
+      width: 100%;
+      padding: 12px 40px 12px 16px;
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      font-size: 14.5px;
+      background: var(--input-bg);
+      color: var(--input-text);
+      box-sizing: border-box;
+      font-weight: bold;
+      transition: all 0.25s ease;
+    }
+
+    .field--password input:focus {
+      outline: none;
+      border-color: #E8A93B;
+      background: var(--card-bg-solid);
+    }
+
+    .eye-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .eye-btn:hover {
+      color: #E8A93B;
+      background: var(--input-bg);
+    }
+
+    .eye-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #E8A93B, #c58c2b);
+      color: #111111;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+      margin-top: 10px;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(232, 169, 59, 0.4);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .submit-btn .btn-arrow {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.25s ease;
+    }
+
+    .submit-btn:hover .btn-arrow {
+      transform: translateX(4px);
+    }
+
+    .btn-spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(17, 17, 17, 0.2);
+      border-top: 3px solid #111111;
+      border-radius: 50%;
+      animation: spinClockwise 1s linear infinite;
+    }
+
+    .submit-btn.is-loading .btn-spinner {
+      display: block;
+    }
+
+    .submit-btn.is-loading .btn-label,
+    .submit-btn.is-loading .btn-arrow,
+    .submit-btn.is-loading .btn-check {
+      display: none;
+    }
+
+    .submit-btn .btn-check {
+      display: none;
+      width: 19px;
+      height: 19px;
+    }
+
+    .submit-btn.is-success {
+      background: linear-gradient(135deg, #28a745, #1e7e34);
+      color: #ffffff;
+    }
+
+    .submit-btn.is-success .btn-check {
+      display: block;
+    }
+
+    .submit-btn.is-success .btn-label,
+    .submit-btn.is-success .btn-arrow,
+    .submit-btn.is-success .btn-spinner {
+      display: none;
+    }
+
+    .error {
+      font-size: 13px;
+      font-weight: bold;
+      color: #dc3545;
+      text-align: center;
+      margin: 5px 0 15px;
+      display: none;
+    }
+
+    .error.is-visible {
+      display: block;
+    }
+
+    .error.is-success {
+      color: #28a745;
+    }
+
+    .hint {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 20px 0 0;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .25;
+      }
+    }
+
+    @keyframes tickerScroll {
+      from {
+        transform: translateX(0);
+      }
+
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    @keyframes shimmerLine {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      100% {
+        background-position: 200% 50%;
+      }
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes spinClockwise {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .card.shake {
+      animation: shakeAnim 0.4s ease-in-out;
+    }
+
+    @keyframes shakeAnim {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20%,
+      60% {
+        transform: translateX(-6px);
+      }
+
+      40%,
+      80% {
+        transform: translateX(6px);
+      }
+    }
+
+    @media (max-width: 920px) {
+      .layout {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        gap: 30px;
+      }
+
+      .intro {
+        text-align: center;
+      }
+
+      .sub {
+        margin: 0 auto 30px;
+      }
+
+      .ticker {
+        margin: 0 auto;
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+  <div class="bg-slider">
+    <div class="bg-slide active" style="background-image: url('BACKGROUNDHARVESTING.jpeg');"></div>
+    <div class="bg-slide" style="background-image: url('PAGE 2.jpg');"></div>
+  </div>
+
+  <div class="bg-overlay"></div>
+
+  <button id="themeToggleBtn" class="theme-toggle" onclick="toggleTheme()" title="Ubah Tema">
+    <div class="theme-toggle-icon-wrapper">
+      <!-- Sun Icon -->
+      <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <!-- Moon Icon -->
+      <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </div>
+  </button>
+
+  <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-spinner-container">
+      <div class="loading-spinner-wrap">
+        <div class="loading-spinner-outer"></div>
+        <div class="loading-spinner-inner"></div>
+        <div class="loading-spinner-center"></div>
+      </div>
+      <p id="loadingText" class="loading-text">Memproses...</p>
+    </div>
+  </div>
+
+  <div id="loginSection" style="display: block; width: 100%;">
+    <main class="layout">
+      <section class="intro">
+        <p class="eyebrow">One Agrinas Operational Monitoring (One Agripam)</p>
+        <h1 class="headline">Setiap tandan,<br><span>tercatat tepat waktu.</span></h1>
+        <p class="sub">Masuk dengan wilayah kerja Anda untuk mulai mencatat realisasi panen hari ini kapan pun shift
+          Anda berlangsung.</p>
+
+        <div class="ticker" aria-hidden="true">
+          <div class="ticker__clock">
+            <span class="dot"></span>
+            <span id="clockTime">--:--:--</span>
+            <span class="tz">WIB · UTC+7</span>
+          </div>
+          <div class="ticker__track">
+            <div class="ticker__list" id="tickerList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-wrap">
+        <div class="card" id="loginFormCard">
+          <div class="logo-chip">
+            <div class="logo-wrapper">
+              <img src="AGRINAS DANANTARA.png" alt="Logo Agrinas Palma Nusantara">
+            </div>
+          </div>
+
+          <h2 class="card-title">Selamat Datang</h2>
+          <p class="card-sub">Masuk untuk melaporkan hasil panen TBS wilayah Anda.</p>
+
+          <form id="loginForm" novalidate onsubmit="event.preventDefault(); prosesLogin();">
+            <label class="field field--region">
+              <span class="field__label">Region / Wilayah</span>
+              <div class="select-wrap">
+                <select id="loginRegion" required>
+                  <option value="" disabled selected>Pilih wilayah kerja...</option>
+                  <option value="Aceh">Aceh</option>
+                  <option value="Sumatera Utara 1">Sumatera Utara 1</option>
+                  <option value="Sumatera Utara 2 Ex Torganda">Sumatera Utara 2 Ex Torganda</option>
+                  <option value="Riau 1">Riau 1</option>
+                  <option value="Riau 2">Riau 2</option>
+                  <option value="Riau 3">Riau 3</option>
+                  <option value="Riau 4">Riau 4</option>
+                  <option value="Bangka Belitung">Bangka Belitung</option>
+                  <option value="Jambi">Jambi</option>
+                  <option value="Sumatera Barat">Sumatera Barat</option>
+                  <option value="Sumatera Selatan">Sumatera Selatan</option>
+                  <option value="Kalimantan Barat 1A">Kalimantan Barat 1A</option>
+<option value="Kalimantan Barat 1B">Kalimantan Barat 1B</option>
+                  <option value="Kalimantan Barat 2">Kalimantan Barat 2</option>
+                  <option value="Kalimantan Selatan 1">Kalimantan Selatan 1</option>
+                  <option value="Kalimantan Selatan 2">Kalimantan Selatan 2</option>
+                  <option value="Kalimantan Timur">Kalimantan Timur</option>
+                  <option value="Kalimantan Utara">Kalimantan Utara</option>
+                  <option value="Kalimantan Tengah 1">Kalimantan Tengah 1</option>
+                  <option value="Kalimantan Tengah 2">Kalimantan Tengah 2</option>
+                  <option value="Kalimantan Tengah 3">Kalimantan Tengah 3</option>
+                  <option value="Sulawesi Tenggara">Sulawesi Tenggara</option>
+                  <option value="Sulawesi Tengah">Sulawesi Tengah</option>
+                  <option value="ADMIN">ADMIN</option>
+                </select>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </label>
+
+            <label class="field field--password">
+              <span class="field__label">Password Region</span>
+              <div style="position:relative">
+                <input type="password" id="loginPassword" placeholder="Masukkan password" required>
+                <button class="eye-btn" id="toggleEye" type="button" aria-label="Tampilkan password">
+                  <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  <svg class="eye-off" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                      d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                    </path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                </button>
+              </div>
+            </label>
+
+            <p class="error" id="loginError" role="alert"></p>
+
+            <button type="button" onclick="prosesLogin()" class="submit-btn" id="loginBtn">
+              <span class="btn-label">Masuk</span>
+              <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+              <span class="btn-spinner"></span>
+              <svg class="btn-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </button>
+
+            <p class="hint">Lupa password? Hubungi admin wilayah Anda.</p>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===================== HALAMAN UTAMA ===================== -->
+  <div id="mainSection" class="layout-wrapper" style="display:none;">
+    <!-- Sidetrack (Fixed Left Navigation) -->
+    <div class="sidetrack">
+      <button id="sidebarToggleBtn" onclick="toggleSidebar()" data-slot="sidebar-trigger" data-variant="ghost"
+        data-size="icon-sm"
+        class="focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 border border-transparent bg-clip-padding text-sm font-medium focus-visible:ring-3 aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 inline-flex items-center justify-center whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none hover:bg-muted hover:text-foreground dark:hover:bg-muted/50 aria-expanded:bg-muted aria-expanded:text-foreground size-8 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-md -ml-1"
+        data-sidebar="trigger"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="lucide lucide-panel-left" aria-hidden="true">
+          <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+          <path d="M9 3v18"></path>
+        </svg></button>
+
+      <!-- SAP Button -->
+      <button id="btnOpenSAP" onclick="bukaSAP()" title="Buka SAP (Persuratan)" style="position:relative;"
+        class="focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 border border-transparent bg-clip-padding text-sm font-medium focus-visible:ring-3 aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 inline-flex items-center justify-center whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none hover:bg-muted hover:text-foreground dark:hover:bg-muted/50 aria-expanded:bg-muted aria-expanded:text-foreground size-8 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-md -ml-1">
+        <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+          </path>
+        </svg>
+        <span id="sapNotifBadge" class="hidden">
+          <span class="ping-glow"></span>
+          <span class="ping-dot"></span>
+        </span>
+      </button>
+    </div>
+    <!-- Floating Navigation Arrow to open Infografis -->
+    <button id="btnOpenInfografis" class="floating-nav-btn" onclick="bukaInfografis()"
+      title="Buka Infografis Rencana & Estimasi Panen">
+      <svg class="nav-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+      </svg>
+    </button>
+
+    <!-- KOLOM KIRI: Sesi Pengisian Laporan Panen -->
+    <div class="column-left container" style="margin: 0; max-width: 100%;">
+      <div class="logo-wrapper">
+        <img src="AGRINAS DANANTARA.png" alt="Logo Agrinas Palma Nusantara">
+      </div>
+      <hr class="logo-divider">
+
+      <h2>AgriPaM</h2>
+      <div class="wib-clock-container">
+        <div class="wib-clock-time" id="wibClockTime">--:--:--</div>
+        <div class="wib-clock-date" id="wibClockDate">Mengambil Waktu WIB...</div>
+        <div class="wib-clock-label">WAKTU SERVER WIB (UTC+7)</div>
+      </div>
+
+      <p id="displayRegionText" class="active-region"></p>
+
+      <!-- Dropdown khusus ADMIN untuk memilih region atau rekapan CRO -->
+      <div id="adminRegionSelectContainer"
+        style="display: none; text-align: center; margin-top: -10px; margin-bottom: 15px;">
+        <div style="margin-bottom: 8px;">
+          <label
+            style="display: inline-block; width: 120px; max-width: 100%; box-sizing: border-box; text-align: left; margin-top: 0; color: var(--text-secondary); font-size: 14px;">Region
+            Monitor:</label>
+          <select id="adminRegionSelect" onchange="onAdminRegionChange()"
+            style="display: inline-block; width: 320px; max-width: 100%; box-sizing: border-box; padding: 6px 12px; margin-top: 0; font-weight: bold;"></select>
+        </div>
+        <div style="margin-bottom: 8px;">
+          <label
+            style="display: inline-block; width: 120px; max-width: 100%; box-sizing: border-box; text-align: left; margin-top: 0; color: var(--text-secondary); font-size: 14px;">Rekapan
+            CRO:</label>
+          <select id="adminCROSelect" onchange="onAdminCROChange()"
+            style="display: inline-block; width: 320px; max-width: 100%; box-sizing: border-box; padding: 6px 12px; margin-top: 0; font-weight: bold;">
+            <option value="">- Pilih CRO -</option>
+            <option value="CRO I">CRO I (Aceh, Sumut 1, Sumut 2)</option>
+            <option value="CRO II">CRO II (Riau 1)</option>
+            <option value="CRO III">CRO III (Riau 2, Riau 3)</option>
+            <option value="CRO IV">CRO IV (Riau 4)</option>
+            <option value="CRO V">CRO V (Sumbar, Jambi, Babel)</option>
+            <option value="CRO VI">CRO VI (Kalbar 1A, Kalbar 1B, Kalbar 2)</option>
+            <option value="CRO VII">CRO VII (Kalsel 1, Kalsel 2, Kaltim, Kalut)</option>
+            <option value="CRO VIII">CRO VIII (Kalteng 1, Kalteng 3)</option>
+            <option value="CRO IX">CRO IX (Kalteng 2)</option>
+            <option value="CRO X">CRO X (Sultra, Sulteng)</option>
+          </select>
+        </div>
+        <div style="margin-top: 10px; text-align: center;">
+          <button type="button" class="btn-submit" onclick="onAdminTotalAllClick()"
+            style="display: inline-block; width: 450px; max-width: 100%; padding: 8px 12px; font-size: 14px; font-weight: bold;">
+            Tampilkan Total Semua Region
+          </button>
+        </div>
+      </div>
+
+      <p id="sessionInfo" class="session-info"></p>
+
+      <form id="panenForm" onsubmit="return false;">
+        <label>Tanggal Laporan:</label>
+        <input type="date" id="tanggal" name="tanggal" required onchange="onTanggalChange()">
+
+        <!-- Container input yang disembunyikan untuk ADMIN -->
+        <div id="panenInputFields">
+          <label>Jam Laporan:</label>
+          <select id="jam" name="jam" required onchange="updateJamHint()">
+            <option value="" disabled selected>Pilih Jam...</option>
+            <option value="06.00">06.00</option>
+            <option value="07.00">07.00</option>
+            <option value="08.00">08.00</option>
+            <option value="09.00">09.00</option>
+            <option value="10.00">10.00</option>
+            <option value="11.00">11.00</option>
+            <option value="12.00">12.00</option>
+            <option value="13.00">13.00</option>
+            <option value="14.00">14.00</option>
+            <option value="15.00">15.00</option>
+            <option value="16.00">16.00</option>
+            <option value="17.30">17.30</option>
+          </select>
+          <small class="hint" id="jamHint"></small>
+
+          <label>Realisasi Panen Saat Ini (Ton):</label>
+          <input type="number" step="0.01" id="tonase" name="tonase" placeholder="">
+
+          <label>Total Akumulasi (Ton) </label>
+          <div class="akumulasi-row">
+            <div class="field-wrap">
+              <input type="number" step="0.01" id="akumulasi" class="readonly-input" value="0" readonly>
+            </div>
+            <button type="button" class="btn-refresh" onclick="checkAccumulation()">Refresh</button>
+          </div>
+
+          <div class="btn-group">
+            <button type="button" id="submitBtn" class="btn-submit" onclick="handleInsert()">Kirim
+              Data</button>
+            <button type="button" id="deleteBtn" class="btn-delete" onclick="handleDelete()">Hapus Jam
+              Ini</button>
+          </div>
+
+        </div>
+
+
+        <button type="button" class="btn-logout" style="width:100%;" onclick="prosesLogout()">
+          Logout
+        </button>
+
+        <p id="status"></p>
+      </form>
+    </div>
+
+    <div class="column-right">
+      <h3 id="chartTitle"
+        style="text-align: center; color: var(--text-primary); margin-top: 0; font-size: 30px; font-weight: bold;">
+        Grafik Realisasi Tiap Jam</h3>
+      <div id="chartContainer"
+        style="width: 822px; height: auto; max-width: 100%; aspect-ratio: 1 / 1; position: relative; margin: 15px auto; box-sizing: border-box;">
+        <canvas id="realisasiChart"></canvas>
+      </div>
+
+      <!-- Comparison Card Estimasi vs Realisasi -->
+      <div id="estimasiComparisonCard"
+        style="display: none; margin-top: 15px; padding: 15px; border-radius: 8px; background: var(--clock-bg); border: 1px solid var(--border-color);">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; font-family: 'Calibri', sans-serif;">
+          <div>
+            <span
+              style="font-size: 11px; color: var(--text-secondary); font-weight: bold; text-transform: uppercase;">Estimasi
+              Rencana</span>
+            <div style="font-size: 16px; font-weight: bold; color: var(--text-primary);" id="compCardEstimasi">0.00 Ton
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <span
+              style="font-size: 11px; color: var(--text-secondary); font-weight: bold; text-transform: uppercase;">Total
+              Realisasi</span>
+            <div style="font-size: 16px; font-weight: bold; color: var(--text-primary);" id="compCardRealisasi">0.00 Ton
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <span
+              style="font-size: 11px; color: var(--text-secondary); font-weight: bold; text-transform: uppercase;">Pencapaian</span>
+            <div style="font-size: 18px; font-weight: bold;" id="compCardPercentage">0.00%</div>
+          </div>
+        </div>
+      </div>
+      </p>
+    </div>
+  </div>
+
+  <!-- ===================== INFOGRAFIS ESTIMASI PANEN ===================== -->
+  <div id="infografisSection"
+    style="display:none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; background: transparent; box-sizing: border-box; padding: 0;">
+    <iframe id="infografisIframe" src=""
+      style="width: 100%; height: 100%; border: none; border-radius: 0; box-shadow: none;"></iframe>
+
+    <!-- Backdrop -->
+    <div id="estimasiBackdrop"></div>
+
+    <!-- Form Estimasi Modal -->
+    <div id="estimasiSection" class="container"
+      style="display:none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1001; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+      <div class="logo-wrapper">
+        <img src="LOGO AGRIPAM.jpeg" alt="Logo Agrinas Palma Nusantara">
+      </div>
+      <hr class="logo-divider">
+
+      <h2>Estimasi Panen</h2>
+      <div class="wib-clock-container">
+        <div class="wib-clock-time" id="wibClockTimeEst">--:--:--</div>
+        <div class="wib-clock-date" id="wibClockDateEst">Mengambil Waktu WIB...</div>
+        <div class="wib-clock-label">WAKTU SERVER WIB (UTC+7)</div>
+      </div>
+
+      <p id="displayRegionEstimasi" class="active-region"></p>
+
+      <form id="estimasiForm" onsubmit="return false;">
+        <label>Tanggal Estimasi:</label>
+        <input type="date" id="tanggalEstimasi" required onchange="checkEstimasi()">
+        <small class="hint" id="estimasiHint"></small>
+
+        <label>Luas Panen (Ha):</label>
+        <input type="number" step="0.01" id="luasPanen" placeholder="Contoh: 15.5">
+
+        <label>Estimasi Restan Lalu (Kg):</label>
+        <input type="number" step="0.01" id="estimasiRestanLalu" placeholder="Contoh: 200">
+
+        <label>TK Panen (Hk):</label>
+        <input type="number" id="tkPanen" placeholder="Contoh: 10" oninput="hitungOutput()">
+
+        <label>Estimasi Panen (Kg):</label>
+        <input type="number" step="0.01" id="estimasiPanen" placeholder="Contoh: 5000" oninput="hitungOutput()">
+
+        <label>Output Panen (Kg/Hk):</label>
+        <input type="number" step="0.01" id="outputPanen" class="readonly-input" placeholder="Terisi Otomatis" readonly>
+        <small class="hint">Dihitung dari: Estimasi Panen / TK Panen</small>
+
+        <button type="button" id="btnTidakPanen" onclick="toggleTidakPanen()"
+          style="width: 100%; margin-top: 15px; margin-bottom: 10px; font-weight: bold; background-color: #28a745; color: white; border: none; border-radius: 4px; padding: 10px; cursor: pointer; transition: background-color 0.3s;">
+          Status: Aktif Panen (Klik jika Tidak Panen)
+        </button>
+
+        <label>Estimasi Kirim (Kg):</label>
+        <input type="number" step="0.01" id="estimasiKirim" placeholder="Contoh: 4800">
+
+        <label>Estimasi Restan (Kg):</label>
+        <input type="number" step="0.01" id="estimasiRestan" placeholder="Contoh: 200">
+
+        <div class="btn-group">
+          <button type="button" id="submitEstimasiBtn" class="btn-submit" onclick="handleInsertEstimasi()">Kirim
+            Estimasi</button>
+          <button type="button" id="deleteEstimasiBtn" class="btn-delete" onclick="handleDeleteEstimasi()">Hapus
+            Estimasi</button>
+        </div>
+        <button type="button" class="btn-logout" style="width:100%; margin-top:10px; background-color: #6c757d;"
+          onclick="tutupEstimasiModal()">
+          Tutup Form Estimasi
+        </button>
+        <button type="button" id="btnSimpanDraftEstimasi"
+          style="width:100%; margin-top:10px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; padding: 10px; font-weight: bold; cursor: pointer;"
+          onclick="simpanDraftEstimasi()">Simpan Draft</button>
+
+        <p id="statusEstimasi"
+          style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 14px; min-height: 20px;"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== SAP SECTION ===================== -->
+  <div id="sapSection"
+    style="display:none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; background: transparent; box-sizing: border-box; padding: 0; align-items: center; justify-content: center;">
+    <iframe id="sapIframe" src=""
+      style="width: 100%; height: 100%; border: none; border-radius: 0; box-shadow: none;"></iframe>
+  </div> <!-- End of sapSection -->
+
+  <!-- Running Text Hasil Produksi -->
+  <div id="runningTextContainer" class="running-text-container" style="display: none;">
+    <div class="running-text-content" id="runningTextContent">
+      Mengambil data hasil produksi...
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // LIGHT / DARK MODE THEME MANAGEMENT
+    // =========================================================================
+    var savedTheme = localStorage.getItem("agripam_theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+
+    function toggleTheme() {
+      var currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+      var newTheme = currentTheme === "dark" ? "light" : "dark";
+
+      document.documentElement.setAttribute("data-theme", newTheme);
+      localStorage.setItem("agripam_theme", newTheme);
+
+      applyChartTheme();
+
+      // Sync theme to iframe
+      try {
+        var iframe = document.getElementById("infografisIframe");
+        if (iframe && iframe.contentWindow && typeof iframe.contentWindow.syncTheme === "function") {
+          iframe.contentWindow.syncTheme();
+        }
+      } catch (e) { }
+    }
+
+    function applyChartTheme() {
+      if (!myChart) return;
+      var theme = document.documentElement.getAttribute("data-theme") || "light";
+      var gridColor = theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)";
+      var textColor = theme === "dark" ? "#cbd5e1" : "#444444";
+
+      myChart.options.scales.y.grid.color = gridColor;
+      myChart.options.scales.x.grid.color = gridColor;
+      myChart.options.scales.x.ticks.color = textColor;
+      myChart.options.scales.y.ticks.color = textColor;
+      myChart.update();
+    }
+
+    // =========================================================================
+    // KONFIGURASI
+    // =========================================================================
+    // â”€â”€ API Configuration (Supabase via Vercel Serverless) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    var API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:'
+      ? 'http://localhost:3000/api'
+      : '/api';
+    // Pemetaan action lama (Apps Script) â†’ endpoint baru
+    var ACTION_MAP = {
+      "login": "auth",
+      "logout": "auth",
+      "refreshToken": "auth",
+      "getData": "realisasi",
+      "getRunningTextData": "realisasi",
+      "insert": "realisasi",
+      "delete": "realisasi",
+      "getEstimasi": "estimasi",
+      "insertEstimasi": "estimasi",
+      "deleteEstimasi": "estimasi",
+      "requestDelete": "deleteRequest",
+      "getDeleteRequests": "deleteRequest",
+      "resolveDeleteRequest": "deleteRequest",
+      "getSurat": "sap"
+    };
+    var MAX_RETRIES = 2;
+    var RETRY_DELAY_MS = 3000;
+    var SESSION_KEY = "agripam_session";
+    var BC_CHANNEL = "agripam_bc"; // nama channel BroadcastChannel
+
+    // =========================================================================
+    // BROADCASTCHANNEL â€” komunikasi antar tab
+    // =========================================================================
+    var bc = (typeof BroadcastChannel !== "undefined") ? new BroadcastChannel(BC_CHANNEL) : null;
+
+    // Pesan yang dikirim/diterima antar tab:
+    // { type: "SESSION_QUERY" }          â†’ tab baru tanya: "ada sesi aktif?"
+    // { type: "SESSION_ANNOUNCE", region } â†’ tab aktif jawab: "saya aktif dengan region X"
+    // { type: "SESSION_STARTED", region } â†’ tab baru kasih tahu: "saya baru login region X"
+    // { type: "SESSION_ENDED" }           â†’ tab yang logout kasih tahu semua tab
+
+    if (bc) {
+      bc.onmessage = function (event) {
+        var msg = event.data;
+        if (!msg || !msg.type) return;
+
+        if (msg.type === "SESSION_QUERY") {
+          // Ada tab baru yang tanya â€” jawab jika kita punya sesi aktif
+          var s = loadSession();
+          if (s) {
+            bc.postMessage({ type: "SESSION_ANNOUNCE", region: s.region });
+          }
+
+        } else if (msg.type === "SESSION_ANNOUNCE") {
+          // Ada tab lain yang aktif â€” simpan info ini untuk dipakai saat login
+          window._activeTabRegion = msg.region;
+
+        } else if (msg.type === "SESSION_STARTED") {
+          // Tab lain baru login â€” kita harus logout
+          var mySession = loadSession();
+          if (mySession) {
+            clearSession();
+            tampilkanLoginDariBC("Sesi Anda diakhiri karena ada login baru di tab lain (Region: " + msg.region + ").");
+          }
+
+        } else if (msg.type === "SESSION_ENDED") {
+          // Tab lain logout â€” tidak perlu aksi khusus, tapi reset flag
+          window._activeTabRegion = null;
+        }
+      };
+    }
+
+    // Saat halaman pertama dibuka, tanya apakah ada tab lain yang aktif
+    // Tunggu 300ms untuk memberi waktu tab lain merespons
+    function queryOtherTabs(callback) {
+      if (!bc) { callback(null); return; }
+
+      window._activeTabRegion = null;
+      bc.postMessage({ type: "SESSION_QUERY" });
+
+      setTimeout(function () {
+        callback(window._activeTabRegion || null);
+      }, 300);
+    }
+
+    function tampilkanLoginDariBC(pesan) {
+      // Paksa tampilan kembali ke halaman login dengan pesan
+      prosesLogoutSilent();
+      window.location.replace("login.html?msg=" + encodeURIComponent(pesan));
+    }
+
+    // =========================================================================
+    // STATE
+    // =========================================================================
+    var currentJamData = {};
+    var isSubmitting = false;
+    var sessionTimer = null;
+    var currentEstimasiPanen = 0; // estimasi panen dalam Ton
+    var isAdminTotalAll = false;
+    var myChart = null; // instance Chart.js grafik realisasi â€” dideklarasikan di sini (bukan dekat updateChart())
+    // karena init() yang memanggil updateChart() lebih dulu jalan di posisi source ini
+
+    var statusText = document.getElementById("status");
+    var submitBtn = document.getElementById("submitBtn");
+    var deleteBtn = document.getElementById("deleteBtn");
+    var akumulasiEl = document.getElementById("akumulasi");
+    var currentEstimasiExists = false;
+    var isInternalNavigation = false;
+
+    // Tombol di estimasi section â€” diambil saat dibutuhkan agar tidak null saat load
+    function getEstimasiBtn() { return document.getElementById("submitEstimasiBtn"); }
+    function getDeleteEstBtn() { return document.getElementById("deleteEstimasiBtn"); }
+
+    // =========================================================================
+    // SESSION HELPERS
+    // =========================================================================
+
+    function saveSession(region, token, ttlMs) {
+      var expiry = Date.now() + (ttlMs || 8 * 60 * 60 * 1000);
+
+
+
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+        region: region,
+        token: token,
+        expiry: expiry
+      }));
+      scheduleSessionWarning(expiry);
+    }
+
+    function loadSession() {
+      try {
+        var raw = sessionStorage.getItem(SESSION_KEY);
+        if (!raw) return null;
+        var s = JSON.parse(raw);
+        if (Date.now() > s.expiry) {
+          sessionStorage.removeItem(SESSION_KEY);
+          return null;
+        }
+        return s;
+      } catch (e) {
+        sessionStorage.removeItem(SESSION_KEY);
+        return null;
+      }
+    }
+
+    function clearSession() {
+      sessionStorage.removeItem(SESSION_KEY);
+      if (sessionTimer) { clearTimeout(sessionTimer); sessionTimer = null; }
+    }
+
+    function scheduleSessionWarning(expiry) {
+      if (sessionTimer) clearTimeout(sessionTimer);
+      var warnAt = expiry - 15 * 60 * 1000;
+      var now = Date.now();
+      if (warnAt > now) {
+        sessionTimer = setTimeout(function () {
+          var el = document.getElementById("sessionInfo");
+          if (el) {
+            el.textContent = "Sesi akan berakhir dalam ~15 menit. Simpan pekerjaan Anda.";
+            el.className = "session-info warning";
+          }
+        }, warnAt - now);
+      }
+      updateSessionDisplay(expiry);
+    }
+
+    function updateSessionDisplay(expiry) {
+      var el = document.getElementById("sessionInfo");
+      if (!el) return;
+      var remaining = expiry - Date.now();
+      if (remaining <= 0) {
+        el.textContent = "Sesi berakhir.";
+        el.className = "session-info warning";
+        return;
+      }
+      var hours = Math.floor(remaining / 3600000);
+      var mins = Math.floor((remaining % 3600000) / 60000);
+      el.textContent = "Sesi aktif â€” berakhir " + hours + " jam " + mins + " menit lagi";
+      el.className = "session-info";
+    }
+
+    function requireSession() {
+      var s = loadSession();
+      if (!s) {
+        alert("Sesi Anda sudah berakhir. Silakan login ulang.");
+        prosesLogout();
+        return null;
+      }
+      return s;
+    }
+    function checkEstimasi() {
+      var tanggal = document.getElementById("tanggalEstimasi").value;
+      var hint = document.getElementById("estimasiHint");
+      var s = loadSession();
+
+      if (!tanggal || !s) {
+        hint.textContent = "";
+        currentEstimasiExists = false;
+        hideLoading();
+        return;
+      }
+
+      // Check deadline: H-1 before tanggal at 22:00:00 WIB
+      var now = new Date();
+      var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      var wibNow = new Date(utc + (7 * 3600000));
+
+      var parts = tanggal.split("-");
+      var estYear = parseInt(parts[0], 10);
+      var estMonth = parseInt(parts[1], 10) - 1;
+      var estDay = parseInt(parts[2], 10);
+
+      var deadline = new Date(estYear, estMonth, estDay - 1, 22, 0, 0, 0);
+      var isLocked = wibNow.getTime() > deadline.getTime();
+
+      setLoading(true, "Memeriksa data estimasi...");
+
+      // Cek status unlock sebelum fetch estimasi
+      var unlockUrl = "/api/unlockRequest?action=checkUnlock&tanggal=" + tanggal + "&region=" + encodeURIComponent(s.region) + "&token=" + encodeURIComponent(s.token);
+      fetch(unlockUrl)
+        .then(function (res) { return res.json(); })
+        .catch(function () { return { success: false }; })
+        .then(function (unlockData) {
+          var unlockStatus = (unlockData && unlockData.success) ? unlockData.status : 'NONE';
+          var finalLocked = isLocked;
+          if (unlockStatus === 'APPROVED') {
+            finalLocked = false;
+          }
+          window.currentUnlockStatus = unlockStatus;
+
+          jsonpRequest(
+            { action: "getEstimasi", tanggal: tanggal, region: s.region, token: s.token },
+            function (res) {
+              setLoading(false);
+              if (res.success) {
+                currentEstimasiExists = res.exists;
+
+                // Persiapkan tombol request
+                var reqBtn = document.getElementById("btnRequestUnlock");
+                if (!reqBtn) {
+                  reqBtn = document.createElement("button");
+                  reqBtn.id = "btnRequestUnlock";
+                  reqBtn.type = "button";
+                  reqBtn.style.marginTop = "5px";
+                  reqBtn.style.marginBottom = "10px";
+                  reqBtn.style.padding = "5px 10px";
+                  reqBtn.style.fontSize = "12px";
+                  reqBtn.style.fontWeight = "bold";
+                  reqBtn.style.borderRadius = "4px";
+                  reqBtn.style.border = "none";
+                  reqBtn.style.cursor = "pointer";
+                  reqBtn.onclick = requestUnlockAccess;
+                  hint.parentNode.insertBefore(reqBtn, hint.nextSibling);
+                }
+                reqBtn.style.display = "none";
+
+                if (res.exists) {
+                  hint.textContent = "Data estimasi tanggal ini sudah terisi (" + res.data.estPanen + " Kg)." +
+                    (finalLocked ? " (Pengisian Baru / Edit ditutup)" : "");
+                  hint.style.color = finalLocked ? "#ffa600" : "#dc3545";
+
+                  if (finalLocked && unlockStatus === 'NONE') {
+                    reqBtn.style.display = "inline-block";
+                    reqBtn.textContent = "Ajukan Buka Akses";
+                    reqBtn.style.backgroundColor = "#ffc107";
+                    reqBtn.style.color = "#000";
+                    reqBtn.disabled = false;
+                  } else if (finalLocked && unlockStatus === 'PENDING') {
+                    reqBtn.style.display = "inline-block";
+                    reqBtn.textContent = "Menunggu Persetujuan Admin";
+                    reqBtn.style.backgroundColor = "#6c757d";
+                    reqBtn.style.color = "#fff";
+                    reqBtn.disabled = true;
+                  } else if (finalLocked && unlockStatus === 'REJECTED') {
+                    reqBtn.style.display = "inline-block";
+                    reqBtn.textContent = "Ajukan Ulang Buka Akses";
+                    reqBtn.style.backgroundColor = "#ffc107";
+                    reqBtn.style.color = "#000";
+                    reqBtn.disabled = false;
+                  }
+
+                  document.getElementById("luasPanen").value = res.data.luasPanen;
+                  document.getElementById("estimasiRestanLalu").value = res.data.restanLalu;
+                  document.getElementById("tkPanen").value = res.data.tkPanen;
+                  document.getElementById("estimasiPanen").value = res.data.estPanen;
+                  document.getElementById("outputPanen").value = res.data.outPanen;
+                  document.getElementById("estimasiKirim").value = res.data.estKirim;
+                  document.getElementById("estimasiRestan").value = res.data.estRestan;
+
+                  var isTp = (parseFloat(res.data.luasPanen) === 0 && parseFloat(res.data.estPanen) === 0);
+                  toggleTidakPanen(isTp);
+                } else {
+                  if (finalLocked) {
+                    var d1 = new Date(estYear, estMonth, estDay - 1);
+                    var d1Day = String(d1.getDate()).padStart(2, '0');
+                    var d1Month = String(d1.getMonth() + 1).padStart(2, '0');
+                    var d1Year = d1.getFullYear();
+                    var deadlineStr = d1Day + "/" + d1Month + "/" + d1Year + " pukul 22.00 WIB";
+
+                    hint.textContent = "Pengisian ditutup! Batas pengisian berakhir pada " + deadlineStr;
+                    hint.style.color = "#dc3545";
+
+                    if (unlockStatus === 'NONE') {
+                      reqBtn.style.display = "inline-block";
+                      reqBtn.textContent = "Ajukan Buka Akses";
+                      reqBtn.style.backgroundColor = "#ffc107";
+                      reqBtn.style.color = "#000";
+                      reqBtn.disabled = false;
+                    } else if (unlockStatus === 'PENDING') {
+                      reqBtn.style.display = "inline-block";
+                      reqBtn.textContent = "Menunggu Persetujuan Admin";
+                      reqBtn.style.backgroundColor = "#6c757d";
+                      reqBtn.style.color = "#fff";
+                      reqBtn.disabled = true;
+                    } else if (unlockStatus === 'REJECTED') {
+                      reqBtn.style.display = "inline-block";
+                      reqBtn.textContent = "Ajukan Ulang Buka Akses";
+                      reqBtn.style.backgroundColor = "#ffc107";
+                      reqBtn.style.color = "#000";
+                      reqBtn.disabled = false;
+                    }
+                  } else {
+                    hint.textContent = "Tanggal ini belum ada data estimasi (Bisa diisi).";
+                    hint.style.color = "#28a745";
+                  }
+
+                  document.getElementById("luasPanen").value = "";
+                  document.getElementById("estimasiRestanLalu").value = "";
+                  document.getElementById("tkPanen").value = "";
+                  document.getElementById("estimasiPanen").value = "";
+                  document.getElementById("outputPanen").value = "";
+                  document.getElementById("estimasiKirim").value = "";
+                  document.getElementById("estimasiRestan").value = "";
+                  toggleTidakPanen(false);
+
+                  var draftKey = "draft_estimasi_" + s.region + "_" + tanggal;
+                  var draftDataStr = localStorage.getItem(draftKey);
+                  if (draftDataStr) {
+                    try {
+                      var draftData = JSON.parse(draftDataStr);
+                      document.getElementById("luasPanen").value = draftData.luasPanen || "";
+                      document.getElementById("estimasiRestanLalu").value = draftData.estimasiRestanLalu || "";
+                      document.getElementById("tkPanen").value = draftData.tkPanen || "";
+                      document.getElementById("estimasiPanen").value = draftData.estimasiPanen || "";
+                      document.getElementById("outputPanen").value = draftData.outputPanen || "";
+                      document.getElementById("estimasiKirim").value = draftData.estimasiKirim || "";
+                      document.getElementById("estimasiRestan").value = draftData.estimasiRestan || "";
+                      var isTpDraft = (draftData.luasPanen === "0" && draftData.estimasiPanen === "0");
+                      toggleTidakPanen(isTpDraft);
+                      hint.textContent += " (Memuat Draft Lokal)";
+                    } catch (e) { }
+                  }
+                }
+
+                // Disable/Enable fields based on finalLocked
+                var formFields = [
+                  "luasPanen", "estimasiRestanLalu", "tkPanen", "estimasiPanen",
+                  "estimasiKirim", "estimasiRestan", "btnTidakPanen", "btnSimpanDraftEstimasi"
+                ];
+                formFields.forEach(function (id) {
+                  var el = document.getElementById(id);
+                  if (el) el.disabled = finalLocked;
+                });
+
+                var submitBtn = getEstimasiBtn();
+                if (submitBtn) submitBtn.disabled = finalLocked;
+
+                var delBtn = getDeleteEstBtn();
+                if (delBtn) delBtn.style.display = (res.exists && !finalLocked) ? "inline-block" : "none";
+              } else {
+                hint.textContent = "Gagal mengecek data.";
+                hint.style.color = "#dc3545";
+              }
+            },
+            function (errMsg) {
+              setLoading(false);
+              hint.textContent = "Gagal koneksi ke server.";
+              hint.style.color = "#dc3545";
+            }
+          );
+        });
+    }
+
+    function requestUnlockAccess() {
+      var tanggal = document.getElementById("tanggalEstimasi").value;
+      var s = loadSession();
+      if (!tanggal || !s) return;
+
+      if (!confirm("Ajukan permohonan buka akses pengisian estimasi ke Admin untuk tanggal " + tanggal + "?")) return;
+
+      setLoading(true, "Mengirim pengajuan...");
+      fetch("/api/unlockRequest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "requestUnlock", tanggal: tanggal, region: s.region, token: s.token })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          setLoading(false);
+          alert(res.message || (res.success ? "Pengajuan berhasil" : "Pengajuan gagal"));
+          if (res.success) {
+            checkEstimasi(); // Refresh status
+          }
+        })
+        .catch(function (err) {
+          setLoading(false);
+          alert("Gagal menghubungi server.");
+        });
+    }
+
+    // =========================================================================
+    // JSONP ENGINE
+    // =========================================================================
+
+    // â”€â”€ API Request Engine (fetch-based, menggantikan JSONP) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    function jsonpRequest(params, onSuccess, onError, _retry) {
+      var retry = _retry || 0;
+      var action = params.action || "";
+      var endpoint = ACTION_MAP[action] || action;
+      var url = API_BASE + "/" + endpoint;
+
+      // Kirim sebagai GET dengan query string
+      var query = Object.keys(params).map(function (k) {
+        return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]);
+      }).join("&");
+
+      var controller = new AbortController();
+      var timeoutId = setTimeout(function () { controller.abort(); }, 20000);
+
+      fetch(url + "?" + query, { signal: controller.signal })
+        .then(function (res) {
+          clearTimeout(timeoutId);
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          onSuccess(data);
+        })
+        .catch(function (err) {
+          clearTimeout(timeoutId);
+          if (retry < MAX_RETRIES) {
+            if (typeof setStatus === 'function') {
+              setStatus("Koneksi gagal. Mencoba ulang (" + (retry + 1) + "/" + MAX_RETRIES + ")...", "#888");
+            }
+            setTimeout(function () {
+              jsonpRequest(params, onSuccess, onError, retry + 1);
+            }, RETRY_DELAY_MS);
+          } else {
+            onError("Koneksi gagal. Periksa koneksi internet Anda.");
+          }
+        });
+    }
+
+    // =========================================================================
+    // LOGIN & LOGOUT
+    // =========================================================================
+
+    function getClientWIBTimeStr() {
+      var now = new Date();
+      var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      var wibTime = new Date(utc + (7 * 3600000));
+      var yyyy = wibTime.getFullYear();
+      var MM = String(wibTime.getMonth() + 1).padStart(2, '0');
+      var dd = String(wibTime.getDate()).padStart(2, '0');
+      var hh = String(wibTime.getHours()).padStart(2, '0');
+      var mm = String(wibTime.getMinutes()).padStart(2, '0');
+      var ss = String(wibTime.getSeconds()).padStart(2, '0');
+      return yyyy + "-" + MM + "-" + dd + " " + hh + ":" + mm + ":" + ss;
+    }
+
+    function updateRunningText() {
+      var container = document.getElementById("runningTextContainer");
+      var content = document.getElementById("runningTextContent");
+
+      // Safety check: ensure DOM elements exist
+      if (!container || !content) return;
+
+      // Check if we are on the login page or don't have a session. If so, hide and abort.
+      var loginSection = document.getElementById("loginSection");
+      var s = loadSession();
+      if (!s || (loginSection && loginSection.style.display !== "none")) {
+        container.style.display = "none";
+        return;
+      }
+
+      // Hide running text when infografisSection is currently visible (active iframe page)
+      var infografisSec = document.getElementById("infografisSection");
+      if (infografisSec && infografisSec.style.display !== "none") {
+        container.style.display = "none";
+        return;
+      }
+
+      // Get today's date in WIB (UTC+7) as fallback
+      var now = new Date();
+      var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      var wibTime = new Date(utc + (7 * 3600000));
+      var yyyy = wibTime.getFullYear();
+      var MM = String(wibTime.getMonth() + 1).padStart(2, '0');
+      var dd = String(wibTime.getDate()).padStart(2, '0');
+      var todayDateStr = yyyy + "-" + MM + "-" + dd;
+      var tanggal = todayDateStr;
+
+      // If user has selected a date in the form, use that instead
+      var tanggalEl = document.getElementById("tanggal");
+      if (tanggalEl && tanggalEl.value) {
+        tanggal = tanggalEl.value;
+      }
+
+      var isToday = (tanggal === todayDateStr);
+      var wibHourFloat = wibTime.getHours() + (wibTime.getMinutes() / 60);
+
+      var realisasiRes = null;
+      var estimasiRes = null;
+      var hasError = false;
+      var errorMsg = "";
+
+      function checkDone() {
+        // Check session, login page, and infografis visibility again
+        var currentSession = loadSession();
+        if (!currentSession || (loginSection && loginSection.style.display !== "none")) {
+          container.style.display = "none";
+          return;
+        }
+        if (infografisSec && infografisSec.style.display !== "none") {
+          container.style.display = "none";
+          return;
+        }
+
+        if (hasError) {
+          container.style.display = "block";
+          content.innerHTML = '<span class="running-text-item" style="color: #dc3545;">Gagal memperbarui data running text: ' + errorMsg + '</span>';
+          return;
+        }
+
+        if (realisasiRes && estimasiRes) {
+          if (realisasiRes.success && realisasiRes.allRecords && realisasiRes.allRecords.length > 0) {
+            container.style.display = "block";
+            var displayDate = tanggal.split("-").reverse().join("/");
+
+            function parseHourFloat(jamStr) {
+              if (!jamStr) return 0;
+              var p = jamStr.split(".");
+              var h = parseInt(p[0], 10) || 0;
+              var m = parseInt(p[1], 10) || 0;
+              return h + (m / 60);
+            }
+
+            // Group by region and sum tonase up to the current server hour
+            var regionMap = {};
+            realisasiRes.allRecords.forEach(function (rec) {
+              // Filter by server hour if today
+              if (isToday) {
+                if (parseHourFloat(rec.jam) > wibHourFloat) {
+                  return; // Skip future entries
+                }
+              }
+
+              var key = rec.region;
+              if (!regionMap[key]) {
+                regionMap[key] = { region: rec.region, totalRealisasi: 0, latestJam: rec.jam };
+              }
+              regionMap[key].totalRealisasi += rec.tonase;
+              if (rec.jam > regionMap[key].latestJam) {
+                regionMap[key].latestJam = rec.jam;
+              }
+            });
+
+            var items = Object.keys(regionMap).map(function (key) {
+              var r = regionMap[key];
+              var estObj = null;
+              if (estimasiRes.allEstimasi) {
+                var matchKey = Object.keys(estimasiRes.allEstimasi).find(function (k) {
+                  return k.trim().toLowerCase() === key.trim().toLowerCase();
+                });
+                if (matchKey) {
+                  estObj = estimasiRes.allEstimasi[matchKey];
+                }
+              }
+              var estPanenKg = 0;
+              if (estObj && estObj.estPanen) {
+                estPanenKg = parseFloat(estObj.estPanen) || 0;
+              }
+              var estKirimKg = 0;
+              if (estObj && estObj.estKirim) {
+                estKirimKg = parseFloat(estObj.estKirim) || 0;
+              }
+              if (estPanenKg === 0) {
+                estPanenKg = estKirimKg;
+              }
+              var estPanenTon = estPanenKg / 1000;
+
+              var percentageStr = "-";
+              if (estPanenTon > 0) {
+                var percentage = (r.totalRealisasi / estPanenTon) * 100;
+                percentageStr = percentage.toFixed(2) + "%";
+              }
+
+              return '<span class="running-text-item">' +
+                r.region + ' (Produksi s.d Jam ' + r.latestJam + ': <strong>' + r.totalRealisasi.toFixed(2) + ' Ton</strong>) ' +
+                '<strong>' + percentageStr + '</strong>' +
+                '</span>';
+            });
+
+            if (items.length > 0) {
+              // Duplicate items for seamless looping if few items
+              var html = items.join(' <span style="margin: 0 15px; opacity: 0.3;">â—</span> ');
+              if (items.length < 5) {
+                html = html + ' <span style="margin: 0 30px; opacity: 0.3;">â—</span> ' + html;
+              }
+              if (content.innerHTML !== html) {
+                content.innerHTML = html;
+
+                // Reset animation for smooth restart
+                content.style.animation = 'none';
+                content.offsetHeight; // trigger reflow
+                content.style.animation = '';
+              }
+            } else {
+              if (isToday) {
+                content.innerHTML = '<span class="running-text-item" style="font-style: italic; opacity: 0.7;">Belum ada laporan produksi masuk s.d jam server saat ini (' + displayDate + ')</span>';
+              } else {
+                content.innerHTML = '<span class="running-text-item" style="font-style: italic; opacity: 0.7;">Belum ada laporan produksi masuk untuk tanggal ' + displayDate + '</span>';
+              }
+            }
+          } else {
+            container.style.display = "block";
+            if (realisasiRes && realisasiRes.message) {
+              content.innerHTML = '<span class="running-text-item" style="color: #dc3545; font-style: italic;">Info Server: ' + realisasiRes.message + '</span>';
+            } else {
+              content.innerHTML = '<span class="running-text-item" style="font-style: italic; opacity: 0.7;">Belum ada laporan produksi masuk untuk tanggal ' + tanggal.split("-").reverse().join("/") + '</span>';
+            }
+          }
+        }
+      }
+
+      // Fetch Realisasi
+      jsonpRequest(
+        { action: "getRunningTextData", tanggal: tanggal, region: "ALL" },
+        function (res) {
+          realisasiRes = res;
+          checkDone();
+        },
+        function (errMsg) {
+          hasError = true;
+          errorMsg = errMsg;
+          checkDone();
+        }
+      );
+
+      // Fetch Estimasi
+      jsonpRequest(
+        { action: "getEstimasi", tanggal: tanggal, region: "ALL", token: s.token },
+        function (res) {
+          estimasiRes = res;
+          checkDone();
+        },
+        function (errMsg) {
+          // Fallback to empty estimates on error instead of breaking the running text
+          estimasiRes = { success: true, allEstimasi: {} };
+          checkDone();
+        }
+      );
+    }
+
+    function prosesLogin() {
+      var region = document.getElementById("loginRegion").value;
+      var password = document.getElementById("loginPassword").value;
+
+      document.getElementById("loginError").style.display = "none";
+
+      if (!region) { showLoginError("Harap pilih Region terlebih dahulu!"); return; }
+      if (!password) { showLoginError("Harap masukkan Password!"); return; }
+
+      setLoading(true, "Memeriksa login...");
+
+      jsonpRequest(
+        { action: "login", region: region, password: password, ip: clientIP, clientTime: getClientWIBTimeStr() },
+        function (res) {
+          if (res.success) {
+            saveSession(region, res.token, res.ttlMs);
+            if (typeof bc !== 'undefined' && bc) bc.postMessage({ type: "SESSION_STARTED", region: region });
+
+            var loginBtn = document.getElementById("loginBtn");
+            var errorEl = document.getElementById("loginError");
+            if (loginBtn) {
+              loginBtn.classList.remove("is-loading");
+              loginBtn.classList.add("is-success");
+            }
+            if (errorEl) {
+              errorEl.textContent = "Berhasil masuk. Memuat dashboard...";
+              errorEl.classList.remove("is-visible");
+              void errorEl.offsetWidth;
+              errorEl.classList.add("is-visible", "is-success");
+            }
+
+            setTimeout(function () {
+              if (region === "ADMIN") {
+                isInternalNavigation = true;
+                window.location.href = "laporan_produksi.html";
+                return;
+              }
+              document.getElementById("loginSection").style.display = "none";
+              document.getElementById("mainSection").style.display = "flex";
+              document.body.classList.add("dashboard-active");
+              document.getElementById("loginPassword").value = "";
+              if (loginBtn) loginBtn.classList.remove("is-success");
+              if (errorEl) errorEl.classList.remove("is-visible", "is-success");
+              applyUserRoleUI();
+
+              startHeartbeat();
+              startAdminAutoUpdate();
+              startNotificationsCheck();
+
+              currentJamData = {};
+              updateJamHint();
+
+              // Set default date to today's WIB date if empty
+              var tglInput = document.getElementById("tanggal");
+              if (!tglInput.value) {
+                var now = new Date();
+                var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                var wibTime = new Date(utc + (7 * 3600000));
+                var yyyy = wibTime.getFullYear();
+                var MM = String(wibTime.getMonth() + 1).padStart(2, '0');
+                var dd = String(wibTime.getDate()).padStart(2, '0');
+                tglInput.value = yyyy + "-" + MM + "-" + dd;
+              }
+
+              var tgl = tglInput.value;
+              if (tgl) {
+                setLoading(true, "Mengambil data realisasi...");
+                checkAccumulation();
+              } else {
+                setLoading(false);
+              }
+              updateRunningText();
+            }, 1000);
+
+          } else {
+            setLoading(false);
+            showLoginError(res.message || ("Password salah untuk Region " + region + "!"));
+          }
+        },
+        function (errMsg) {
+          setLoading(false);
+          showLoginError(errMsg);
+        }
+      );
+    }
+
+    function showLoginError(msg) {
+      var el = document.getElementById("loginError");
+      el.textContent = msg;
+      el.style.display = "block";
+    }
+
+    // =========================================================================
+    // âœ… BARU: HEARTBEAT â€” perpanjang sesi otomatis setiap 30 menit
+    // =========================================================================
+    var heartbeatInterval = null;
+
+    function startHeartbeat() {
+      stopHeartbeat(); // bersihkan yang lama dulu
+      heartbeatInterval = setInterval(function () {
+        var s = loadSession();
+        if (!s) { stopHeartbeat(); return; }
+
+        jsonpRequest(
+          { action: "refreshToken", token: s.token, region: s.region },
+          function (res) {
+            if (res.success) {
+              // Perbarui expiry di sessionStorage
+              saveSession(s.region, s.token, res.ttlMs || (8 * 60 * 60 * 1000));
+            } else {
+              // Token sudah tidak valid â€” paksa logout
+              stopHeartbeat();
+              alert("Sesi Anda berakhir: " + (res.message || "Silakan login ulang."));
+              prosesLogout();
+            }
+          },
+          function () {
+            // Gagal koneksi â€” biarkan saja, coba lagi di interval berikutnya
+          }
+        );
+      }, 30 * 60 * 1000); // setiap 30 menit
+    }
+
+    function stopHeartbeat() {
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+      }
+    }
+
+    // =========================================================================
+    // âœ… BARU: AUTO UPDATE ADMIN â€” update data panen tiap 30 detik tanpa refresh
+    // =========================================================================
+    var adminAutoUpdateInterval = null;
+
+    function startAdminAutoUpdate() {
+      stopAdminAutoUpdate(); // Bersihkan yang lama dulu
+      var s = loadSession();
+      if (!s || s.region !== "ADMIN") return;
+
+      adminAutoUpdateInterval = setInterval(function () {
+        var s2 = loadSession();
+        // Pastikan user masih login sebagai ADMIN dan sedang tidak menginput data/loading manual
+        if (!s2 || s2.region !== "ADMIN" || isSubmitting) return;
+
+        var loadingOverlay = document.getElementById("loadingOverlay");
+        if (loadingOverlay && loadingOverlay.style.display === "flex") return;
+
+        checkAccumulation(true); // Silent update = true
+      }, 30 * 1000); // Setiap 30 detik
+    }
+
+    function stopAdminAutoUpdate() {
+      if (adminAutoUpdateInterval) {
+        clearInterval(adminAutoUpdateInterval);
+        adminAutoUpdateInterval = null;
+      }
+    }
+
+    // =========================================================================
+    // âœ… BARU: NOTIFICATIONS CHECK (SAP)
+    // =========================================================================
+    var notificationsInterval = null;
+
+    function checkNotifications() {
+      var s = loadSession();
+      if (!s || s.region !== 'ADMIN') return;
+
+      jsonpRequest({ action: "getSurat", region: "ADMIN", token: s.token }, function (res) {
+        if (res.success && res.data) {
+          var unreadCount = res.data.filter(function (surat) { return surat.status === 'menunggu'; }).length;
+          var badge = document.getElementById("sapNotifBadge");
+          if (badge) {
+            var dot = badge.querySelector(".ping-dot");
+            if (unreadCount > 0) {
+              if (dot) dot.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
+              badge.classList.remove("hidden");
+            } else {
+              badge.classList.add("hidden");
+            }
+          }
+        }
+      }, function () { });
+    }
+
+    function startNotificationsCheck() {
+      stopNotificationsCheck();
+      var s = loadSession();
+      if (s && s.region === 'ADMIN') {
+        checkNotifications(); // Cek langsung saat mulai
+        notificationsInterval = setInterval(checkNotifications, 1000); // Polling 1 detik (Real-time)
+
+        // Cek langsung ketika window aktif kembali (user berpindah tab lalu kembali ke web)
+        window.addEventListener("focus", checkNotifications);
+      }
+    }
+
+    function stopNotificationsCheck() {
+      if (notificationsInterval) {
+        clearInterval(notificationsInterval);
+        notificationsInterval = null;
+      }
+      window.removeEventListener("focus", checkNotifications);
+    }
+
+    // Buka SAP (Sistem Administrasi Persuratan) â€” dengan animasi scale-in dari tombol
+    function bukaSAP() {
+      var s = loadSession();
+      var region = s ? s.region : null;
+      if (!region) {
+        alert("Sesi tidak valid, silakan login ulang.");
+        prosesLogout();
+        return;
+      }
+
+      // Get button center position
+      var btn = document.getElementById("btnOpenSAP");
+      var btnRect = btn.getBoundingClientRect();
+      var btnX = btnRect.left + btnRect.width / 2;
+      var btnY = btnRect.top + btnRect.height / 2;
+
+      // Calculate offsets from viewport center
+      var W = window.innerWidth / 2;
+      var H = window.innerHeight / 2;
+      var translateX = btnX - W;
+      var translateY = btnY - H;
+
+      var sapSec = document.getElementById("sapSection");
+
+      // Set CSS variables on the section
+      sapSec.style.setProperty('--scale-x', translateX + 'px');
+      sapSec.style.setProperty('--scale-y', translateY + 'px');
+
+      // Set iframe src
+      var params = '?token=' + encodeURIComponent(s.token) + '&region=' + encodeURIComponent(s.region) + '&expiry=' + encodeURIComponent(s.expiry) + '&t=' + Date.now();
+      var sapIframe = document.getElementById("sapIframe");
+      if (region === 'ADMIN') {
+        sapIframe.src = 'sap_admin.html' + params;
+      } else {
+        sapIframe.src = 'sap_regional.html' + params;
+      }
+
+      // Prepare classes and display â€” animate scale-in
+      sapSec.classList.remove("scale-out");
+      sapSec.classList.add("scale-in");
+      sapSec.style.display = "flex";
+
+      // Hide mainSection after the animation finishes (500ms is scale-in duration)
+      setTimeout(function () {
+        document.getElementById("mainSection").style.display = "none";
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("estimasiSection").style.display = "none";
+        document.body.classList.remove("dashboard-active");
+      }, 500);
+    }
+
+    // Tutup SAP â€” dengan animasi scale-out kembali ke tombol
+    function tutupSAP() {
+      var sapSec = document.getElementById("sapSection");
+
+      // Bring back mainSection immediately so it is visible behind the shrinking modal
+      document.getElementById("mainSection").style.display = "flex";
+      document.body.classList.add("dashboard-active");
+
+      // Get button center position
+      var btn = document.getElementById("btnOpenSAP");
+      if (btn) {
+        var btnRect = btn.getBoundingClientRect();
+        var btnX = btnRect.left + btnRect.width / 2;
+        var btnY = btnRect.top + btnRect.height / 2;
+        var W = window.innerWidth / 2;
+        var H = window.innerHeight / 2;
+        var translateX = btnX - W;
+        var translateY = btnY - H;
+        sapSec.style.setProperty('--scale-x', translateX + 'px');
+        sapSec.style.setProperty('--scale-y', translateY + 'px');
+      }
+
+      // Trigger Scale-out animation
+      sapSec.classList.remove("scale-in");
+      sapSec.classList.add("scale-out");
+
+      // Hide sapSection after animation finishes (400ms is scale-out duration)
+      setTimeout(function () {
+        sapSec.style.display = "none";
+        sapSec.classList.remove("scale-out");
+        document.getElementById("sapIframe").src = "";
+
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("estimasiSection").style.display = "none";
+
+        updateRunningText();
+      }, 400);
+    }
+
+    // Handle close request from SAP iframe
+    window.addEventListener('message', function (event) {
+      if (event.data && event.data.action === 'closeSAP') {
+        tutupSAP();
+      }
+    });
+
+    // Logout normal (dengan broadcast)
+    function prosesLogout() {
+      var s = loadSession();
+      if (s) {
+        // Beritahu server untuk hapus sesi â€” fire and forget
+        jsonpRequest(
+          { action: "logout", token: s.token, region: s.region },
+          function () { }, function () { }
+        );
+      }
+      stopHeartbeat(); // âœ… BARU: hentikan heartbeat
+      stopAdminAutoUpdate(); // âœ… BARU: hentikan auto-update admin
+      stopNotificationsCheck(); // Hentikan notifikasi
+      clearSession();
+      if (bc) bc.postMessage({ type: "SESSION_ENDED" });
+      _resetUI();
+      window.location.replace("login.html");
+    }
+    // Logout diam-diam karena dipaksa oleh BroadcastChannel (tidak perlu broadcast balik)
+    function prosesLogoutSilent() {
+      stopHeartbeat(); // âœ… BARU: hentikan heartbeat
+      stopAdminAutoUpdate(); // âœ… BARU: hentikan auto-update admin
+      clearSession();
+      _resetUI();
+    }
+
+    function _resetUI() {
+      currentJamData = {};
+      isSubmitting = false;
+      document.body.classList.remove("dashboard-active");
+
+      var mainSection = document.getElementById("mainSection");
+      if (mainSection) {
+        mainSection.style.display = "none";
+        mainSection.classList.remove("admin-layout");
+      }
+      document.getElementById("estimasiSection").style.display = "none";
+      document.getElementById("infografisSection").style.display = "none";
+      document.getElementById("sapSection").style.display = "none";
+      document.getElementById("sapIframe").src = "";
+      document.getElementById("loginSection").style.display = "block";
+      document.getElementById("loginPassword").value = "";
+      document.getElementById("status").textContent = "";
+      document.getElementById("statusEstimasi").textContent = "";
+      document.getElementById("displayRegionText").textContent = "";
+      document.getElementById("displayRegionText").style.display = "block";
+      document.getElementById("sessionInfo").textContent = "";
+      document.getElementById("loginError").style.display = "none";
+
+      var adminContainer = document.getElementById("adminRegionSelectContainer");
+      if (adminContainer) adminContainer.style.display = "none";
+
+      var container = document.getElementById("runningTextContainer");
+      if (container) container.style.display = "none";
+
+
+
+      var compCard = document.getElementById("estimasiComparisonCard");
+      if (compCard) compCard.style.display = "none";
+      var adminSelect = document.getElementById("adminRegionSelect");
+      if (adminSelect) adminSelect.value = "";
+      var croSelect = document.getElementById("adminCROSelect");
+      if (croSelect) croSelect.value = "";
+      isAdminTotalAll = false;
+
+      updateJamHint();
+    }
+
+    function applyUserRoleUI() {
+      var s = loadSession();
+      if (!s) return;
+
+      var displayRegionText = document.getElementById("displayRegionText");
+      var adminContainer = document.getElementById("adminRegionSelectContainer");
+      var panenInputFields = document.getElementById("panenInputFields");
+      var mainSection = document.getElementById("mainSection");
+
+      if (s.region === "ADMIN") {
+        if (mainSection) mainSection.classList.add("admin-layout");
+        if (displayRegionText) displayRegionText.style.display = "none";
+        if (adminContainer) {
+          adminContainer.style.display = "block";
+          var adminSelect = document.getElementById("adminRegionSelect");
+          if (adminSelect && adminSelect.options.length === 0) {
+            var loginSelect = document.getElementById("loginRegion");
+            adminSelect.innerHTML = "";
+
+            var placeholderOpt = document.createElement("option");
+            placeholderOpt.value = "";
+            placeholderOpt.textContent = "- Pilih Region -";
+            adminSelect.appendChild(placeholderOpt);
+
+            for (var i = 0; i < loginSelect.options.length; i++) {
+              var opt = loginSelect.options[i];
+              if (opt.value && opt.value !== "ADMIN") {
+                var newOpt = document.createElement("option");
+                newOpt.value = opt.value;
+                newOpt.textContent = opt.textContent;
+                adminSelect.appendChild(newOpt);
+              }
+            }
+          }
+        }
+        if (panenInputFields) panenInputFields.style.display = "none";
+      } else {
+        if (mainSection) mainSection.classList.remove("admin-layout");
+        if (displayRegionText) {
+          displayRegionText.style.display = "block";
+          displayRegionText.textContent = "Region: " + s.region;
+        }
+        if (adminContainer) adminContainer.style.display = "none";
+        if (panenInputFields) panenInputFields.style.display = "block";
+      }
+    }
+
+    var CRO_GROUPS = {
+      "CRO I": ["Aceh", "Sumatera Utara 1", "Sumatera Utara 2 Ex Torganda"],
+      "CRO II": ["Riau 1"],
+      "CRO III": ["Riau 2", "Riau 3"],
+      "CRO IV": ["Riau 4"],
+      "CRO V": ["Sumatera Barat", "Jambi", "Bangka Belitung"],
+      "CRO VI": ["Kalimantan Barat 1A", "Kalimantan Barat 1B", "Kalimantan Barat 2"],
+      "CRO VII": ["Kalimantan Selatan 1", "Kalimantan Selatan 2", "Kalimantan Timur", "Kalimantan Utara"],
+      "CRO VIII": ["Kalimantan Tengah 1", "Kalimantan Tengah 3"],
+      "CRO IX": ["Kalimantan Tengah 2"],
+      "CRO X": ["Sulawesi Tenggara", "Sulawesi Tengah"]
+    };
+
+    var ALL_REGIONS = [
+      "Aceh",
+      "Sumatera Utara 1",
+      "Sumatera Utara 2 Ex Torganda",
+      "Riau 1",
+      "Riau 2",
+      "Riau 3",
+      "Riau 4",
+      "Bangka Belitung",
+      "Jambi",
+      "Sumatera Barat",
+      "Sumatera Selatan",
+      "Kalimantan Barat 1A", "Kalimantan Barat 1B",
+      "Kalimantan Barat 2",
+      "Kalimantan Selatan 1",
+      "Kalimantan Selatan 2",
+      "Kalimantan Timur",
+      "Kalimantan Utara",
+      "Kalimantan Tengah 1",
+      "Kalimantan Tengah 2",
+      "Kalimantan Tengah 3",
+      "Sulawesi Tenggara",
+      "Sulawesi Tengah"
+    ];
+
+
+
+    function onAdminRegionChange() {
+      var croSelect = document.getElementById("adminCROSelect");
+      if (croSelect) {
+        croSelect.value = "";
+      }
+      isAdminTotalAll = false;
+      currentJamData = {};
+      updateJamHint();
+      checkAccumulation();
+    }
+
+    function onAdminCROChange() {
+      var adminSelect = document.getElementById("adminRegionSelect");
+      if (adminSelect) {
+        adminSelect.value = "";
+      }
+      isAdminTotalAll = false;
+      currentJamData = {};
+      updateJamHint();
+      checkAccumulation();
+    }
+
+    function onAdminTotalAllClick() {
+      var adminSelect = document.getElementById("adminRegionSelect");
+      if (adminSelect) {
+        adminSelect.value = "";
+      }
+      var croSelect = document.getElementById("adminCROSelect");
+      if (croSelect) {
+        croSelect.value = "";
+      }
+      isAdminTotalAll = true;
+      currentJamData = {};
+      updateJamHint();
+      checkAccumulation();
+    }
+
+    // =========================================================================
+    // AKUMULASI & JAM HINT
+    // =========================================================================
+
+
+    function onTanggalChange() {
+      currentJamData = {};
+      updateJamHint();
+      checkAccumulation();
+      updateRunningText();
+    }
+
+    function fetchAndAccumulate(regions, label, tanggal, isSilent) {
+      if (!regions || regions.length === 0) return;
+
+      if (!isSilent) {
+        setLoading(true, "Mengambil data rekapan " + label + "...");
+      }
+
+      var totalRealisasi = 0;
+      var combinedJamData = {};
+      var totalEstimasi = 0;
+
+      var hasError = false;
+      var errorMsg = "";
+
+      var hours = ["06.00", "07.00", "08.00", "09.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.30"];
+      for (var i = 0; i < hours.length; i++) {
+        combinedJamData[hours[i]] = 0;
+      }
+
+      var completedData = false;
+      var completedEstimasi = false;
+      var s = loadSession();
+
+      // Fetch ALL Realisasi (1 request)
+      jsonpRequest(
+        { action: "getData", tanggal: tanggal, region: "ALL" },
+        function (res) {
+          if (res.success && res.allRecords) {
+            res.allRecords.forEach(function (r) {
+              if (regions.includes(r.region)) {
+                var t = parseFloat(r.tonase) || 0;
+                totalRealisasi += t;
+                if (r.jam) {
+                  combinedJamData[r.jam] = (combinedJamData[r.jam] || 0) + t;
+                }
+              }
+            });
+          } else {
+            hasError = true;
+            errorMsg = res.message || "Gagal mengambil data realisasi";
+          }
+          completedData = true;
+          checkIfDone();
+        },
+        function (err) {
+          hasError = true;
+          errorMsg = err;
+          completedData = true;
+          checkIfDone();
+        }
+      );
+
+      // Fetch ALL Estimasi (1 request)
+      jsonpRequest(
+        { action: "getEstimasi", tanggal: tanggal, region: "ALL", token: s ? s.token : "" },
+        function (estRes) {
+          if (estRes.success && estRes.allEstimasi) {
+            regions.forEach(function (reg) {
+              var regData = estRes.allEstimasi[reg];
+              if (regData) {
+                var estPanenKg = parseFloat(regData.estPanen) || 0;
+                var estKirimKg = parseFloat(regData.estKirim) || 0;
+                if (estPanenKg === 0) {
+                  estPanenKg = estKirimKg;
+                }
+                totalEstimasi += estPanenKg / 1000;
+              }
+            });
+          }
+          completedEstimasi = true;
+          checkIfDone();
+        },
+        function () {
+          completedEstimasi = true;
+          checkIfDone();
+        }
+      );
+
+      function checkIfDone() {
+        if (completedData && completedEstimasi) {
+          if (!isSilent) {
+            setLoading(false);
+          }
+          if (hasError && totalRealisasi === 0) {
+            akumulasiEl.value = "0";
+            currentJamData = {};
+            setStatus(errorMsg, "#dc3545");
+            currentEstimasiPanen = 0;
+          } else {
+            akumulasiEl.value = totalRealisasi.toFixed(2);
+            currentJamData = combinedJamData;
+            currentEstimasiPanen = totalEstimasi;
+            setStatus("", "");
+          }
+          updateJamHint();
+          updateEstimasiComparison();
+        }
+      }
+    }
+
+    function checkAccumulation(isSilent) {
+      var tanggal = document.getElementById("tanggal").value;
+      var s = loadSession();
+      if (!tanggal || !s) {
+        akumulasiEl.value = "0";
+        currentJamData = {};
+        updateJamHint();
+        if (!isSilent) {
+          setLoading(false);
+        }
+        currentEstimasiPanen = 0;
+        updateEstimasiComparison();
+        return;
+      }
+
+      var region = s.region;
+      var croGroup = "";
+
+      if (s.region === "ADMIN") {
+        if (isAdminTotalAll) {
+          fetchAndAccumulate(ALL_REGIONS, "Semua Region", tanggal, isSilent);
+          return;
+        }
+
+        var adminSelect = document.getElementById("adminRegionSelect");
+        var croSelect = document.getElementById("adminCROSelect");
+        if (croSelect && croSelect.value) {
+          croGroup = croSelect.value;
+        } else if (adminSelect && adminSelect.value) {
+          region = adminSelect.value;
+        } else {
+          akumulasiEl.value = "0";
+          currentJamData = {};
+          updateJamHint();
+          if (!isSilent) {
+            setLoading(false);
+          }
+          currentEstimasiPanen = 0;
+          updateEstimasiComparison();
+          return;
+        }
+      }
+
+      if (croGroup) {
+        fetchAndAccumulate(CRO_GROUPS[croGroup], croGroup, tanggal, isSilent);
+        return;
+      }
+
+      if (!isSilent) {
+        akumulasiEl.value = "";
+        setLoading(true, "Mengambil data realisasi...");
+      }
+
+      jsonpRequest(
+        { action: "getData", tanggal: tanggal, region: region },
+        function (res) {
+          if (res.success) {
+            akumulasiEl.value = res.total.toFixed(2);
+            currentJamData = res.jamData || {};
+            setStatus("", "");
+          } else {
+            akumulasiEl.value = "0";
+            currentJamData = {};
+            setStatus(res.message || "Gagal mengambil data.", "#dc3545");
+          }
+          updateJamHint();
+
+          // Ambil data estimasi rencana
+          jsonpRequest(
+            { action: "getEstimasi", tanggal: tanggal, region: region, token: s.token },
+            function (estRes) {
+              if (!isSilent) {
+                setLoading(false);
+              }
+              if (estRes.success && estRes.exists) {
+                var estPanenKg = parseFloat(estRes.data.estPanen) || 0;
+                var estKirimKg = parseFloat(estRes.data.estKirim) || 0;
+                if (estPanenKg === 0) {
+                  estPanenKg = estKirimKg;
+                }
+                currentEstimasiPanen = estPanenKg / 1000; // Konversi Kg ke Ton
+              } else {
+                currentEstimasiPanen = 0;
+              }
+              updateEstimasiComparison();
+            },
+            function () {
+              if (!isSilent) {
+                setLoading(false);
+              }
+              currentEstimasiPanen = 0;
+              updateEstimasiComparison();
+            }
+          );
+        },
+        function (errMsg) {
+          if (!isSilent) {
+            setLoading(false);
+          }
+          akumulasiEl.value = "0";
+          setStatus(errMsg, "#dc3545");
+          currentEstimasiPanen = 0;
+          updateEstimasiComparison();
+        }
+      );
+    }
+
+    function updateJamHint() {
+      updateChart();
+      var jam = document.getElementById("jam").value;
+      var hint = document.getElementById("jamHint");
+      if (!jam) { hint.textContent = ""; return; }
+
+      if (currentJamData.hasOwnProperty(jam)) {
+        hint.textContent = "Jam " + jam + " sudah terisi: " + currentJamData[jam] + " Ton. "
+          + "Gunakan 'Hapus Jam Ini' jika ingin merevisi.";
+        hint.style.color = "#28a745";
+      } else {
+        hint.textContent = "Jam " + jam + " belum ada data.";
+        hint.style.color = "#28a745";
+      }
+    }
+
+    function formatNumberId(num) {
+      if (typeof num !== "number") num = parseFloat(num) || 0;
+      return num.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function updateEstimasiComparison() {
+      var card = document.getElementById("estimasiComparisonCard");
+      var compEstimasi = document.getElementById("compCardEstimasi");
+      var compRealisasi = document.getElementById("compCardRealisasi");
+      var compPercentage = document.getElementById("compCardPercentage");
+
+      if (!card || !compEstimasi || !compRealisasi || !compPercentage) return;
+
+      var tanggal = document.getElementById("tanggal").value;
+      var s = loadSession();
+
+      if (!tanggal || !s) {
+        card.style.display = "none";
+        return;
+      }
+
+      var totalRealisasi = parseFloat(document.getElementById("akumulasi").value) || 0;
+
+      card.style.display = "block";
+      compRealisasi.textContent = formatNumberId(totalRealisasi) + " Ton";
+
+      if (currentEstimasiPanen > 0) {
+        compEstimasi.textContent = formatNumberId(currentEstimasiPanen) + " Ton";
+        var pct = (totalRealisasi / currentEstimasiPanen) * 100;
+        compPercentage.textContent = formatNumberId(pct) + "%";
+
+        if (pct >= 100) {
+          compPercentage.style.color = "#28a745"; // Green
+        } else if (pct >= 80) {
+          compPercentage.style.color = "#ffa600"; // Orange
+        } else {
+          compPercentage.style.color = "#dc3545"; // Red
+        }
+      } else {
+        compEstimasi.textContent = "0,00 Ton";
+        compPercentage.textContent = "0,00%";
+        compPercentage.style.color = "var(--text-muted)";
+      }
+      updateChart();
+    }
+
+    // =========================================================================
+    // INSERT
+    // =========================================================================
+
+    function handleInsert() {
+      if (isSubmitting) { alert("Sedang memproses, harap tunggu."); return; }
+
+      var s = requireSession();
+      if (!s) return;
+
+      var tanggal = document.getElementById("tanggal").value;
+      var jam = document.getElementById("jam").value;
+      var tonase = document.getElementById("tonase").value;
+
+      if (!tanggal || !jam) { alert("Harap lengkapi Tanggal dan Jam!"); return; }
+      if (!tonase) { alert("Harap isi angka tonase untuk dikirim!"); return; }
+
+      var tonaseNum = parseFloat(tonase);
+      if (isNaN(tonaseNum) || tonaseNum < 0 || tonaseNum > 5000) {
+        alert("Tonase tidak valid. Masukkan angka antara 0 dan 5.000 ton.");
+        return;
+      }
+
+      if (currentJamData.hasOwnProperty(jam)) {
+        alert("Data jam " + jam + " sudah ada. Gunakan 'Hapus Jam Ini' untuk merevisi.");
+        return;
+      }
+
+      isSubmitting = true;
+      setLoading(true, "Mengirim data...");
+
+      jsonpRequest(
+        { action: "insert", tanggal: tanggal, region: s.region, jam: jam, tonase: tonase, token: s.token },
+        function (res) {
+          isSubmitting = false;
+          setLoading(false);
+          if (res.success) {
+            setStatus(res.message, "green");
+            document.getElementById("tonase").value = "";
+            if (res.total !== undefined) akumulasiEl.value = res.total.toFixed(2);
+            if (res.jamData !== undefined) currentJamData = res.jamData;
+            updateRunningText();
+          } else {
+            if (isSessionError(res.message)) { alert(res.message); prosesLogout(); return; }
+            setStatus(res.message || "Gagal mengirim data.", "#dc3545");
+            if (res.total !== undefined) akumulasiEl.value = res.total.toFixed(2);
+            if (res.jamData !== undefined) currentJamData = res.jamData;
+          }
+          updateJamHint();
+          updateEstimasiComparison();
+        },
+        function (errMsg) {
+          isSubmitting = false;
+          setLoading(false);
+          setStatus(errMsg, "#dc3545");
+        }
+      );
+    }
+
+    // =========================================================================
+    // DELETE
+    // =========================================================================
+
+    function handleDelete() {
+      if (isSubmitting) { alert("Sedang memproses, harap tunggu."); return; }
+
+      var s = requireSession();
+      if (!s) return;
+
+      var tanggal = document.getElementById("tanggal").value;
+      var jam = document.getElementById("jam").value;
+
+      if (!tanggal || !jam) { alert("Pilih Tanggal dan Jam yang ingin dihapus!"); return; }
+
+      if (!currentJamData.hasOwnProperty(jam)) {
+        alert("TIDAK DITEMUKAN: Tidak ada data tersimpan untuk jam " + jam + " pada Tanggal & Region ini.");
+        return;
+      }
+
+      // Validasi Tanggal (Hanya Hari Ini)
+      var today = new Date();
+      var wibOffset = 7 * 60;
+      var localOffset = today.getTimezoneOffset();
+      var todayWIB = new Date(today.getTime() + (wibOffset + localOffset) * 60000);
+      var todayStr = todayWIB.toISOString().split('T')[0];
+
+      var actionToCall = "delete";
+      var confirmMsg = "Apakah Anda yakin ingin menghapus data laporan jam " + jam + "?\n"
+        + "Tonase sebesar " + currentJamData[jam] + " Ton akan dihapus dari database & akumulasi.";
+
+      if (tanggal !== todayStr) {
+        actionToCall = "requestDelete";
+        confirmMsg = "Penghapusan data di luar Hari Ini membutuhkan persetujuan ADMIN.\nKirim permintaan hapus untuk jam " + jam + "?";
+      }
+
+      var konfirmasi = confirm(confirmMsg);
+      if (!konfirmasi) return;
+
+      isSubmitting = true;
+      setLoading(true, actionToCall === "delete" ? "Menghapus data..." : "Mengirim permintaan...");
+
+      jsonpRequest(
+        { action: actionToCall, type: "REALISASI", tanggal: tanggal, region: s.region, jam: jam, token: s.token },
+        function (res) {
+          isSubmitting = false;
+          setLoading(false);
+          if (res.success) {
+            setStatus(res.message, "#dc3545");
+            updateRunningText();
+          } else {
+            if (isSessionError(res.message)) { alert(res.message); prosesLogout(); return; }
+            setStatus(res.message || "Gagal menghapus data.", "#dc3545");
+          }
+          if (res.total !== undefined) akumulasiEl.value = res.total.toFixed(2);
+          if (res.jamData !== undefined) currentJamData = res.jamData;
+          updateJamHint();
+          updateEstimasiComparison();
+        },
+        function (errMsg) {
+          isSubmitting = false;
+          setLoading(false);
+          setStatus(errMsg, "#dc3545");
+        }
+      );
+    }
+
+    // =========================================================================
+    // HELPERS
+    // =========================================================================
+
+    function isSessionError(msg) {
+      if (!msg) return false;
+      var l = msg.toLowerCase();
+      return l.indexOf("sesi") !== -1 || l.indexOf("token") !== -1 || l.indexOf("login ulang") !== -1;
+    }
+
+    function setLoading(on, text) {
+      if (submitBtn) submitBtn.disabled = on;
+      if (deleteBtn) deleteBtn.disabled = on;
+
+      var loginBtn = document.getElementById("loginBtn");
+      if (loginBtn) {
+        loginBtn.disabled = on;
+        if (on) {
+          loginBtn.classList.add("is-loading");
+        } else {
+          loginBtn.classList.remove("is-loading");
+        }
+      }
+
+      var estSubmit = document.getElementById("submitEstimasiBtn");
+      var estDelete = document.getElementById("deleteEstimasiBtn");
+      if (estSubmit) estSubmit.disabled = on;
+      if (estDelete) estDelete.disabled = on;
+
+      if (on) {
+        setStatus(text, "#555");
+        var estStat = document.getElementById("statusEstimasi");
+        if (estStat) {
+          estStat.textContent = text;
+          estStat.style.color = "#555";
+        }
+        showLoading(text);
+      } else {
+        hideLoading();
+      }
+    }
+
+    function showLoading(text) {
+      var el = document.getElementById("loadingOverlay");
+      var txtEl = document.getElementById("loadingText");
+      if (el) {
+        if (text && txtEl) txtEl.textContent = text;
+        el.style.display = "flex";
+        el.offsetHeight; // trigger reflow
+        el.classList.add("active");
+      }
+    }
+
+    function hideLoading() {
+      var el = document.getElementById("loadingOverlay");
+      if (el) {
+        el.classList.remove("active");
+        setTimeout(function () {
+          if (!el.classList.contains("active")) {
+            el.style.display = "none";
+          }
+        }, 400);
+      }
+    }
+
+    function setStatus(text, color) {
+      statusText.textContent = text;
+      statusText.style.color = color;
+    }
+    window.addEventListener("beforeunload", function () {
+      if (isInternalNavigation) return;
+      var s = loadSession();
+      if (!s) return;
+
+      // Gunakan sendBeacon ke endpoint /api/logout (lebih reliable saat tab ditutup)
+      var url = API_BASE + "/logout"
+        + "?token=" + encodeURIComponent(s.token)
+        + "&region=" + encodeURIComponent(s.region);
+
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(url);
+      } else {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, false);
+        try { xhr.send(); } catch (e) { }
+      }
+
+      clearSession();
+    });
+
+    // =========================================================================
+    // FITUR ESTIMASI PANEN
+    // =====================================// 1. Fungsi Navigasi Antar Halaman
+    function bukaEstimasiModal() {
+      var s = requireSession();
+      if (!s) return;
+
+      var iframe = document.getElementById("infografisIframe");
+      if (iframe && iframe.contentWindow && iframe.contentWindow.closeTableModal) {
+        iframe.contentWindow.closeTableModal();
+      }
+
+      var backdrop = document.getElementById("estimasiBackdrop");
+      if (backdrop) {
+        backdrop.style.display = "block";
+        backdrop.offsetWidth; // trigger reflow
+        backdrop.classList.add("show");
+      }
+
+      var estimasiSec = document.getElementById("estimasiSection");
+      estimasiSec.style.display = "block";
+      estimasiSec.classList.remove("ios-modal-leave");
+      estimasiSec.offsetWidth; // trigger reflow
+      estimasiSec.classList.add("ios-modal-enter");
+
+      var d = document.getElementById("tanggal").value;
+      if (d) {
+        var ed = document.getElementById("tanggalEstimasi");
+        if (!ed.value) ed.value = d;
+        checkEstimasi();
+      }
+    }
+
+    function tutupEstimasiModal() {
+      var estimasiSec = document.getElementById("estimasiSection");
+      estimasiSec.classList.remove("ios-modal-enter");
+      estimasiSec.classList.add("ios-modal-leave");
+
+      var backdrop = document.getElementById("estimasiBackdrop");
+      if (backdrop) {
+        backdrop.classList.remove("show");
+      }
+
+      setTimeout(function () {
+        estimasiSec.style.display = "none";
+        estimasiSec.classList.remove("ios-modal-leave");
+        if (backdrop) backdrop.style.display = "none";
+
+        var iframe = document.getElementById("infografisIframe");
+        if (iframe && iframe.contentWindow && iframe.contentWindow.fetchEstimasiData) {
+          iframe.contentWindow.fetchEstimasiData();
+        }
+      }, 250);
+    }
+
+    function bukaEstimasi() {
+      var s = requireSession();
+      if (!s) return; // Pastikan user masih login
+
+      showLoading("Membuka Form Estimasi...");
+      setTimeout(function () {
+        document.getElementById("mainSection").style.display = "none";
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("estimasiSection").style.display = "block";
+        document.body.classList.remove("dashboard-active");
+        document.getElementById("displayRegionEstimasi").textContent = "Region: " + s.region;
+
+        var estDateEl = document.getElementById("tanggalEstimasi");
+        if (!estDateEl.value) {
+          var realDate = document.getElementById("tanggal").value;
+          if (realDate) {
+            estDateEl.value = realDate;
+          }
+        }
+
+        if (estDateEl.value) {
+          checkEstimasi();
+        } else {
+          hideLoading();
+        }
+      }, 400);
+    }
+
+    function bukaRealisasi() {
+      var s = loadSession();
+      if (s && s.region === "ADMIN") {
+        isInternalNavigation = true;
+        window.location.href = "laporan_produksi.html";
+        return;
+      }
+      var infografisSec = document.getElementById("infografisSection");
+      var estimasiSec = document.getElementById("estimasiSection");
+
+      // Smooth switch when coming back from estimasi Section
+      if (estimasiSec.style.display === "block") {
+        estimasiSec.classList.add("fade-out-anim");
+        setTimeout(function () {
+          estimasiSec.style.display = "none";
+          estimasiSec.classList.remove("fade-out-anim");
+
+          var mainSec = document.getElementById("mainSection");
+          mainSec.style.display = "flex";
+          mainSec.classList.add("fade-in-anim");
+          document.body.classList.add("dashboard-active");
+
+          setTimeout(function () {
+            mainSec.classList.remove("fade-in-anim");
+          }, 250);
+
+          updateRunningText();
+        }, 250);
+        return;
+      }
+
+      // Bring back mainSection immediately so it is visible behind the shrinking modal
+      document.getElementById("mainSection").style.display = "flex";
+      document.body.classList.add("dashboard-active");
+
+      // Get button center position in case screen was resized
+      var btn = document.getElementById("btnOpenInfografis");
+      if (btn) {
+        var btnRect = btn.getBoundingClientRect();
+        var btnX = btnRect.left + btnRect.width / 2;
+        var btnY = btnRect.top + btnRect.height / 2;
+        var W = window.innerWidth / 2;
+        var H = window.innerHeight / 2;
+        var translateX = btnX - W;
+        var translateY = btnY - H;
+        infografisSec.style.setProperty('--scale-x', translateX + 'px');
+        infografisSec.style.setProperty('--scale-y', translateY + 'px');
+      }
+
+      // Trigger Scale out animation
+      infografisSec.classList.remove("scale-in");
+      infografisSec.classList.add("scale-out");
+
+      // Hide infografisSection after animation finishes (400ms is scale-out duration)
+      setTimeout(function () {
+        infografisSec.style.display = "none";
+        infografisSec.classList.remove("scale-out");
+
+        document.getElementById("estimasiSection").style.display = "none";
+        document.getElementById("loginSection").style.display = "none";
+
+        updateRunningText();
+      }, 400);
+    }
+
+    function bukaInfografis() {
+      var s = loadSession();
+      if (!s) return;
+
+      // Get button center position
+      var btn = document.getElementById("btnOpenInfografis");
+      var btnRect = btn.getBoundingClientRect();
+      var btnX = btnRect.left + btnRect.width / 2;
+      var btnY = btnRect.top + btnRect.height / 2;
+
+      // Calculate offsets from viewport center
+      var W = window.innerWidth / 2;
+      var H = window.innerHeight / 2;
+      var translateX = btnX - W;
+      var translateY = btnY - H;
+
+      var infografisSec = document.getElementById("infografisSection");
+
+      // Set CSS variables on the section
+      infografisSec.style.setProperty('--scale-x', translateX + 'px');
+      infografisSec.style.setProperty('--scale-y', translateY + 'px');
+
+      // Set iframe src
+      var iframe = document.getElementById("infografisIframe");
+      iframe.src = "FORMAT_ESTIMASI_PANEN.html?t=" + new Date().getTime();
+
+      // Prepare classes and display
+      infografisSec.classList.remove("scale-out");
+      infografisSec.classList.add("scale-in");
+      infografisSec.style.display = "flex";
+
+      var runningContainer = document.getElementById("runningTextContainer");
+      if (runningContainer) runningContainer.style.display = "none";
+
+      // Hide mainSection after the animation finishes (500ms is scale-in duration)
+      setTimeout(function () {
+        document.getElementById("mainSection").style.display = "none";
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("estimasiSection").style.display = "none";
+        document.body.classList.remove("dashboard-active");
+      }, 500);
+    }
+
+    // 2. Fungsi Kalkulasi Otomatis Output Panen (Kg/Hk)
+    function hitungOutput() {
+      var tk = parseFloat(document.getElementById("tkPanen").value);
+      var panen = parseFloat(document.getElementById("estimasiPanen").value);
+      var outputEl = document.getElementById("outputPanen");
+
+      if (!isNaN(tk) && !isNaN(panen) && tk > 0) {
+        var output = panen / tk;
+        outputEl.value = output.toFixed(2); // Dibulatkan 2 desimal
+      } else {
+        outputEl.value = "";
+      }
+    }
+
+    var isTidakPanen = false;
+    function toggleTidakPanen(forceActive) {
+      isTidakPanen = (typeof forceActive === "boolean") ? forceActive : !isTidakPanen;
+      var btn = document.getElementById("btnTidakPanen");
+      if (btn) {
+        if (isTidakPanen) {
+          btn.textContent = "Status: Hanya Pengiriman Restan (Aktif)";
+          btn.style.backgroundColor = "#dc3545"; // red
+        } else {
+          btn.textContent = "Status: Aktif Panen (Klik jika Tidak Panen)";
+          btn.style.backgroundColor = "#28a745"; // green
+        }
+      }
+
+      var inputs = ["luasPanen", "estimasiRestanLalu", "tkPanen", "estimasiPanen", "estimasiRestan"];
+      inputs.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.disabled = isTidakPanen;
+          if (isTidakPanen) {
+            el.value = "0";
+          } else if (el.value === "0") {
+            el.value = "";
+          }
+        }
+      });
+      var outPanenEl = document.getElementById("outputPanen");
+      if (outPanenEl) {
+        if (isTidakPanen) {
+          outPanenEl.value = "0";
+        } else if (outPanenEl.value === "0") {
+          outPanenEl.value = "";
+        }
+      }
+    }
+
+    function simpanDraftEstimasi() {
+      var s = requireSession();
+      if (!s) return;
+      var tanggal = document.getElementById("tanggalEstimasi").value;
+      if (!tanggal) { alert("Pilih tanggal estimasi terlebih dahulu."); return; }
+
+      var now = new Date();
+      var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      var wibNow = new Date(utc + (7 * 3600000));
+      var parts = tanggal.split("-");
+      var estYear = parseInt(parts[0], 10);
+      var estMonth = parseInt(parts[1], 10) - 1;
+      var estDay = parseInt(parts[2], 10);
+      var deadline = new Date(estYear, estMonth, estDay - 1, 22, 0, 0, 0);
+
+      if (wibNow.getTime() > deadline.getTime() && window.currentUnlockStatus !== 'APPROVED') {
+        alert("Penyimpanan draft ditutup! Batas pengisian rencana estimasi telah berakhir pada pukul 22.00 WIB.");
+        return;
+      }
+
+      var draftData = {
+        luasPanen: document.getElementById("luasPanen").value,
+        estimasiRestanLalu: document.getElementById("estimasiRestanLalu").value,
+        tkPanen: document.getElementById("tkPanen").value,
+        estimasiPanen: document.getElementById("estimasiPanen").value,
+        outputPanen: document.getElementById("outputPanen").value,
+        estimasiKirim: document.getElementById("estimasiKirim").value,
+        estimasiRestan: document.getElementById("estimasiRestan").value
+      };
+
+      var draftKey = "draft_estimasi_" + s.region + "_" + tanggal;
+      localStorage.setItem(draftKey, JSON.stringify(draftData));
+      alert("Draft estimasi berhasil disimpan di perangkat ini.");
+    }
+
+    // 3. Fungsi Kirim Data Estimasi ke Backend
+    function handleInsertEstimasi() {
+      if (isSubmitting) { alert("Sedang memproses, harap tunggu."); return; }
+
+      var s = requireSession();
+      if (!s) return;
+
+      var tanggal = document.getElementById("tanggalEstimasi").value;
+
+      if (isTidakPanen) {
+        document.getElementById("luasPanen").value = "0";
+        document.getElementById("estimasiRestanLalu").value = "0";
+        document.getElementById("tkPanen").value = "0";
+        document.getElementById("estimasiPanen").value = "0";
+        document.getElementById("outputPanen").value = "0";
+        document.getElementById("estimasiRestan").value = "0";
+      }
+
+      var luasPanen = document.getElementById("luasPanen").value;
+      var estRestanLalu = document.getElementById("estimasiRestanLalu").value;
+      var tkPanen = document.getElementById("tkPanen").value;
+      var estPanen = document.getElementById("estimasiPanen").value;
+      var outPanen = document.getElementById("outputPanen").value;
+      var estKirim = document.getElementById("estimasiKirim").value;
+      var estRestan = document.getElementById("estimasiRestan").value;
+
+      // Validasi kelengkapan
+      if (!tanggal || !luasPanen || !estRestanLalu || !tkPanen || !estPanen || !estKirim || !estRestan) {
+        alert("Harap lengkapi semua isian estimasi!");
+        return;
+      }
+
+      // Lock jam pengisian: Maksimal H-1 jam 22.00 WIB
+      var now = new Date();
+      var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      var wibNow = new Date(utc + (7 * 3600000));
+
+      var parts = tanggal.split("-");
+      var estYear = parseInt(parts[0], 10);
+      var estMonth = parseInt(parts[1], 10) - 1;
+      var estDay = parseInt(parts[2], 10);
+
+      var deadline = new Date(estYear, estMonth, estDay - 1, 22, 0, 0, 0);
+
+      if (wibNow.getTime() > deadline.getTime() && window.currentUnlockStatus !== 'APPROVED') {
+        var d1 = new Date(estYear, estMonth, estDay - 1);
+        var d1Day = String(d1.getDate()).padStart(2, '0');
+        var d1Month = String(d1.getMonth() + 1).padStart(2, '0');
+        var d1Year = d1.getFullYear();
+        var deadlineDateStr = d1Day + "/" + d1Month + "/" + d1Year;
+
+        alert("Pengisian ditutup! Batas pengisian rencana estimasi untuk tanggal " +
+          tanggal.split("-").reverse().join("/") +
+          " telah berakhir pada tanggal " + deadlineDateStr + " pukul 22.00 WIB.");
+        return;
+      }
+
+      // Validasi numerik â€” masing-masing field divalidasi sendiri
+      var luasPanenNum = parseFloat(luasPanen);
+      if (isNaN(luasPanenNum) || luasPanenNum < 0 || luasPanenNum > 999999) {
+        alert("Luas Panen tidak valid.");
+        return;
+      }
+
+      var restanLaluNum = parseFloat(estRestanLalu);
+      if (isNaN(restanLaluNum) || restanLaluNum < 0 || restanLaluNum > 999999999) {
+        alert("Estimasi Restan Lalu tidak valid.");
+        return;
+      }
+
+      var tkPanenNum = parseFloat(tkPanen);
+      if (isNaN(tkPanenNum) || tkPanenNum < 0 || tkPanenNum > 99999) {
+        alert("TK Panen tidak valid.");
+        return;
+      }
+
+      var estPanenNum = parseFloat(estPanen);
+      if (isNaN(estPanenNum) || estPanenNum < 0 || estPanenNum > 999999999) {
+        alert("Estimasi Panen tidak valid.");
+        return;
+      }
+
+      var outPanenNum = parseFloat(outPanen) || 0;
+
+      var estKirimNum = parseFloat(estKirim);
+      if (isNaN(estKirimNum) || estKirimNum < 0 || estKirimNum > 999999999) {
+        alert("Estimasi Kirim tidak valid.");
+        return;
+      }
+
+      var estRestanNum = parseFloat(estRestan);
+      if (isNaN(estRestanNum) || estRestanNum < 0 || estRestanNum > 999999999) {
+        alert("Estimasi Restan tidak valid.");
+        return;
+      }
+
+      isSubmitting = true;
+      setLoading(true, "Mengirim data estimasi...");
+
+      jsonpRequest(
+        {
+          action: "insertEstimasi",
+          tanggal: tanggal,
+          region: s.region,
+          estimasiRestanLalu: estRestanLalu,
+          luasPanen: luasPanen,
+          tkPanen: tkPanen,
+          estimasiPanen: estPanen,
+          outputPanen: outPanenNum,
+          estimasiKirim: estKirim,
+          estimasiRestan: estRestan,
+          token: s.token,
+          clientTime: getClientWIBTimeStr()
+        },
+        function (res) {
+          isSubmitting = false;
+          setLoading(false);
+          var stat = document.getElementById("statusEstimasi");
+          if (res.success) {
+            if (stat) {
+              stat.textContent = "Data estimasi berhasil disimpan!";
+              stat.style.color = "green";
+            }
+            document.getElementById("estimasiForm").reset();
+            document.getElementById("estimasiHint").textContent = "";
+            currentEstimasiExists = true;
+            localStorage.removeItem("draft_estimasi_" + s.region + "_" + tanggal);
+          } else {
+            if (isSessionError(res.message)) { alert(res.message); prosesLogout(); return; }
+            if (stat) {
+              stat.textContent = res.message || "Gagal mengirim data.";
+              stat.style.color = "#dc3545";
+            }
+          }
+        },
+        function (errMsg) {
+          isSubmitting = false;
+          setLoading(false);
+          var stat = document.getElementById("statusEstimasi");
+          if (stat) {
+            stat.textContent = errMsg;
+            stat.style.color = "#dc3545";
+          }
+        }
+      );
+    }
+    // 4. Fungsi Hapus Data Estimasi dari Backend
+    function handleDeleteEstimasi() {
+      if (isSubmitting) { alert("Sedang memproses, harap tunggu."); return; }
+
+      var s = requireSession();
+      if (!s) return;
+
+      var tanggal = document.getElementById("tanggalEstimasi").value;
+
+      if (!tanggal) {
+        alert("Pilih Tanggal Estimasi yang ingin dihapus!");
+        return;
+      }
+
+      // Validasi Tanggal (Hanya H-1)
+      var today = new Date();
+      var wibOffset = 7 * 60;
+      var localOffset = today.getTimezoneOffset();
+      var todayWIB = new Date(today.getTime() + (wibOffset + localOffset) * 60000);
+      var yesterdayWIB = new Date(todayWIB.getTime() - 24 * 60 * 60 * 1000);
+      var yesterdayStr = yesterdayWIB.toISOString().split('T')[0];
+
+      var actionToCall = "deleteEstimasi";
+      var confirmMsg = "Apakah Anda yakin ingin menghapus data estimasi tanggal " + tanggal + " untuk Region " + s.region + "?\nData yang dihapus tidak dapat dikembalikan.";
+
+      if (tanggal !== yesterdayStr) {
+        actionToCall = "requestDelete";
+        confirmMsg = "Penghapusan data estimasi selain H-1 (Kemarin) membutuhkan persetujuan ADMIN.\nKirim permintaan hapus untuk estimasi tanggal " + tanggal + "?";
+      }
+
+      var konfirmasi = confirm(confirmMsg);
+      if (!konfirmasi) return;
+
+      isSubmitting = true;
+      setLoading(true, actionToCall === "deleteEstimasi" ? "Menghapus data estimasi..." : "Mengirim permintaan...");
+
+      jsonpRequest(
+        {
+          action: actionToCall,
+          type: "ESTIMASI",
+          tanggal: tanggal,
+          region: s.region,
+          token: s.token
+        },
+        function (res) {
+          isSubmitting = false;
+          setLoading(false);
+          var stat = document.getElementById("statusEstimasi");
+          if (res.success) {
+            if (stat) {
+              stat.textContent = res.message || "Data estimasi berhasil dihapus!";
+              stat.style.color = "#dc3545";
+            }
+            document.getElementById("estimasiForm").reset();
+            document.getElementById("estimasiHint").textContent = "";
+          } else {
+            if (isSessionError(res.message)) { alert(res.message); prosesLogout(); return; }
+            if (stat) {
+              stat.textContent = res.message || "Gagal menghapus data.";
+              stat.style.color = "#dc3545";
+            }
+          }
+        },
+        function (errMsg) {
+          isSubmitting = false;
+          setLoading(false);
+          var stat = document.getElementById("statusEstimasi");
+          if (stat) {
+            stat.textContent = errMsg;
+            stat.style.color = "#dc3545";
+          }
+        }
+      );
+    }
+
+    // =========================================================================
+    // INIT â€” pulihkan sesi jika halaman di-refresh
+    // =========================================================================
+    (function init() {
+      var params = new URLSearchParams(window.location.search);
+      var showInfografis = params.get('show') === 'infografis';
+
+      var s = loadSession();
+      if (s) {
+        if (s.region === "ADMIN" && !showInfografis) {
+          isInternalNavigation = true;
+          window.location.href = "laporan_produksi.html";
+          return;
+        }
+
+        if (showInfografis) {
+          document.getElementById("loginSection").style.display = "none";
+          document.getElementById("mainSection").style.display = "none";
+          bukaInfografis();
+          return;
+        }
+
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("mainSection").style.display = "flex";
+        document.body.classList.add("dashboard-active");
+        applyUserRoleUI();
+        scheduleSessionWarning(s.expiry);
+        startHeartbeat();
+        startAdminAutoUpdate();
+        startNotificationsCheck();
+        currentJamData = {};
+        updateJamHint();
+      } else {
+        // Sesi kosong â€” tetap di login.html, tampilkan login form
+        document.getElementById("loginSection").style.display = "block";
+        document.getElementById("mainSection").style.display = "none";
+      }
+    })();
+
+    // =========================================================================
+    // PAGESHOW GUARD â€” cegah akses halaman dari bfcache setelah logout
+    // =========================================================================
+    window.addEventListener("pageshow", function (event) {
+      if (event.persisted) {
+        // Halaman dimuat dari bfcache (tombol Back/Forward)
+        var s = loadSession();
+        var loginSec = document.getElementById("loginSection");
+        var isOnDashboard = loginSec && loginSec.style.display === "none";
+        if (!s && isOnDashboard) {
+          // Session sudah dihapus (logout), tapi halaman masih menampilkan dashboard
+          _resetUI();
+        }
+      }
+    });
+
+
+    var clientIP = "Tidak Terdeteksi";
+    fetch('https://api.ipify.org?format=json')
+      .then(response => response.json())
+      .then(data => { clientIP = data.ip; })
+      .catch(e => { });
+
+    // =========================================================================
+    // JAM DIGITAL SERVER WIB (UTC+7)
+    // =========================================================================
+    function updateWIBClock() {
+      var now = new Date();
+      // Offset local timezone to UTC, then add 7 hours for WIB (UTC+7)
+      var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      var wibTime = new Date(utc + (7 * 3600000));
+
+      var hh = String(wibTime.getHours()).padStart(2, '0');
+      var mm = String(wibTime.getMinutes()).padStart(2, '0');
+      var ss = String(wibTime.getSeconds()).padStart(2, '0');
+
+      var timeStr = hh + ":" + mm + ":" + ss;
+
+      // Format tanggal Indonesia
+      var days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      var months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      var dayName = days[wibTime.getDay()];
+      var dateNum = wibTime.getDate();
+      var monthName = months[wibTime.getMonth()];
+      var yearNum = wibTime.getFullYear();
+      var dateStr = dayName + ", " + dateNum + " " + monthName + " " + yearNum;
+
+      var timeIds = ["wibClockTime", "wibClockTimeEst", "wibClockTimeLogin"];
+      var dateIds = ["wibClockDate", "wibClockDateEst", "wibClockDateLogin"];
+
+      for (var i = 0; i < timeIds.length; i++) {
+        var el = document.getElementById(timeIds[i]);
+        if (el) el.textContent = timeStr;
+      }
+      for (var i = 0; i < dateIds.length; i++) {
+        var el = document.getElementById(dateIds[i]);
+        if (el) el.textContent = dateStr;
+      }
+    }
+    setInterval(updateWIBClock, 1000);
+    updateWIBClock();
+
+    // =========================================================================
+    // GRAFIK REALISASI PANEN TIAP JAM (CHART.JS)
+    // =========================================================================
+
+    var TREND_UP_COLOR = '#2563eb';   // biru â€” kenaikan
+    var TREND_DOWN_COLOR = '#dc2626'; // merah â€” penurunan
+    var TREND_FLAT_COLOR = 'rgba(148, 163, 184, 0.6)'; // netral â€” tidak ada perubahan / tidak ada data
+
+    // Memotong data hanya pada rentang jam yang sudah dilaporkan: null sebelum jam pertama
+    // dan sesudah jam terakhir yang terisi, supaya garis penghubung tidak "rata di 0" di luar rentang itu.
+    function trimToReportedRange(values) {
+      var firstIdx = -1, lastIdx = -1;
+      for (var i = 0; i < values.length; i++) {
+        if (values[i] > 0) {
+          if (firstIdx === -1) firstIdx = i;
+          lastIdx = i;
+        }
+      }
+      if (firstIdx === -1) return values.map(function () { return null; });
+      return values.map(function (v, i) {
+        return (i < firstIdx || i > lastIdx) ? null : v;
+      });
+    }
+
+    function segmentColorForLine(datasetIndex) {
+      return function (ctx) {
+        var data = ctx.chart.data.datasets[datasetIndex].data;
+        var v0 = data[ctx.p0DataIndex];
+        var v1 = data[ctx.p1DataIndex];
+        if (v0 == null || v1 == null) return TREND_FLAT_COLOR;
+        if (v1 > v0) return TREND_UP_COLOR;
+        if (v1 < v0) return TREND_DOWN_COLOR;
+        return TREND_FLAT_COLOR;
+      };
+    }
+
+    function pointColorForLine(datasetIndex) {
+      return function (ctx) {
+        var data = ctx.chart.data.datasets[datasetIndex].data;
+        var i = ctx.dataIndex;
+        var v1 = data[i];
+        if (i === 0 || v1 == null) return TREND_FLAT_COLOR;
+        var v0 = data[i - 1];
+        if (v0 == null) return TREND_FLAT_COLOR;
+        if (v1 > v0) return TREND_UP_COLOR;
+        if (v1 < v0) return TREND_DOWN_COLOR;
+        return TREND_FLAT_COLOR;
+      };
+    }
+
+    function updateChart() {
+      var canvas = document.getElementById("realisasiChart");
+      if (!canvas) return;
+
+      // Update title dynamically
+      var titleEl = document.getElementById("chartTitle");
+      if (titleEl) {
+        var s = loadSession();
+        var titleText = "Grafik Realisasi Tiap Jam";
+        if (s) {
+          if (s.region === "ADMIN") {
+            var adminSelect = document.getElementById("adminRegionSelect");
+            var croSelect = document.getElementById("adminCROSelect");
+            if (isAdminTotalAll) {
+              titleText += " - Semua Region";
+            } else if (croSelect && croSelect.value) {
+              titleText += " - " + croSelect.value;
+            } else if (adminSelect && adminSelect.value) {
+              titleText += " - " + adminSelect.value;
+            }
+          } else {
+            titleText += " - " + s.region;
+          }
+        }
+        titleEl.textContent = titleText;
+      }
+
+      var hours = ["06.00", "07.00", "08.00", "09.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.30"];
+      var dataValues = [];
+      var hasData = false;
+
+      for (var i = 0; i < hours.length; i++) {
+        var h = hours[i];
+        var val = currentJamData.hasOwnProperty(h) ? parseFloat(currentJamData[h]) : 0;
+        dataValues.push(val);
+        if (val > 0) hasData = true;
+      }
+
+      var noDataEl = document.getElementById("chartNoData");
+      if (noDataEl) {
+        noDataEl.style.display = hasData ? "none" : "block";
+      }
+
+      var lineData = trimToReportedRange(dataValues);
+
+      if (myChart) {
+        myChart.data.datasets[0].data = dataValues;
+        myChart.data.datasets[1].data = lineData;
+
+        // Re-create gradient on update to ensure it fits the canvas properly
+        var ctx = canvas.getContext("2d");
+        var gradient = ctx.createLinearGradient(0, 0, 0, canvas.clientHeight || 300);
+        gradient.addColorStop(0, 'rgba(40, 167, 69, 0.9)');
+        gradient.addColorStop(1, 'rgba(40, 167, 69, 0.15)');
+        myChart.data.datasets[0].backgroundColor = gradient;
+
+        myChart.update();
+      } else {
+        var ctx = canvas.getContext("2d");
+        var theme = document.documentElement.getAttribute("data-theme") || "light";
+        var gridColor = theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)";
+        var textColor = theme === "dark" ? "#cbd5e1" : "#444444";
+
+        // Create a beautiful linear gradient for normal background
+        var gradient = ctx.createLinearGradient(0, 0, 0, canvas.clientHeight || 300);
+        gradient.addColorStop(0, 'rgba(40, 167, 69, 0.9)');
+        gradient.addColorStop(1, 'rgba(40, 167, 69, 0.15)');
+
+        // Create a linear gradient for hover background
+        var hoverGradient = ctx.createLinearGradient(0, 0, 0, canvas.clientHeight || 300);
+        hoverGradient.addColorStop(0, 'rgba(40, 167, 69, 1)');
+        hoverGradient.addColorStop(1, 'rgba(40, 167, 69, 0.35)');
+
+        // Custom plugin to draw nilai per jam + persentase kumulatif vs estimasi, dan persentase kenaikan/penurunan per jam
+        var chartDataLabelsPlugin = {
+          id: 'chartDataLabels',
+          afterDatasetsDraw: function (chart) {
+            var ctx = chart.ctx;
+            var theme = document.documentElement.getAttribute("data-theme") || "light";
+
+            // Dataset 0 (bar): nilai per jam + persentase kumulatif terhadap estimasi
+            var barDataset = chart.data.datasets[0];
+            var barMeta = chart.getDatasetMeta(0);
+            barMeta.data.forEach(function (bar, index) {
+              var val = barDataset.data[index];
+              if (val === 0) return; // Don't draw if 0
+
+              ctx.save();
+              ctx.font = "bold 11px Calibri";
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+
+              var pctText = "";
+              var pctColor = "";
+              if (currentEstimasiPanen > 0) {
+                var cumulativeSum = 0;
+                for (var k = 0; k <= index; k++) {
+                  cumulativeSum += barDataset.data[k];
+                }
+                var pct = (cumulativeSum / currentEstimasiPanen) * 100;
+                pctText = pct.toFixed(2) + "%";
+                pctColor = theme === "dark" ? "#cbd5e1" : "#444444";
+              }
+
+              var valText = val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              ctx.fillStyle = theme === "dark" ? "#cbd5e1" : "#111111";
+
+              if (pctText) {
+                ctx.fillText(valText, bar.x, bar.y - 15);
+                ctx.fillStyle = pctColor;
+                ctx.fillText(pctText, bar.x, bar.y - 3);
+              } else {
+                ctx.fillText(valText, bar.x, bar.y - 3);
+              }
+              ctx.restore();
+            });
+
+            // Dataset 1 (garis penghubung): persentase kenaikan/penurunan dibanding jam sebelumnya
+            var lineDataset = chart.data.datasets[1];
+            var lineMeta = chart.getDatasetMeta(1);
+            lineMeta.data.forEach(function (point, index) {
+              if (index === 0) return; // jam pertama tidak punya pembanding
+              var prev = lineDataset.data[index - 1];
+              var curr = lineDataset.data[index];
+              if (!prev || !curr) return; // di luar rentang terlapor / salah satu jam belum ada data
+
+              var change = ((curr - prev) / prev) * 100;
+              var isUp = change > 0;
+              var isFlat = change === 0;
+              var color = isFlat ? TREND_FLAT_COLOR : (isUp ? TREND_UP_COLOR : TREND_DOWN_COLOR);
+              var arrow = isFlat ? "â–¬" : (isUp ? "â–²" : "â–¼");
+              var text = arrow + " " + (change >= 0 ? "+" : "") + change.toFixed(1) + "%";
+
+              ctx.save();
+              ctx.font = "bold 10px Calibri";
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              ctx.fillStyle = color;
+              ctx.fillText(text, point.x + 10, point.y);
+              ctx.restore();
+            });
+          }
+        };
+
+        myChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: hours,
+            datasets: [
+              {
+                type: 'bar',
+                label: 'Realisasi Panen (Ton)',
+                data: dataValues,
+                backgroundColor: gradient,
+                borderColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 1.5,
+                borderRadius: 4,
+                hoverBackgroundColor: hoverGradient,
+                order: 1
+              },
+              {
+                type: 'line',
+                label: 'Connecting Line',
+                data: lineData,
+                borderWidth: 2.5,
+                borderDash: [6, 4],
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: pointColorForLine(1),
+                pointBorderColor: pointColorForLine(1),
+                segment: { borderColor: segmentColorForLine(1) },
+                fill: false,
+                tension: 0,
+                order: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                grace: '15%', // Prevent label clipping
+                grid: {
+                  display: true,
+                  color: gridColor
+                },
+                ticks: {
+                  color: textColor,
+                  font: {
+                    family: 'Calibri',
+                    size: 11,
+                    weight: 'bold'
+                  },
+                  callback: function (value) {
+                    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Ton';
+                  }
+                }
+              },
+              x: {
+                grid: {
+                  display: true,
+                  color: gridColor
+                },
+                ticks: {
+                  color: textColor,
+                  font: {
+                    family: 'Calibri',
+                    size: 11,
+                    weight: 'bold'
+                  }
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                titleFont: {
+                  family: 'Calibri',
+                  size: 11,
+                  weight: 'bold'
+                },
+                bodyFont: {
+                  family: 'Calibri',
+                  size: 11,
+                  weight: 'bold'
+                },
+                callbacks: {
+                  label: function (context) {
+                    return ' ' + context.dataset.label + ': ' + context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Ton';
+                  }
+                }
+              }
+            }
+          },
+          plugins: [chartDataLabelsPlugin]
+        });
+      }
+    }
+
+    // =========================================================================
+    // BACKGROUND SLIDESHOW LOOP
+    // =========================================================================
+    function initBgSlideshow() {
+      var slides = document.querySelectorAll('.bg-slide');
+      if (slides.length === 0) return;
+      var currentSlide = 0;
+      setInterval(function () {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+      }, 15000); // 15 seconds
+    }
+    initBgSlideshow();
+
+
+    updateRunningText();
+    setInterval(updateRunningText, 30000);
+
+    // Sidebar Toggle function and state restoration
+    function toggleSidebar() {
+      var mainSec = document.getElementById("mainSection");
+      mainSec.classList.toggle("sidebar-collapsed");
+      var isCollapsed = mainSec.classList.contains("sidebar-collapsed");
+      localStorage.setItem("agripam_sidebar_collapsed", isCollapsed ? "true" : "false");
+    }
+
+    // Restore sidebar state immediately
+    (function () {
+      var sidebarCollapsed = localStorage.getItem("agripam_sidebar_collapsed") === "true";
+      if (sidebarCollapsed) {
+        var mainSec = document.getElementById("mainSection");
+        if (mainSec) {
+          mainSec.classList.add("sidebar-collapsed");
+        }
+      }
+    })();
+
+    // ---------- Live WIB clock (Login) ----------
+    function updateClock() {
+      var now = new Date();
+      var str = new Intl.DateTimeFormat('id-ID', {
+        timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+      }).format(now);
+      var el = document.getElementById('clockTime');
+      if (el) el.textContent = str;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // ---------- Harvest ticker ----------
+    (function initTicker() {
+      var regions = ["Patriot - Loyal - Profesional"];
+      var list = document.getElementById('tickerList');
+      if (!list) return;
+      var html = '';
+      for (var pass = 0; pass < 2; pass++) {
+        for (var i = 0; i < regions.length; i++) {
+          html += '<span>' + regions[i] + '</span><span class="sep"></span>';
+        }
+      }
+      list.innerHTML = html;
+    })();
+
+    // ---------- Eye Toggle ----------
+    (function initEyeToggle() {
+      var pwd = document.getElementById('loginPassword');
+      var eyeBtn = document.getElementById('toggleEye');
+      if (!pwd || !eyeBtn) return;
+      var eyeOn = eyeBtn.querySelector('.eye-on');
+      var eyeOff = eyeBtn.querySelector('.eye-off');
+
+      eyeBtn.addEventListener('click', function () {
+        var show = pwd.type === 'password';
+        pwd.type = show ? 'text' : 'password';
+        if (show) {
+          eyeOn.style.display = 'none';
+          eyeOff.style.display = 'block';
+        } else {
+          eyeOn.style.display = 'block';
+          eyeOff.style.display = 'none';
+        }
+        eyeBtn.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
+      });
+    })();
+
+    // ---------- Background Slider ----------
+    (function initBgSlideshow() {
+      var slides = document.querySelectorAll('.bg-slide');
+      if (slides.length === 0) return;
+      var currentSlide = 0;
+      setInterval(function () {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+      }, 15000); // 15 seconds
+    })();
+
+    // ---------- Check for query message ----------
+    (function checkQueryMsg() {
+      var params = new URLSearchParams(window.location.search);
+      var msg = params.get('msg');
+      if (msg) {
+        showLoginError(msg);
+        var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+        window.history.replaceState({ path: newUrl }, '', newUrl);
+      }
+    })();
+
+    // ---------- Auto-hide Background Slider outside Login Section ----------
+    (function observeLoginVisibility() {
+      var loginSec = document.getElementById("loginSection");
+      if (!loginSec) return;
+      var updateBgVisibility = function () {
+        var isLoginVisible = (loginSec.style.display !== "none");
+        var slider = document.querySelector(".bg-slider");
+        var overlay = document.querySelector(".bg-overlay");
+        if (slider) slider.style.display = isLoginVisible ? "block" : "none";
+        if (overlay) overlay.style.display = isLoginVisible ? "block" : "none";
+      };
+
+      // Run once immediately
+      updateBgVisibility();
+
+      var observer = new MutationObserver(updateBgVisibility);
+      observer.observe(loginSec, { attributes: true, attributeFilter: ["style"] });
+    })();
+
+  </script>
+</body>
+
+</html>
