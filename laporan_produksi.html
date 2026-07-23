@@ -2070,7 +2070,7 @@
           setDbLoading(true);
           try {
             const isRange = filters.tanggal !== filters.tanggal_akhir;
-            const palmopsUrl = `/api/palmops?action=get&tanggal=${filters.tanggal}${isRange ? `&tanggal_akhir=${filters.tanggal_akhir}` : ''}`;
+            const palmopsUrl = `/api/palmops?action=get&tanggal=${filters.tanggal}${isRange ? `&tanggal_akhir=${filters.tanggal_akhir}` : ''}&_t=${Date.now()}`;
 
             const palmopsRes = await fetch(palmopsUrl);
             const palmopsJson = await palmopsRes.json();
