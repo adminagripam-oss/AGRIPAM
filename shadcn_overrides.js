@@ -246,12 +246,14 @@ window.initShadcnDate = function () {
         disableMobile: true,
         allowInput: true,
         onChange: function (selectedDates, dateStr, instance) {
-          input.value = dateStr;
-          // If react input
           const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
-          if (setter) setter.call(input, dateStr);
-          input.dispatchEvent(new Event('change', { bubbles: true }));
+          if (setter) {
+            setter.call(input, dateStr);
+          } else {
+            input.value = dateStr;
+          }
           input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
         }
       });
     } else if (input.disabled || input.readOnly) {
