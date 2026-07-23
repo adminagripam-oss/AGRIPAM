@@ -2,95 +2,95 @@
 
 ---
 
-## 1. Document Overview
+## 1. Ikhtisar Dokumen
 
-### 1.1 Product Vision
-**AGRI-PAM (Agrinas Panen Monitoring)** is a real-time, hybrid-cloud enterprise dashboard and operational monitoring system designed for **PT Agrinas Palma Nusantara**. It provides centralized, automated, and real-time tracking of daily oil palm harvest estimations, hourly production realisations, shipping logistics (Surat Angkut / SAP), and automated executive WhatsApp dispatch reporting across 22 regional plantation units in Indonesia.
+### 1.1 Visi Produk
+**AGRI-PAM (Agrinas Panen Monitoring)** adalah sistem pemantauan operasional dan dashboard enterprise berbasis real-time, hybrid-cloud yang dirancang khusus untuk **PT Agrinas Palma Nusantara**. Sistem ini menyediakan pelacakan terpusat, otomatis, dan real-time untuk estimasi panen kelapa sawit harian, realisasi produksi per jam, logistik pengiriman (Surat Angkut / SAP), serta pelaporan visual eksekutif otomatis via WhatsApp di seluruh unit regional perkebunan di Indonesia.
 
-### 1.2 Problem Statement
-- **Manual & Fragmented Reporting**: Legacy reporting relied on manual Google Sheets entries and scattered messaging, causing data latency and sync delays.
-- **Human Error & Late Inputs**: Late inputs or future-dated entries undermined harvest forecasting accuracy.
-- **Lack of Timezone Standardization**: Regional plantation units across Western Indonesia Time (WIB) and Central Indonesia Time (WITA) suffered from timing discrepancies.
-- **Lack of Executive Visibility**: Stakeholders lacked a unified, real-time visual dashboard showing comparative RKAP targets versus actual hourly harvest realisations.
+### 1.2 Pernyataan Masalah
+- **Pelaporan Manual & Terfragmentasi**: Pelaporan terdahulu mengandalkan input manual Google Sheets dan pesan terpisah, menyebabkan keterlambatan data dan sinkronisasi.
+- **Kesalahan Manusia & Input Terlambat**: Input terlambat atau pengisian tanggal di masa depan merusak akurasi prakiraan hasil panen.
+- **Standarisasi Zona Waktu**: Unit perkebunan di wilayah Waktu Indonesia Barat (WIB) dan Waktu Indonesia Tengah (WITA) sering mengalami ketidaksesuaian waktu pelaporan.
+- **Visibilitas Eksekutif yang Terbatas**: Pemangku kepentingan membutuhkan dashboard visual terpadu secara real-time yang membandingkan target RKAP dengan realisasi panen per jam.
 
-### 1.3 Target Audience
-1. **Regional Users (Operator Kebun / Wilayah)**: Responsible for inputting hourly harvest realisations, daily estimation targets (Rencana Estimasi Panen), and shipping data.
-2. **Admin Pusat / Management**: Responsible for monitoring nationwide harvest metrics, reviewing regional performance, approving data deletion requests, and overseeing SAP logistics.
-3. **Executive Leadership**: Receives automated hourly WhatsApp visual chart reports dispatched to management groups.
+### 1.3 Target Pengguna
+1. **Pengguna Regional (Operator Kebun / Wilayah)**: Bertanggung jawab memasukkan realisasi panen per jam, target estimasi harian (Rencana Estimasi Panen), dan data pengiriman.
+2. **Admin Pusat / Manajemen**: Bertanggung jawab memantau metrik panen nasional, meninjau kinerja regional, menyetujui/menolak permintaan hapus data, dan mengawasi logistik SAP.
+3. **Pimpinan Eksekutif**: Menerima laporan visual grafik per jam otomatis yang dikirimkan ke grup WhatsApp manajemen.
 
 ---
 
-## 2. User Personas & Permissions
+## 2. Persona Pengguna & Hak Akses
 
-| Role | Key Permissions | Target Users |
+| Peran | Hak Akses Utama | Target Pengguna |
 |---|---|---|
-| **Super Admin / Admin Pusat** | Full system access: view nationwide data, approve/reject data deletion requests, access SAP Admin, view all 22 regional bento grids. | Executive Management, Operational Head Office |
-| **Regional User** | Input/edit hourly harvest realisations, input daily estimation targets, toggle "Hanya Pengiriman Restan", request data deletion, view regional dashboard. | 22 Regional Units (e.g., Aceh, Riau, Kalbar, Kaltim, Sulteng, etc.) |
+| **Super Admin / Admin Pusat** | Akses penuh sistem: melihat data nasional, menyetujui/menolak permintaan hapus data, akses SAP Admin, memantau seluruh bento grid regional. | Manajemen Eksekutif, Operational Head Office |
+| **Pengguna Regional** | Input/edit realisasi panen per jam, input target estimasi harian, toggle status "Hanya Pengiriman Restan", mengajukan hapus data, melihat dashboard regional. | Unit Regional Kebun (misal: Aceh, Riau, Kalbar, Kaltim, Sulteng, dll.) |
 
 ---
 
-## 3. Core Functional Requirements
+## 3. Persyaratan Fungsional Utama
 
-### 3.1 Authentication & Session Management
-- **Secure Login**: Authentication via custom API (`/api/auth`) with bcrypt password hashing stored in Supabase PostgreSQL.
-- **JWT Session Handling**: Issues JSON Web Tokens (JWT) with an 8-hour Time-to-Live (TTL) audited via `sesi_aktif` table.
-- **Rate Limiting**: Protects against brute-force attacks via `rate_limit` table.
-- **Automatic Session Expiration & Logout**: Gracefully redirects expired sessions back to `login.html`.
-- **SSO & Regional Auto-Detect**: Automatically sets timezone (WIB or WITA) based on the logged-in region.
+### 3.1 Otentikasi & Manajemen Sesi
+- **Login Aman**: Otentikasi via API kustom (`/api/auth`) dengan enkripsi password bcrypt yang tersimpan di PostgreSQL Supabase.
+- **Manajemen Sesi JWT**: Menggunakan JSON Web Tokens (JWT) dengan durasi aktif 8 jam yang diaudit melalui tabel `sesi_aktif`.
+- **Rate Limiting**: Membatasi percobaan login berulang untuk mencegah brute-force via tabel `rate_limit`.
+- **Pengakhiran Sesi Otomatis**: Mengarahkan kembali pengguna secara otomatis ke `login.html` jika sesi telah berakhir.
+- **Deteksi Zona Waktu Regional**: Otomatis menyesuaikan kalkulasi zona waktu (WIB atau WITA) berdasarkan wilayah yang login.
 
-### 3.2 Real-Time Hourly Harvest Realisation
-- **Hourly Input Form**: Operators report harvest tonnage per hour (e.g., `07.00`, `08.00`, ..., `18.00`).
-- **Time Window Validation**:
-  - **Future Hours**: Strictly **blocked** (`targetRealUnixTimestamp > Date.now()`). Operators cannot submit data for hours that have not yet occurred according to server UTC time.
-  - **Past & Current Hours**: **Allowed**. Operators can fill current or overdue hours freely without requiring unlock approvals.
-  - **Timezone Awareness**: Automatically offsets time calculations by 7 hours (WIB) or 8 hours (WITA) based on region mapping:
-    - *WITA Regions*: Kalimantan Selatan 1 & 2, Kalimantan Timur, Kalimantan Utara, Sulawesi Tenggara, Sulawesi Tengah.
-    - *WIB Regions*: All other regional units.
-- **Form Auto-Disable**: Automatically disables submit button and shows custom Shadcn Warning Alert when selecting a future hour slot.
+### 3.2 Realisasi Panen Per Jam Real-Time
+- **Form Input Per Jam**: Operator melaporkan tonase hasil panen per jam (misal: `07.00`, `08.00`, ..., `18.00`).
+- **Validasi Batas Waktu**:
+  - **Jam Masa Depan**: Ditolak secara ketat (`targetRealUnixTimestamp > Date.now()`). Operator tidak dapat menginput data untuk jam yang belum tiba berdasarkan waktu server UTC.
+  - **Jam Sekarang & Sebelumnya**: Diizinkan. Operator bebas mengisi jam berjalan atau jam yang terlewat tanpa perlu proses buka kunci (unlock).
+  - **Deteksi Zona Waktu**: Otomatis menyesuaikan perhitungan waktu dengan offset 7 jam (WIB) atau 8 jam (WITA) sesuai pemetaan wilayah:
+    - *Wilayah WITA*: Kalimantan Selatan 1 & 2, Kalimantan Timur, Kalimantan Utara, Sulawesi Tenggara, Sulawesi Tengah.
+    - *Wilayah WIB*: Seluruh unit regional lainnya.
+- **Penonaktifan Form Otomatis**: Mengunci tombol submit dan menampilkan Peringatan Shadcn saat jam masa depan dipilih.
 
-### 3.3 Daily Harvest Estimation & Status Management
-- **Rencana Estimasi Panen Form**: Operators input daily target metrics (Luas Panen, Estimasi Panen, Estimasi Kirim, Restan Lalu, TK Panen).
+### 3.3 Estimasi Panen Harian & Manajemen Status
+- **Form Rencana Estimasi Panen**: Operator menginput metrik target harian (Luas Panen, Estimasi Panen, Estimasi Kirim, Restan Lalu, TK Panen).
 - **Status "Hanya Pengiriman Restan" (Tidak Ada Panen)**:
-  - Form includes an interactive toggle button `#btnTidakPanen`.
-  - **Default State (Aktif Panen)**: Button displays **GREEN** (`#28a745`) with label `"Status: Aktif Panen (Klik jika Tidak Panen)"`.
-  - **Toggled State (Tidak Panen / Restan Only)**: Button turns **RED** (`#dc3545`) with label `"Status: Hanya Pengiriman Restan (Aktif)"`. Harvest inputs (Luas Panen, Est Panen, etc.) auto-fill to `0` and disable.
-- **Table Modal Status Mapping**:
-  - Once an estimation form is submitted (whether active harvest or restan-only), the regional entry is saved in `database_estimasi`.
-  - In both User/Regional and Admin Table Modals, completed regions automatically display **GREEN** (`#16a34a` / `#15803d`) with a checkmark (**✓**).
+  - Form memiliki tombol toggle interaktif `#btnTidakPanen`.
+  - **Status Default (Aktif Panen)**: Tombol berwarna **HIJAU** (`#28a745`) dengan label `"Status: Aktif Panen (Klik jika Tidak Panen)"`.
+  - **Status Toggle (Hanya Restan)**: Tombol berubah menjadi **MERAH** (`#dc3545`) dengan label `"Status: Hanya Pengiriman Restan (Aktif)"`. Input panen otomatis diisi angka `0` dan dikunci.
+- **Indikator Status Modal Tabel**:
+  - Setelah data estimasi dikirim, status simpan wilayah diperbarui di `data_estimasi`.
+  - Pada modal tabel pengguna maupun admin, wilayah yang sudah melapor otomatis ditandai warna **HIJAU** (`#16a34a`) dengan centang (**✓**).
 
-### 3.4 Bento Grid Dashboard & Data Visualisations
-- **Responsive Bento Layout**: Mobile-first design using Tailwind CSS cards (Live Clock, Target Cards, Form Card, Chart Cards, Table Modals).
-- **Chart.js Visualisations**:
-  1. **Hourly Harvest Trend (`#realisasiChart`)**: Displays hourly harvest bars with trendlines and custom canvas plugins calculating percentage changes (e.g. `▲ +10.5%`).
-  2. **Realisasi vs Estimasi Panen (`#realisasiVsEstimasiChart`)**: Displays solid green actual harvest lines versus red dashed RKAP target lines (`borderDash: [5, 5]`) with formatted data labels.
-- **Shadcn / REUI Alert Design System**:
-  - Custom toast alerts (`window.showAlert`) and inline alerts (`window.renderInlineAlert`).
-  - **Alert Invert Variant (`variant="invert"`)**: Dark theme container (`bg-slate-900 text-slate-50 border-slate-800`), green `CircleAlertIcon` (`text-success`), and clean headers (`Notification!`, `Error!`, `Warning!`).
-- **Dark & Light Mode Toggle**: Decoupled theme switcher supporting `data-theme="dark"` with persistent `localStorage` preference.
+### 3.4 Bento Grid Dashboard & Visualisasi Data
+- **Tata Letak Bento Responsive**: Desain modern berbasis Tailwind CSS (Jam Live, Kartu Target, Form Input, Grafik Chart.js, Modal Tabel).
+- **Visualisasi Chart.js**:
+  1. **Tren Produksi Per Jam (`#realisasiChart`)**: Menampilkan batang hasil panen per jam lengkap dengan garis tren dan plugin persentase perubahan (misal: `▲ +10.5%`).
+  2. **Realisasi vs Estimasi Panen (`#realisasiVsEstimasiChart`)**: Menampilkan garis hijau realisasi aktual versus garis merah putus-putus target RKAP (`borderDash: [5, 5]`).
+- **Sistem Desain Shadcn / REUI**:
+  - Alert toast kustom (`window.showAlert`) dan alert inline (`window.renderInlineAlert`).
+  - **Varian Alert Invert (`variant="invert"`)**: Tema gelap (`bg-slate-900 text-slate-50 border-slate-800`), ikon hijau sukses, dan tata letak responsif.
+- **Mode Gelap & Terang**: Pengalih tema mendukung `data-theme="dark"` dengan penyimpanan preferensi di `localStorage`.
 
-### 3.5 SAP Logistics & Shipping Integration
-- Digital shipping letters (Surat Angkut Digital) integration accessible via `/api/sap`.
-- Dedicated interface for SAP Admin (`sap_admin.html`) and SAP Regional (`sap_regional.html`) tracking delivery trucks, driver IDs, mill destinations, and net weights.
+### 3.5 Integrasi Logistik SAP & Pengiriman
+- Surat Angkut Digital terintegrasi via API (`/api/sap`).
+- Antarmuka khusus untuk Admin SAP (`sap_admin.html`) dan Regional SAP (`sap_regional.html`) untuk memantau truk pengangkut, ID driver, PKS tujuan, dan berat netto.
 
-### 3.6 Automated WhatsApp Dispatch Reporting
-- Background automation via Google Apps Script (`Kode2.gs`).
-- Triggered hourly between `06.00` and `17.30` WIB.
-- Renders headless dashboard chart screenshots, uploads to Google Drive, and dispatches visual report cards to WhatsApp management groups via **Fonnte API Gateway**.
+### 3.6 Pelaporan Otomatis WhatsApp Dispatch
+- Otomasi latar belakang menggunakan Google Apps Script (`Kode2.gs`).
+- Berjalan otomatis per jam dari pukul `06.00` hingga `17.30` WIB.
+- Mengambil screenshot visual dashboard, mengunggah ke Google Drive, dan mengirimkan kartu laporan ke grup WhatsApp manajemen via **Fonnte API Gateway**.
 
 ---
 
-## 4. Technical Architecture & Tech Stack
+## 4. Arsitektur Teknis & Teknologi
 
 ```mermaid
 graph TD
-    subgraph Client [Client Frontend Layer]
-        UI[login.html - Bento Grid Dashboard]
-        CSS[Tailwind CSS + Shadcn / REUI Design Tokens]
-        CJS[Chart.js v4 + Custom Plugins]
+    subgraph Client [Lapisan Frontend Client]
+        UI[laporan_produksi.html - Bento Grid Dashboard]
+        CSS[Tailwind CSS + Token Desain Shadcn / REUI]
+        CJS[Chart.js v4 + Plugin Kustom]
     end
 
-    subgraph Server [Application Server Layer]
-        EXP[dev-server.js / Express 5.x Server]
+    subgraph Server [Lapisan Server Aplikasi]
+        EXP[dev-server.js / Server Express 5.x]
         API_AUTH[api/auth.js]
         API_REAL[api/realisasi.js]
         API_EST[api/estimasi.js]
@@ -98,69 +98,69 @@ graph TD
         API_SAP[api/sap.js]
     end
 
-    subgraph Database [Persistence & Security Layer]
-        PG[(Supabase PostgreSQL Database)]
+    subgraph Database [Lapisan Data & Keamanan]
+        PG[(Database Supabase PostgreSQL)]
         RLS[Row Level Security]
     end
 
-    subgraph External [External Integrations]
+    subgraph External [Integrasi Eksternal]
         GAS[Google Apps Script - Kode2.gs]
         WA[Fonnte WhatsApp API Gateway]
         GDrive[Google Drive Archiving]
     end
 
-    UI -->|JSONP / HTTP API| EXP
+    UI -->|HTTP API / JSON| EXP
     EXP --> API_AUTH & API_REAL & API_EST & API_DEL & API_SAP
-    API_AUTH & API_REAL & API_EST & API_DEL & API_SAP -->|PostgreSQL Queries| PG
-    GAS -->|Direct Database Sync| PG
-    GAS -->|Send Screenshot Reports| WA
-    GAS -->|Archive Reports| GDrive
+    API_AUTH & API_REAL & API_EST & API_DEL & API_SAP -->|Query PostgreSQL| PG
+    GAS -->|Sinkronisasi Database| PG
+    GAS -->|Kirim Laporan Grafik| WA
+    GAS -->|Arsip Laporan| GDrive
 ```
 
-### 4.1 Technology Stack
-- **Frontend**: HTML5, Vanilla JavaScript (ES6+), Vanilla CSS, Tailwind CSS CDN, Chart.js (v4), Flatpickr Date Picker, Lucide/Material Symbols.
+### 4.1 Teknologi yang Digunakan
+- **Frontend**: HTML5, Vanilla JavaScript (ES6+), Vanilla CSS, Tailwind CSS CDN, Chart.js (v4), Flatpickr Date Picker, Lucide Icons.
 - **Backend**: Node.js, Express.js (v5), JSON Web Tokens (`jsonwebtoken`), dotenv.
-- **Database**: PostgreSQL hosted on Supabase (PostgREST + Service Role API).
-- **Automation Gateway**: Google Apps Script (GAS), Fonnte WhatsApp API.
+- **Database**: PostgreSQL di Supabase (PostgREST + Service Role API).
+- **Gateaway Otomasi**: Google Apps Script (GAS), Fonnte WhatsApp API.
 
 ---
 
-## 5. Database Schema Specification
+## 5. Spesifikasi Skema Database
 
-### 5.1 Main Tables
+### 5.1 Tabel Utama
 
-1. **`regions`**: Regional master data and credentials.
-   - `id` (`UUID`, Primary Key)
+1. **`regions`**: Master data regional dan kredensial login.
+   - `id` (`SERIAL`, Primary Key)
    - `region_name` (`VARCHAR`, Unique)
-   - `password_hash` (`VARCHAR`, Bcrypt hash)
+   - `password_hash` (`VARCHAR`, Hash Bcrypt)
    - `is_active` (`BOOLEAN`, Default: `true`)
 
-2. **`database_input`**: Real-time hourly harvest tonnage.
-   - `id` (`BIGINT`, Primary Key)
+2. **`database_input`**: Realisasi tonase panen per jam.
+   - `id` (`BIGSERIAL`, Primary Key)
    - `tanggal` (`DATE`)
-   - `jam` (`VARCHAR`, e.g., `'08.00'`)
+   - `jam` (`VARCHAR`, misal: `'08.00'`)
    - `tonase` (`NUMERIC`)
    - `region` (`VARCHAR`)
    - `created_at` (`TIMESTAMPTZ`)
 
-3. **`data_estimasi`**: Daily target estimations per region.
-   - `id` (`BIGINT`, Primary Key)
+3. **`data_estimasi`**: Target estimasi harian per wilayah.
+   - `id` (`BIGSERIAL`, Primary Key)
    - `tanggal` (`DATE`)
-   - `est_panen` (`NUMERIC`, in kg)
-   - `est_kirim` (`NUMERIC`, in kg)
-   - `luas_panen` (`NUMERIC`)
+   - `estimasi_panen_kg` (`NUMERIC`)
+   - `estimasi_kirim_kg` (`NUMERIC`)
+   - `luas_panen_ha` (`NUMERIC`)
    - `region` (`VARCHAR`)
    - `created_at` (`TIMESTAMPTZ`)
 
-4. **`sesi_aktif`**: Session token audit and JWT verification.
-   - `id` (`BIGINT`, Primary Key)
+4. **`sesi_aktif`**: Audit token sesi dan verifikasi JWT.
+   - `id` (`BIGSERIAL`, Primary Key)
    - `region` (`VARCHAR`)
    - `token` (`TEXT`)
    - `expiry` (`TIMESTAMPTZ`)
-   - `status` (`VARCHAR`, `'Aktif'` / `'Logout'`)
+   - `status` (`VARCHAR`)
 
-5. **`delete_requests`**: Workflow requests for data deletion or access un-locking.
-   - `id` (`BIGINT`, Primary Key)
+5. **`delete_requests`**: Pengajuan hapus data atau buka kunci.
+   - `id` (`BIGSERIAL`, Primary Key)
    - `type` (`VARCHAR`, `'REALISASI'` / `'ESTIMASI'` / `'UNLOCK_REALISASI'`)
    - `region` (`VARCHAR`)
    - `tanggal` (`DATE`)
@@ -170,25 +170,28 @@ graph TD
 
 ---
 
-## 6. Non-Functional Requirements
+## 6. Persyaratan Non-Fungsional
 
-1. **Security**:
-   - All passwords hashed using `pgcrypto` / `bcrypt`.
-   - Database tables protected via Row Level Security (RLS).
-   - Rate limiting enforced on authentication routes.
-2. **Performance**:
-   - Page load time < 1.5 seconds.
-   - Chart rerendering and form input transitions < 100ms.
-   - Zero layout shift when alerts expand (`items-start` grid alignment).
-3. **Usability & Accessibility**:
-   - High-contrast text elements for mobile operators in outdoor sunlight.
-   - Touch-friendly input fields with custom Flatpickr mobile date pickers.
-   - Native dark mode support eliminating screen glare.
+1. **Keamanan**:
+   - Password dienkripsi menggunakan `pgcrypto` / `bcrypt`.
+   - Tabel database dilindungi oleh Row Level Security (RLS).
+   - Enforce rate limiting pada rute otentikasi.
+2. **Kinerja**:
+   - Waktu muat halaman < 1.5 detik.
+   - Render ulang grafik dan transisi input < 100ms.
+   - Tanpa pergeseran tata letak (Zero Layout Shift) saat alert muncul.
+3. **Kemudahan Penggunaan & Aksesibilitas**:
+   - Kontras teks tinggi untuk keterbacaan operator kebun di bawah sinar matahari.
+   - Elemen input responsif dan ramah perangkat seluler.
+   - Dukungan mode gelap native mengurangi silau layar.
 
 ---
 
-## 7. Success Metrics (KPIs)
+## 7. Riwayat Revisi & Pembaruan Terkini
 
-- **100% On-Time Reporting**: Eliminate missing hourly reports across all 22 regional units.
-- **Zero Timezone Errors**: Seamless automated WIB/WITA shift calculations.
-- **Rapid Operational Response**: Real-time visibility into RKAP target shortfalls via WhatsApp dispatch within 5 minutes of hour closure.
+| Tanggal | Fitur / Modifikasi | Rincian |
+|---|---|---|
+| **2026-07-23** | **Pemisahan Regional (Kalbar 1 → 1A & 1B)** | Mengubah nama `Kalimantan Barat 1` menjadi `Kalimantan Barat 1A` dan menambah akun `Kalimantan Barat 1B`. Mengubah pemetaan `CRO VI` mencakup `['Kalimantan Barat 1A', 'Kalimantan Barat 1B', 'Kalimantan Barat 2']`. Mengubah password Jambi (`ROJ4mb1`). |
+| **2026-07-23** | **Otimisasi Paginasi Paralel API** | Memperbaiki batas 2.000 baris Supabase PostgREST di `/api/realisasi` & `/api/estimasi` menggunakan query paralel (`Promise.all` 10 page × 1.000 baris) agar grafik tren bulanan tampil utuh tanpa terputus di pertengahan bulan. |
+| **2026-07-23** | **Konfigurasi CSP & Vercel** | Menambahkan `https://unpkg.com` dan `'unsafe-eval'` pada `Content-Security-Policy` di `vercel.json` untuk mendukung CDN React 18, Babel, dan Lucide. Menurunkan risiko timeout dengan set `maxDuration` 30 detik. |
+| **2026-07-23** | **Sinkronisasi Input Tanggal React** | Menambahkan `data-noflatpickr="true"` pada input tanggal FilterBar `laporan_produksi.html` untuk menghindari konflik manipulasi DOM Flatpickr dengan controlled component React 18. |

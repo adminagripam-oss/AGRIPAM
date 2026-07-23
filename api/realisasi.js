@@ -66,23 +66,37 @@ module.exports = async (req, res) => {
     if (!tanggal) return res.json({ success: false, message: 'Tanggal wajib diisi.' });
     const tanggal_akhir = (p.tanggal_akhir || '').trim();
     
-    // Single query with high limit to avoid Vercel 10s timeout from while(true) loop
-    let query = supabase
-      .from('database_input')
-      .select('tanggal, region, jam, tonase')
-      .order('tanggal', { ascending: true })
-      .order('jam', { ascending: true })
-      .limit(25000);
+    // Fetch up to 10,000 records in parallel pages of 1,000 to bypass PostgREST max_rows limit (1000/2000)
+    const pageSize = 1000;
+    const numPages = 10;
+    const pagePromises = [];
 
-    if (tanggal_akhir) {
-      query = query.gte('tanggal', tanggal).lte('tanggal', tanggal_akhir);
-    } else {
-      query = query.eq('tanggal', tanggal);
+    for (let i = 0; i < numPages; i++) {
+      let q = supabase
+        .from('database_input')
+        .select('tanggal, region, jam, tonase')
+        .order('tanggal', { ascending: true })
+        .order('jam', { ascending: true })
+        .range(i * pageSize, (i + 1) * pageSize - 1);
+
+      if (tanggal_akhir) {
+        q = q.gte('tanggal', tanggal).lte('tanggal', tanggal_akhir);
+      } else {
+        q = q.eq('tanggal', tanggal);
+      }
+      if (region && region.toUpperCase() !== 'ALL') q = q.eq('region', region);
+
+      pagePromises.push(q);
     }
-    if (region && region.toUpperCase() !== 'ALL') query = query.eq('region', region);
 
-    const { data: allData, error } = await query;
-    if (error) return res.json({ success: false, message: 'Gagal mengambil data: ' + error.message });
+    const pageResults = await Promise.all(pagePromises);
+    let allData = [];
+    for (const r of pageResults) {
+      if (r.error) return res.json({ success: false, message: 'Gagal mengambil data: ' + r.error.message });
+      if (r.data && r.data.length > 0) {
+        allData = allData.concat(r.data);
+      }
+    }
 
     const { jamData, total } = computeJamDataAndTotal(allData);
     const allRecords = allData.map(r => ({ tanggal: r.tanggal, region: r.region, jam: r.jam, tonase: parseFloat(r.tonase) || 0 }));

@@ -45,28 +45,31 @@ module.exports = async (req, res) => {
 
     const tanggal_akhir = (p.tanggal_akhir || '').trim();
 
-    let allData = [];
-    let page = 0;
+    // Fetch in parallel pages of 1,000 to bypass PostgREST max_rows limit (1000/2000)
     const pageSize = 1000;
+    const numPages = 5;
+    const pagePromises = [];
 
-    while (true) {
-      let query = supabase.from('data_estimasi').select('*').gte('tanggal', tanggal);
+    for (let i = 0; i < numPages; i++) {
+      let q = supabase.from('data_estimasi').select('*').gte('tanggal', tanggal);
       if (tanggal_akhir) {
-        query = query.lte('tanggal', tanggal_akhir);
+        q = q.lte('tanggal', tanggal_akhir);
       } else {
-        query = query.lte('tanggal', tanggal);
+        q = q.lte('tanggal', tanggal);
       }
-      if (region && region.toUpperCase() !== 'ALL') query = query.eq('region', region);
-      
-      query = query.range(page * pageSize, (page + 1) * pageSize - 1);
+      if (region && region.toUpperCase() !== 'ALL') q = q.eq('region', region);
+      q = q.range(i * pageSize, (i + 1) * pageSize - 1);
 
-      const { data, error } = await query;
-      if (error) return res.json({ success: false, message: 'Gagal mengambil data estimasi: ' + error.message });
-      if (!data || data.length === 0) break;
+      pagePromises.push(q);
+    }
 
-      allData = allData.concat(data);
-      if (data.length < pageSize) break;
-      page++;
+    const pageResults = await Promise.all(pagePromises);
+    let allData = [];
+    for (const r of pageResults) {
+      if (r.error) return res.json({ success: false, message: 'Gagal mengambil data estimasi: ' + r.error.message });
+      if (r.data && r.data.length > 0) {
+        allData = allData.concat(r.data);
+      }
     }
 
     const allEstimasi = {};
