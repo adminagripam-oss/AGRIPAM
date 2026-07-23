@@ -1351,8 +1351,8 @@
             }
 
             const promises = [
-              fetch(`/api/realisasi?action=getData&tanggal=${startDate}&tanggal_akhir=${endDateQuery}&region=ALL`),
-              fetch(`/api/estimasi?action=getEstimasi&tanggal=${startDate}&tanggal_akhir=${endDateQuery}&region=ALL&token=${token}`),
+              fetch(`/api/realisasi?action=getData&tanggal=${startDate}&tanggal_akhir=${endDateQuery}&region=ALL&_t=${Date.now()}`),
+              fetch(`/api/estimasi?action=getEstimasi&tanggal=${startDate}&tanggal_akhir=${endDateQuery}&region=ALL&token=${token}&_t=${Date.now()}`),
             ];
 
             const results = await Promise.all(promises);
@@ -2943,7 +2943,7 @@
           const sessionRaw = sessionStorage.getItem("agripam_session");
           const session = sessionRaw ? JSON.parse(sessionRaw) : null;
           const token = session ? session.token : "";
-          const res = await fetch(`/api/targetChallenge?action=getTarget&bulan=${selectedMonth}&token=${token}`);
+          const res = await fetch(`/api/targetChallenge?action=getTarget&bulan=${selectedMonth}&token=${token}&_t=${Date.now()}`);
           const json = await res.json();
           if (json.success && json.exists) {
             setTargetData(json.data);
@@ -3247,7 +3247,7 @@
           const sessionRaw = sessionStorage.getItem("agripam_session");
           const session = sessionRaw ? JSON.parse(sessionRaw) : null;
           const token = session ? session.token : "";
-          const res = await fetch(`/api/targetChallenge?action=getTarget&bulan=${bulan}&token=${token}`);
+          const res = await fetch(`/api/targetChallenge?action=getTarget&bulan=${bulan}&token=${token}&_t=${Date.now()}`);
           const json = await res.json();
           if (json.success && json.exists) {
             const todayTargets = {};
@@ -3280,7 +3280,7 @@
           const sessionRaw = sessionStorage.getItem("agripam_session");
           const session = sessionRaw ? JSON.parse(sessionRaw) : null;
           const token = session ? session.token : "";
-          const res = await fetch(`/api/estimasi?action=getEstimasi&tanggal=${date}&region=ALL&token=${token}`);
+          const res = await fetch(`/api/estimasi?action=getEstimasi&tanggal=${date}&region=ALL&token=${token}&_t=${Date.now()}`);
           const json = await res.json();
           if (json.success) {
             setDbEstimasi(normalizeEstimasiData(json.allEstimasi || {}));
@@ -3301,7 +3301,7 @@
           const sessionRaw = sessionStorage.getItem("agripam_session");
           const session = sessionRaw ? JSON.parse(sessionRaw) : null;
           const token = session ? session.token : "";
-          const res = await fetch(`/api/laporanRealisasi?action=getLaporan&tanggal=${date}&token=${token}`);
+          const res = await fetch(`/api/laporanRealisasi?action=getLaporan&tanggal=${date}&token=${token}&_t=${Date.now()}`);
           const json = await res.json();
 
           if (json.success && json.exists && json.data) {
@@ -3343,7 +3343,7 @@
             dbEstimasi
           };
 
-          const res = await fetch(`/api/laporanRealisasi`, {
+          const res = await fetch(`/api/laporanRealisasi?_t=${Date.now()}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3379,7 +3379,7 @@
           const session = sessionRaw ? JSON.parse(sessionRaw) : null;
           const token = session ? session.token : "";
 
-          const res = await fetch(`/api/laporanRealisasi`, {
+          const res = await fetch(`/api/laporanRealisasi?_t=${Date.now()}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3470,7 +3470,7 @@
             const sessionRaw = sessionStorage.getItem("agripam_session");
             const session = sessionRaw ? JSON.parse(sessionRaw) : null;
             const token = session ? session.token : "";
-            const estRes = await fetch(`/api/estimasi?action=getEstimasi&tanggal=${detectedDate}&region=ALL&token=${token}`);
+            const estRes = await fetch(`/api/estimasi?action=getEstimasi&tanggal=${detectedDate}&region=ALL&token=${token}&_t=${Date.now()}`);
             const estJson = await estRes.json();
             const activeEstimasi = estJson.success ? (estJson.allEstimasi || {}) : {};
             setDbEstimasi(normalizeEstimasiData(activeEstimasi));
@@ -4004,13 +4004,13 @@
 
             // Prepare API calls
             const promises = [
-              fetch(`/api/realisasi?action=getData&tanggal=${filters.tanggal}&tanggal_akhir=${filters.tanggal_akhir || filters.tanggal}&region=ALL`),
-              fetch(`/api/estimasi?action=getEstimasi&tanggal=${filters.tanggal}&tanggal_akhir=${filters.tanggal_akhir || filters.tanggal}&region=ALL&token=${token}`),
+              fetch(`/api/realisasi?action=getData&tanggal=${filters.tanggal}&tanggal_akhir=${filters.tanggal_akhir || filters.tanggal}&region=ALL&_t=${Date.now()}`),
+              fetch(`/api/estimasi?action=getEstimasi&tanggal=${filters.tanggal}&tanggal_akhir=${filters.tanggal_akhir || filters.tanggal}&region=ALL&token=${token}&_t=${Date.now()}`),
             ];
 
             // Only fetch yesterday's data if NOT in range mode
             if (!isRange) {
-              promises.push(fetch(`/api/realisasi?action=getData&tanggal=${yesterday}&region=ALL`));
+              promises.push(fetch(`/api/realisasi?action=getData&tanggal=${yesterday}&region=ALL&_t=${Date.now()}`));
             }
 
             const results = await Promise.all(promises);

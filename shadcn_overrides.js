@@ -251,6 +251,7 @@ window.initShadcnDate = function () {
           const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
           if (setter) setter.call(input, dateStr);
           input.dispatchEvent(new Event('change', { bubbles: true }));
+          input.dispatchEvent(new Event('input', { bubbles: true }));
         }
       });
     } else if (input.disabled || input.readOnly) {
