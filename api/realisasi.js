@@ -70,8 +70,9 @@ module.exports = async (req, res) => {
     let query = supabase
       .from('database_input')
       .select('tanggal, region, jam, tonase')
+      .order('tanggal', { ascending: true })
       .order('jam', { ascending: true })
-      .limit(5000);
+      .limit(15000);
 
     if (tanggal_akhir) {
       query = query.gte('tanggal', tanggal).lte('tanggal', tanggal_akhir);
