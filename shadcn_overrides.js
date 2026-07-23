@@ -1,7 +1,7 @@
 // ==========================================
 // Shadcn Alert Toast System
 // ==========================================
-window.showAlert = function(variant, title, message) {
+window.showAlert = function (variant, title, message) {
   let container = document.getElementById('custom-alert-container');
   if (!container) {
     container = document.createElement('div');
@@ -20,22 +20,22 @@ window.showAlert = function(variant, title, message) {
   }
   alertEl.innerHTML = iconSvg + '<h5 class="shadcn-alert-title">' + (title || 'Notification!') + '</h5><div class="shadcn-alert-desc">' + message + '</div>';
   container.appendChild(alertEl);
-  setTimeout(function() {
+  setTimeout(function () {
     alertEl.classList.add('hiding');
-    setTimeout(function() { alertEl.remove(); }, 300);
+    setTimeout(function () { alertEl.remove(); }, 300);
   }, 4000);
 };
 
 // Override native alert globally!
 window.nativeAlert = window.alert;
-window.alert = function(msg) {
+window.alert = function (msg) {
   if (typeof msg === 'object') {
-     try { msg = JSON.stringify(msg); } catch(e){}
+    try { msg = JSON.stringify(msg); } catch (e) { }
   }
   const lower = String(msg).toLowerCase();
   let variant = 'invert';
   let title = 'Notification!';
-  
+
   if (lower.includes('berhasil') || lower.includes('sukses') || lower.includes('disetujui') || lower.includes('dihapus')) {
     variant = 'invert';
     title = 'Notification!';
@@ -46,7 +46,7 @@ window.alert = function(msg) {
     variant = 'warning';
     title = 'Warning!';
   }
-  
+
   window.showAlert(variant, title, msg);
 };
 
@@ -54,7 +54,7 @@ window.alert = function(msg) {
 // ==========================================
 // Shadcn Custom Select
 // ==========================================
-window.initShadcnSelect = function(selectId) {
+window.initShadcnSelect = function (selectId) {
   const selectEl = document.getElementById(selectId);
   if (!selectEl) return;
   if (selectEl.parentElement && selectEl.parentElement.classList.contains('shadcn-wrapper')) return;
@@ -68,26 +68,26 @@ window.initShadcnSelect = function(selectId) {
   const trigger = document.createElement('button');
   trigger.type = 'button';
   trigger.className = 'custom-shadcn-trigger flex h-10 w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-50 text-slate-700 hover:bg-slate-50 transition-colors text-left';
-  
+
   const triggerText = document.createElement('span');
   triggerText.className = 'truncate pointer-events-none';
   triggerText.textContent = selectEl.options[selectEl.selectedIndex]?.text || 'Select...';
-  
+
   const icon = document.createElement('div');
   icon.className = 'pointer-events-none opacity-50';
   icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>';
-  
+
   trigger.appendChild(triggerText);
   trigger.appendChild(icon);
-  
+
   const popover = document.createElement('div');
   popover.className = 'custom-shadcn-popover-panel absolute z-[9999] mt-2 w-full min-w-[8rem] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl hidden flex-col transition-all opacity-0 translate-y-[-5px]';
-  
+
   const scrollArea = document.createElement('div');
   scrollArea.className = 'overflow-y-auto max-h-72 p-2 shadcn-scroll flex flex-col divide-y divide-gray-50 custom-shadcn-divide';
-  
+
   popover.appendChild(scrollArea);
-  
+
   const updateCheckmarks = () => {
     Array.from(scrollArea.children).forEach(child => {
       const val = child.getAttribute('data-value');
@@ -104,53 +104,53 @@ window.initShadcnSelect = function(selectId) {
 
   Array.from(selectEl.options).forEach(opt => {
     if (opt.disabled && opt.value === "") return;
-    
+
     const item = document.createElement('div');
     item.className = 'custom-shadcn-item relative flex w-full cursor-default select-none items-center rounded-lg py-2.5 pl-8 pr-2 text-sm outline-none hover:bg-gray-100 transition-colors text-slate-700';
     item.setAttribute('data-value', opt.value);
-    
+
     const checkmark = document.createElement('span');
     checkmark.className = 'check-container absolute left-2 flex h-3.5 w-3.5 items-center justify-center';
-    
+
     const itemText = document.createElement('span');
     itemText.textContent = opt.text;
-    
+
     item.appendChild(checkmark);
     item.appendChild(itemText);
-    
+
     item.addEventListener('click', (e) => {
       e.stopPropagation();
       selectEl.value = opt.value;
       triggerText.textContent = opt.text;
-      
+
       popover.classList.remove('opacity-100', 'translate-y-0');
       popover.classList.add('opacity-0', 'translate-y-[-5px]');
       setTimeout(() => popover.classList.add('hidden'), 150);
-      
+
       updateCheckmarks();
       selectEl.dispatchEvent(new Event('change'));
     });
-    
+
     scrollArea.appendChild(item);
   });
-  
+
   updateCheckmarks();
-  
+
   wrapper.appendChild(trigger);
   wrapper.appendChild(popover);
-  
+
   trigger.addEventListener('click', (e) => {
     e.stopPropagation();
     const isHidden = popover.classList.contains('hidden');
-    
+
     document.querySelectorAll('.custom-shadcn-popover-panel').forEach(p => {
-       if(p !== popover) {
-         p.classList.remove('opacity-100', 'translate-y-0');
-         p.classList.add('opacity-0', 'translate-y-[-5px]');
-         setTimeout(() => p.classList.add('hidden'), 150);
-       }
+      if (p !== popover) {
+        p.classList.remove('opacity-100', 'translate-y-0');
+        p.classList.add('opacity-0', 'translate-y-[-5px]');
+        setTimeout(() => p.classList.add('hidden'), 150);
+      }
     });
-    
+
     if (isHidden) {
       popover.classList.remove('hidden');
       requestAnimationFrame(() => {
@@ -163,24 +163,24 @@ window.initShadcnSelect = function(selectId) {
       setTimeout(() => popover.classList.add('hidden'), 150);
     }
   });
-  
+
   document.addEventListener('click', (e) => {
     if (!wrapper.contains(e.target)) {
-       popover.classList.remove('opacity-100', 'translate-y-0');
-       popover.classList.add('opacity-0', 'translate-y-[-5px]');
-       setTimeout(() => popover.classList.add('hidden'), 150);
+      popover.classList.remove('opacity-100', 'translate-y-0');
+      popover.classList.add('opacity-0', 'translate-y-[-5px]');
+      setTimeout(() => popover.classList.add('hidden'), 150);
     }
   });
-  
+
   selectEl.addEventListener('change', () => {
     if (selectEl.selectedIndex >= 0) {
       triggerText.textContent = selectEl.options[selectEl.selectedIndex].text;
       updateCheckmarks();
     }
   });
-  
+
   // Expose update function for dynamically added options
-  selectEl._rebuildShadcn = function() {
+  selectEl._rebuildShadcn = function () {
     scrollArea.innerHTML = '';
     Array.from(selectEl.options).forEach(opt => {
       if (opt.disabled && opt.value === "") return;
@@ -213,44 +213,44 @@ window.initShadcnSelect = function(selectId) {
 // ==========================================
 // Shadcn Date Picker
 // ==========================================
-window.initShadcnDate = function() {
+window.initShadcnDate = function () {
   if (typeof flatpickr === 'undefined') return;
   const dateInputs = document.querySelectorAll('input[type="date"], input[type="month"]');
   dateInputs.forEach(input => {
     if (input.parentElement && input.parentElement.classList.contains('shadcn-date-wrapper')) return;
-    
+
     const wrapper = document.createElement('div');
     wrapper.className = 'relative w-full shadcn-date-wrapper';
     input.parentNode.insertBefore(wrapper, input);
     wrapper.appendChild(input);
-    
+
     const icon = document.createElement('div');
     icon.className = 'absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 z-10';
     icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>';
     wrapper.appendChild(icon);
-    
+
     input.classList.add('custom-shadcn-date');
     input.className = input.className.replace(/p-2/g, '').replace(/bg-gray-100/g, 'bg-white');
     input.classList.add('w-full', 'pl-10', 'pr-3', 'py-2', 'h-10', 'rounded-xl', 'border', 'border-gray-200', 'text-sm', 'font-medium', 'text-slate-700', 'transition-colors', 'focus:outline-none', 'focus:ring-2', 'focus:ring-green-500');
-    
+
     // Hide native icon and convert to text to prevent internal shadow DOM from ignoring padding
     const isDate = input.type === 'date' || input.type === 'month';
     if (isDate) {
       input.setAttribute('type', 'text');
     }
-    
+
     if (!input.disabled && !input.readOnly) {
       input.classList.add('cursor-pointer', 'hover:bg-slate-50');
       flatpickr(input, {
         dateFormat: "Y-m-d",
         disableMobile: true,
         allowInput: true,
-        onChange: function(selectedDates, dateStr, instance) {
-           input.value = dateStr;
-           // If react input
-           const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
-           if (setter) setter.call(input, dateStr);
-           input.dispatchEvent(new Event('change', { bubbles: true }));
+        onChange: function (selectedDates, dateStr, instance) {
+          input.value = dateStr;
+          // If react input
+          const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+          if (setter) setter.call(input, dateStr);
+          input.dispatchEvent(new Event('change', { bubbles: true }));
         }
       });
     } else if (input.disabled || input.readOnly) {
@@ -262,24 +262,24 @@ window.initShadcnDate = function() {
 // ==========================================
 // Shadcn Alert Dialog (Confirm)
 // ==========================================
-window.showConfirm = function(title, description, type = 'destructive') {
+window.showConfirm = function (title, description, type = 'destructive') {
   return new Promise((resolve) => {
     // Create overlay
     const overlay = document.createElement('div');
     overlay.id = 'shadcn-dialog-overlay';
-    
+
     // Create content box
     const dialog = document.createElement('div');
     dialog.id = 'shadcn-dialog-content';
-    
+
     // Header
     const header = document.createElement('div');
     header.className = 'flex flex-col space-y-2 text-center sm:text-left';
-    
+
     // Media / Icon wrapper
     const media = document.createElement('div');
     let iconHtml = '';
-    
+
     if (type === 'success') {
       media.className = 'mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 sm:mx-0 sm:h-10 sm:w-10 dark:bg-emerald-900/20 dark:text-emerald-500 mb-2';
       iconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>';
@@ -288,30 +288,30 @@ window.showConfirm = function(title, description, type = 'destructive') {
       iconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>';
     }
     media.innerHTML = iconHtml;
-    
+
     // Title
     const titleEl = document.createElement('h2');
     titleEl.className = 'text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50';
     titleEl.textContent = title;
-    
+
     // Description
     const descEl = document.createElement('p');
     descEl.className = 'text-sm text-slate-500 dark:text-slate-400 mt-2 whitespace-pre-line';
     descEl.textContent = description;
-    
+
     header.appendChild(media);
     header.appendChild(titleEl);
     header.appendChild(descEl);
-    
+
     // Footer
     const footer = document.createElement('div');
     footer.className = 'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-6';
-    
+
     // Cancel Button
     const btnCancel = document.createElement('button');
     btnCancel.className = 'mt-2 sm:mt-0 inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-transparent px-4 py-2 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-slate-400 dark:focus:ring-offset-slate-900';
     btnCancel.textContent = 'Batal';
-    
+
     // Action Button
     const btnAction = document.createElement('button');
     if (type === 'success') {
@@ -321,16 +321,16 @@ window.showConfirm = function(title, description, type = 'destructive') {
       btnAction.className = 'inline-flex h-10 items-center justify-center rounded-md bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-600 dark:focus:ring-red-400 dark:focus:ring-offset-slate-900';
       btnAction.textContent = 'Hapus';
     }
-    
+
     footer.appendChild(btnCancel);
     footer.appendChild(btnAction);
-    
+
     dialog.appendChild(header);
     dialog.appendChild(footer);
-    
+
     document.body.appendChild(overlay);
     document.body.appendChild(dialog);
-    
+
     const closeDialog = (result) => {
       overlay.classList.add('hiding');
       dialog.classList.add('hiding');
@@ -340,7 +340,7 @@ window.showConfirm = function(title, description, type = 'destructive') {
         resolve(result);
       }, 200);
     };
-    
+
     btnCancel.addEventListener('click', () => closeDialog(false));
     btnAction.addEventListener('click', () => closeDialog(true));
   });
@@ -349,9 +349,9 @@ window.showConfirm = function(title, description, type = 'destructive') {
 // ==========================================
 // Shadcn Inline Alerts (for form hints)
 // ==========================================
-window.renderInlineAlert = function(msg) {
+window.renderInlineAlert = function (msg) {
   const lower = String(msg).toLowerCase();
-  
+
   if (lower.includes('hanya dapat diisi') && lower.includes('waktu server anda saat ini')) {
     // Destructive Variant
     const cleanMsg = msg.replace('❌ Gagal: ', '').replace('Gagal: ', '');
@@ -363,7 +363,7 @@ window.renderInlineAlert = function(msg) {
       </div>
     `;
   }
-  
+
   if (lower.includes('waktu pengisian di luar batas')) {
     // Warning Variant
     const cleanMsg = msg.replace('⚠️ ', '');
@@ -387,15 +387,15 @@ window.renderInlineAlert = function(msg) {
       </div>
     `;
   }
-  
+
   return null;
 };
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   setTimeout(() => {
     // Automatically initialize dates
     window.initShadcnDate();
-    
+
     // Automatically initialize custom selects (by ID)
     if (document.getElementById('loginRegion')) window.initShadcnSelect('loginRegion');
     if (document.getElementById('filterDateMode')) window.initShadcnSelect('filterDateMode');
