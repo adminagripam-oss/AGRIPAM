@@ -455,7 +455,7 @@
     const MOCK_REGIONAL_DONUT = [
       { region: 'Kalimantan Tengah 1', tonase: 847.5, color: '#16a34a' },
       { region: 'Sumatera Utara 2', tonase: 721.3, color: '#2563eb' },
-      { region: 'Kalimantan Barat 1', tonase: 612.8, color: '#d97706' },
+      { region: 'Kalimantan Barat 1A', 'Kalimantan Barat 1B', tonase: 612.8, color: '#d97706' },
       { region: 'Riau 2', tonase: 534.0, color: '#7c3aed' },
       { region: 'Kalimantan Tengah 2', tonase: 498.9, color: '#db2777' },
       { region: 'Kalimantan Timur', tonase: 326.4, color: '#0891b2' },
@@ -465,7 +465,7 @@
     const MOCK_TOP5_OUTPUT = [
       { rank: 1, region: 'Kalimantan Tengah 1', tonase: 847.5, pct: 94 },
       { rank: 2, region: 'Sumatera Utara 2', tonase: 721.3, pct: 80 },
-      { rank: 3, region: 'Kalimantan Barat 1', tonase: 612.8, pct: 68 },
+      { rank: 3, region: 'Kalimantan Barat 1A', 'Kalimantan Barat 1B', tonase: 612.8, pct: 68 },
       { rank: 4, region: 'Riau 2', tonase: 534.0, pct: 59 },
       { rank: 5, region: 'Kalimantan Tengah 2', tonase: 498.9, pct: 55 },
     ];
@@ -473,7 +473,7 @@
     const MOCK_TOP5_RESTAN = [
       { rank: 1, region: 'Kalimantan Tengah 1', restan: 1247.0, pct: 100 },
       { rank: 2, region: 'Riau 3', restan: 942.5, pct: 76 },
-      { rank: 3, region: 'Kalimantan Barat 1', restan: 718.3, pct: 58 },
+      { rank: 3, region: 'Kalimantan Barat 1A', 'Kalimantan Barat 1B', restan: 718.3, pct: 58 },
       { rank: 4, region: 'Sumatera Selatan', restan: 534.7, pct: 43 },
       { rank: 5, region: 'Jambi', restan: 421.0, pct: 34 },
     ];
@@ -503,7 +503,7 @@
       'CRO III — Riau 2, Riau 3': ['Riau 2', 'Riau 3'],
       'CRO IV  — Riau 4': ['Riau 4'],
       'CRO V   — Sumbar, Jambi, Babel': ['Sumatera Barat', 'Jambi', 'Bangka Belitung'],
-      'CRO VI  — Kalbar 1, Kalbar 2': ['Kalimantan Barat 1', 'Kalimantan Barat 2'],
+      'CRO VI  — Kalbar 1, Kalbar 2': ['Kalimantan Barat 1A', 'Kalimantan Barat 1B', 'Kalimantan Barat 2'],
       'CRO VII — Kalsel 1, Kalsel 2, Kaltim, Kalut': ['Kalimantan Selatan 1', 'Kalimantan Selatan 2', 'Kalimantan Timur', 'Kalimantan Utara'],
       'CRO VIII— Kalteng 1, Kalteng 3': ['Kalimantan Tengah 1', 'Kalimantan Tengah 3'],
       'CRO IX  — Kalteng 2': ['Kalimantan Tengah 2'],
@@ -514,7 +514,7 @@
       'Aceh', 'Sumatera Utara 1', 'Sumatera Utara 2 Ex Torganda',
       'Riau 1', 'Riau 2', 'Riau 3', 'Riau 4',
       'Bangka Belitung', 'Jambi', 'Sumatera Barat', 'Sumatera Selatan',
-      'Kalimantan Barat 1', 'Kalimantan Barat 2',
+      'Kalimantan Barat 1A', 'Kalimantan Barat 1B', 'Kalimantan Barat 2',
       'Kalimantan Selatan 1', 'Kalimantan Selatan 2',
       'Kalimantan Timur', 'Kalimantan Utara',
       'Kalimantan Tengah 1', 'Kalimantan Tengah 2', 'Kalimantan Tengah 3',
@@ -525,7 +525,7 @@
     const REGIONAL_DETAIL = [
       { region: 'Kalimantan Tengah 1', shortLabel: 'Kalteng 1', estimasi: 900, realisasi: 848, restan: 1247.0, tonase: 847.5, color: '#16a34a' },
       { region: 'Sumatera Utara 2 Ex Torganda', shortLabel: 'Sumut 2', estimasi: 900, realisasi: 721, restan: 312.0, tonase: 721.3, color: '#2563eb' },
-      { region: 'Kalimantan Barat 1', shortLabel: 'Kalbar 1', estimasi: 900, realisasi: 613, restan: 718.3, tonase: 612.8, color: '#d97706' },
+      { region: 'Kalimantan Barat 1A', 'Kalimantan Barat 1B', shortLabel: 'Kalbar 1', estimasi: 900, realisasi: 613, restan: 718.3, tonase: 612.8, color: '#d97706' },
       { region: 'Riau 2', shortLabel: 'Riau 2', estimasi: 600, realisasi: 534, restan: 198.0, tonase: 534.0, color: '#7c3aed' },
       { region: 'Kalimantan Tengah 2', shortLabel: 'Kalteng 2', estimasi: 560, realisasi: 499, restan: 421.5, tonase: 498.9, color: '#db2777' },
       { region: 'Kalimantan Timur', shortLabel: 'Kaltim', estimasi: 400, realisasi: 326, restan: 187.0, tonase: 326.4, color: '#0891b2' },
@@ -1969,7 +1969,7 @@
       'Jambi': { shortLabel: 'Jambi', color: '#b45309' },
       'Sumatera Barat': { shortLabel: 'Sumbar', color: '#65a30d' },
       'Sumatera Selatan': { shortLabel: 'Sumsel', color: '#dc2626' },
-      'Kalimantan Barat 1': { shortLabel: 'Kalbar 1', color: '#d97706' },
+      'Kalimantan Barat 1A': { shortLabel: 'Kalbar 1A', color: '#d97706' }, 'Kalimantan Barat 1B': { shortLabel: 'Kalbar 1B', color: '#fbbf24' },
       'Kalimantan Barat 2': { shortLabel: 'Kalbar 2', color: '#f59e0b' },
       'Kalimantan Selatan 1': { shortLabel: 'Kalsel 1', color: '#7c3aed' },
       'Kalimantan Selatan 2': { shortLabel: 'Kalsel 2', color: '#6366f1' },
@@ -2007,8 +2007,8 @@
       'sumut 1': 'Sumatera Utara 1',
       'sumut 2': 'Sumatera Utara 2 Ex Torganda',
       'sumut 2 ex torganda': 'Sumatera Utara 2 Ex Torganda',
-      'kalbar 1': 'Kalimantan Barat 1',
-      'kalbar 1 ex duta palma': 'Kalimantan Barat 1',
+      'kalbar 1': 'Kalimantan Barat 1A', 'Kalimantan Barat 1B',
+      'kalbar 1 ex duta palma': 'Kalimantan Barat 1A', 'Kalimantan Barat 1B',
       'kalbar 2': 'Kalimantan Barat 2',
       'kalsel 1': 'Kalimantan Selatan 1',
       'kalsel 2': 'Kalimantan Selatan 2',
@@ -3194,7 +3194,7 @@
       { label: "CRO V", type: "subtotal", children: ["Bangka Belitung", "Jambi", "Sumatera Barat", "Sumatera Selatan"] },
 
       // CRO VI
-      { label: "Kalbar 1 Ex Duta Palma", regionKey: "Kalimantan Barat 1", excelKey: "Kalbar 1", luas: 77955.99, target: 1750, type: "detail" },
+      { label: "Kalbar 1 Ex Duta Palma", regionKey: "Kalimantan Barat 1A", "Kalimantan Barat 1B", excelKey: "Kalbar 1", luas: 77955.99, target: 1750, type: "detail" },
       { label: "Kalimantan Barat 2", regionKey: "Kalimantan Barat 2", excelKey: "Kalbar 2", luas: 12993.09, target: 55, type: "detail" },
       { label: "CRO VI", type: "subtotal", children: ["Kalbar 1 Ex Duta Palma", "Kalimantan Barat 2"] },
 
