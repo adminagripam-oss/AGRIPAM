@@ -68,7 +68,7 @@
 
   <!-- Shadcn Overrides (Alerts, Date, Select) -->
   <link rel="stylesheet" href="shadcn_overrides.css">
-  <script src="shadcn_overrides.js?v=3"></script>
+  <script src="shadcn_overrides.js?v=4"></script>
 
   <script>
     tailwind.config = {
@@ -1889,6 +1889,7 @@
               <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"><Icon name="calendar" size={15} className="text-slate-400" /></div>
               <input
                 type="date"
+                data-noflatpickr="true"
                 value={filters.tanggal === 'Semua Tanggal' ? '' : filters.tanggal}
                 onChange={e => setFilters(prev => ({ ...prev, tanggal: e.target.value || getTodayWIB(), _referenceDate: e.target.value || getTodayWIB() }))}
                 className="w-full h-10 pl-10 pr-4 text-[13px] font-medium text-slate-700 bg-white border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-400 hover:border-slate-300 transition-colors"
@@ -1905,6 +1906,7 @@
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10"><Icon name="calendar" size={15} className="text-slate-400" /></div>
                 <input
                   type="date"
+                  data-noflatpickr="true"
                   value={filters.tanggal_akhir || filters.tanggal}
                   onChange={e => setFilters(prev => ({ ...prev, tanggal_akhir: e.target.value || getTodayWIB() }))}
                   className="w-full h-10 pl-10 pr-4 text-[13px] font-medium text-slate-700 bg-white border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-400 hover:border-slate-300 transition-colors"

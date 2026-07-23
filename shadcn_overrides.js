@@ -218,6 +218,7 @@ window.initShadcnDate = function () {
   const dateInputs = document.querySelectorAll('input[type="date"], input[type="month"]');
   dateInputs.forEach(input => {
     if (input.parentElement && input.parentElement.classList.contains('shadcn-date-wrapper')) return;
+    if (input.getAttribute('data-noflatpickr') === 'true') return; // Skip React-controlled inputs
 
     const wrapper = document.createElement('div');
     wrapper.className = 'relative w-full shadcn-date-wrapper';
