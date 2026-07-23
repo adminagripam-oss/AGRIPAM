@@ -41,7 +41,8 @@
                     <img src="AGRINAS DANANTARA.png" class="h-8 w-auto" alt="Logo Agrinas Palma Nusantara">
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button id="logoutBtn" class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded text-sm font-medium transition-colors shadow">
+                    <button id="logoutBtn"
+                        class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded text-sm font-medium transition-colors shadow">
                         Kembali ke Dashboard
                     </button>
                 </div>
@@ -59,7 +60,8 @@
                     <p class="text-xs text-slate-500 mt-1">Mengelola semua surat yang masuk dari regional.</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
-                    <input type="text" id="searchSurat" oninput="renderSuratTable()" placeholder="Cari nomor surat / perihal..."
+                    <input type="text" id="searchSurat" oninput="renderSuratTable()"
+                        placeholder="Cari nomor surat / perihal..."
                         class="w-full sm:w-64 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none">
                     <button id="btnAdjustFile" onclick="openAdjustFileModal()"
                         class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-indigo-200">
@@ -213,16 +215,16 @@
 
             tbody.innerHTML = '';
             data.forEach(row => {
-                    const date = new Date(row.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const date = new Date(row.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-                    let statusColor = 'bg-slate-100 text-slate-700';
-                    if (row.status === 'menunggu') statusColor = 'bg-yellow-100 text-yellow-700';
-                    if (row.status === 'diproses') statusColor = 'bg-blue-100 text-blue-700';
-                    if (row.status === 'selesai') statusColor = 'bg-green-100 text-green-700';
-                    if (row.status === 'ditolak') statusColor = 'bg-red-100 text-red-700';
+                let statusColor = 'bg-slate-100 text-slate-700';
+                if (row.status === 'menunggu') statusColor = 'bg-yellow-100 text-yellow-700';
+                if (row.status === 'diproses') statusColor = 'bg-blue-100 text-blue-700';
+                if (row.status === 'selesai') statusColor = 'bg-green-100 text-green-700';
+                if (row.status === 'ditolak') statusColor = 'bg-red-100 text-red-700';
 
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
                         <td class="p-4 font-semibold text-indigo-700">${row.regional_pengirim || '-'}</td>
                         <td class="p-4 font-semibold text-slate-800">${row.nomor_surat}</td>
                         <td class="p-4"><span class="capitalize text-xs font-semibold bg-slate-100 px-2 py-1 rounded">${row.jenis_surat}</span></td>
@@ -291,13 +293,15 @@
                         </div>
                         <div class="flex-1">
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teruskan ke Bagian</label>
-                            <select id="tujuan_${id}" onchange="document.getElementById('td_tujuan_${id}').textContent = this.value || '-'" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 outline-none text-sm">
+                            <select id="tujuan_${id}" onchange="if(this.value==='lainnya'){document.getElementById('tujuan_lainnya_${id}').classList.remove('hidden');}else{document.getElementById('tujuan_lainnya_${id}').classList.add('hidden');} document.getElementById('td_tujuan_${id}').textContent = (this.value==='lainnya' ? document.getElementById('tujuan_lainnya_${id}').value || '-' : this.value || '-');" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 outline-none text-sm">
                                 <option value="">-- Pilih Tujuan --</option>
                                 <option value="UMUM" ${currentTujuan === 'UMUM' ? 'selected' : ''}>UMUM</option>
                                 <option value="KEUANGAN" ${currentTujuan === 'KEUANGAN' ? 'selected' : ''}>KEUANGAN</option>
                                 <option value="PENGADAAN" ${currentTujuan === 'PENGADAAN' ? 'selected' : ''}>PENGADAAN</option>
                                 <option value="REGIONAL" ${currentTujuan === 'REGIONAL' ? 'selected' : ''}>REGIONAL</option>
+                                <option value="lainnya" ${!['', 'UMUM', 'KEUANGAN', 'PENGADAAN', 'REGIONAL'].includes(currentTujuan) ? 'selected' : ''}>Lainnya...</option>
                             </select>
+                            <input type="text" id="tujuan_lainnya_${id}" value="${!['', 'UMUM', 'KEUANGAN', 'PENGADAAN', 'REGIONAL'].includes(currentTujuan) ? currentTujuan : ''}" oninput="if(document.getElementById('tujuan_${id}').value==='lainnya'){document.getElementById('td_tujuan_${id}').textContent = this.value || '-';}" placeholder="Ketik nama bagian..." class="${!['', 'UMUM', 'KEUANGAN', 'PENGADAAN', 'REGIONAL'].includes(currentTujuan) ? '' : 'hidden '}w-full mt-2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 outline-none text-sm">
                         </div>
                         <div class="flex-1">
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tanggal Surat</label>
@@ -322,7 +326,8 @@
             const msg = document.getElementById(`msg_${id}`);
             const newStatus = document.getElementById(`status_${id}`).value;
             const catatan = document.getElementById(`catatan_${id}`).value;
-            const tujuan = document.getElementById(`tujuan_${id}`) ? document.getElementById(`tujuan_${id}`).value : '';
+            const selectTujuan = document.getElementById(`tujuan_${id}`);
+            const tujuan = selectTujuan ? (selectTujuan.value === 'lainnya' ? document.getElementById(`tujuan_lainnya_${id}`).value : selectTujuan.value) : '';
             const tanggalSuratUpdate = document.getElementById(`update_tanggal_surat_${id}`).value;
 
             btn.disabled = true;
@@ -486,7 +491,7 @@
                                 region: sessionRegion,
                                 action: 'insertSurat',
                                 nomor_surat: document.getElementById('admin_nomor_surat').value,
-                                jenis_surat: document.getElementById('admin_jenis_surat').value,
+                                jenis_surat: document.getElementById('admin_jenis_surat').value === 'lainnya' ? document.getElementById('admin_jenis_surat_lainnya').value : document.getElementById('admin_jenis_surat').value,
                                 perihal: document.getElementById('admin_perihal').value,
                                 tanggal_surat: document.getElementById('admin_tanggal_surat').value,
                                 fileData: base64Data,
@@ -551,10 +556,13 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Jenis Surat</label>
                         <select id="admin_jenis_surat" required
-                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm">
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm"
+                            onchange="if(this.value==='lainnya'){document.getElementById('admin_jenis_surat_lainnya').classList.remove('hidden'); document.getElementById('admin_jenis_surat_lainnya').setAttribute('required','true');}else{document.getElementById('admin_jenis_surat_lainnya').classList.add('hidden'); document.getElementById('admin_jenis_surat_lainnya').removeAttribute('required');}">
                             <option value="masuk">Surat Masuk</option>
                             <option value="permintaan">Surat Permintaan</option>
+                            <option value="lainnya">Lainnya...</option>
                         </select>
+                        <input type="text" id="admin_jenis_surat_lainnya" placeholder="Ketik jenis surat..." class="hidden w-full mt-2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm">
                     </div>
                 </div>
 
@@ -572,7 +580,9 @@
 
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">File Surat (PDF / Word)</label>
-                    <input type="file" id="admin_file_surat" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required
+                    <input type="file" id="admin_file_surat"
+                        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        required
                         class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                 </div>
 
@@ -599,34 +609,49 @@
     </div>
 
     <!-- MODAL EDIT DOKUMEN DOCX -->
-    <div id="docxEditorModal" class="modal fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div id="docxEditorModal"
+        class="modal fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-3xl max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center p-4 border-b">
                 <h2 class="text-lg font-bold text-slate-800">Edit Dokumen Surat</h2>
                 <button onclick="closeDocxEditor()" class="text-slate-400 hover:text-slate-600 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
                 </button>
             </div>
             <div class="p-4 flex-1 overflow-y-auto">
                 <div id="docxEditorLoading" class="text-center text-sm text-slate-500 py-8">Memuat dokumen...</div>
-                <div id="docxEditorToolbar" class="hidden flex-wrap items-center gap-1 border border-slate-300 border-b-0 rounded-t-lg bg-slate-50 p-2">
-                    <button type="button" onclick="docxExec('bold')" class="px-2 py-1 rounded hover:bg-slate-200 font-bold text-sm" title="Bold">B</button>
-                    <button type="button" onclick="docxExec('italic')" class="px-2 py-1 rounded hover:bg-slate-200 italic text-sm" title="Italic">I</button>
-                    <button type="button" onclick="docxExec('underline')" class="px-2 py-1 rounded hover:bg-slate-200 underline text-sm" title="Underline">U</button>
+                <div id="docxEditorToolbar"
+                    class="hidden flex-wrap items-center gap-1 border border-slate-300 border-b-0 rounded-t-lg bg-slate-50 p-2">
+                    <button type="button" onclick="docxExec('bold')"
+                        class="px-2 py-1 rounded hover:bg-slate-200 font-bold text-sm" title="Bold">B</button>
+                    <button type="button" onclick="docxExec('italic')"
+                        class="px-2 py-1 rounded hover:bg-slate-200 italic text-sm" title="Italic">I</button>
+                    <button type="button" onclick="docxExec('underline')"
+                        class="px-2 py-1 rounded hover:bg-slate-200 underline text-sm" title="Underline">U</button>
                     <span class="w-px h-5 bg-slate-300 mx-1"></span>
-                    <button type="button" onclick="docxExec('formatBlock', 'H1')" class="px-2 py-1 rounded hover:bg-slate-200 text-sm font-semibold" title="Heading 1">H1</button>
-                    <button type="button" onclick="docxExec('formatBlock', 'H2')" class="px-2 py-1 rounded hover:bg-slate-200 text-sm font-semibold" title="Heading 2">H2</button>
-                    <button type="button" onclick="docxExec('formatBlock', 'P')" class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Paragraf">P</button>
+                    <button type="button" onclick="docxExec('formatBlock', 'H1')"
+                        class="px-2 py-1 rounded hover:bg-slate-200 text-sm font-semibold" title="Heading 1">H1</button>
+                    <button type="button" onclick="docxExec('formatBlock', 'H2')"
+                        class="px-2 py-1 rounded hover:bg-slate-200 text-sm font-semibold" title="Heading 2">H2</button>
+                    <button type="button" onclick="docxExec('formatBlock', 'P')"
+                        class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Paragraf">P</button>
                     <span class="w-px h-5 bg-slate-300 mx-1"></span>
-                    <button type="button" onclick="docxExec('insertUnorderedList')" class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Bullet List">&#8226; List</button>
-                    <button type="button" onclick="docxExec('insertOrderedList')" class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Numbered List">1. List</button>
+                    <button type="button" onclick="docxExec('insertUnorderedList')"
+                        class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Bullet List">&#8226; List</button>
+                    <button type="button" onclick="docxExec('insertOrderedList')"
+                        class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Numbered List">1. List</button>
                     <span class="w-px h-5 bg-slate-300 mx-1"></span>
-                    <button type="button" onclick="docxExec('justifyLeft')" class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Rata Kiri">&#8676;</button>
-                    <button type="button" onclick="docxExec('justifyCenter')" class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Rata Tengah">&#8596;</button>
-                    <button type="button" onclick="docxExec('justifyRight')" class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Rata Kanan">&#8677;</button>
-                    <button type="button" onclick="docxExec('justifyFull')" class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Rata Kiri-Kanan">&#8801;</button>
+                    <button type="button" onclick="docxExec('justifyLeft')"
+                        class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Rata Kiri">&#8676;</button>
+                    <button type="button" onclick="docxExec('justifyCenter')"
+                        class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Rata Tengah">&#8596;</button>
+                    <button type="button" onclick="docxExec('justifyRight')"
+                        class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Rata Kanan">&#8677;</button>
+                    <button type="button" onclick="docxExec('justifyFull')"
+                        class="px-2 py-1 rounded hover:bg-slate-200 text-sm" title="Rata Kiri-Kanan">&#8801;</button>
                 </div>
                 <div id="docxEditorContainer" contenteditable="true"
                     class="hidden border border-slate-300 rounded-b-lg p-4 focus:outline-none"
