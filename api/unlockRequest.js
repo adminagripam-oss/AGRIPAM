@@ -17,36 +17,49 @@ module.exports = async (req, res) => {
 
   if (actionCall === 'requestUnlock' || actionCall === 'requestRevision') {
     const tanggal = (p.tanggal || '').trim();
-    const reqType = (p.type || (actionCall === 'requestRevision' ? 'REVISI_REALISASI' : 'UNLOCK_ESTIMASI')).trim();
+    const isRevision = actionCall === 'requestRevision' || p.type === 'REVISI_REALISASI';
 
     if (!tanggal || !region) {
       return res.json({ success: false, message: 'Data tidak lengkap (tanggal/region).' });
     }
 
-    let query = supabase.from('unlock_requests').select('id').eq('region', region).eq('tanggal', tanggal).eq('status', 'PENDING');
-    if (reqType) {
-      query = query.eq('type', reqType);
-    }
+    if (isRevision) {
+      // Check existing pending request in delete_requests
+      const { data: existingDel } = await supabase.from('delete_requests')
+        .select('id').eq('type', 'UNLOCK_REALISASI').eq('region', region).eq('tanggal', tanggal).eq('status', 'PENDING').maybeSingle();
 
-    const { data: existing } = await query.maybeSingle();
-    if (existing) return res.json({ success: false, message: 'Permintaan revisi/buka akses untuk ini sudah diajukan dan sedang menunggu persetujuan Admin.' });
+      if (existingDel) {
+        return res.json({ success: false, message: 'Permintaan revisi realisasi produksi tanggal ini sudah diajukan dan sedang menunggu persetujuan Admin.' });
+      }
 
-    const insertData = { region, tanggal, status: 'PENDING' };
-    try { insertData.type = reqType; } catch (_) {}
+      // Insert into delete_requests for clear type identification
+      const { error: errDel } = await supabase.from('delete_requests').insert({ type: 'UNLOCK_REALISASI', region, tanggal, status: 'PENDING' });
+      if (errDel) {
+        return res.json({ success: false, message: 'Gagal mengirim permintaan revisi: ' + errDel.message });
+      }
 
-    const { error } = await supabase.from('unlock_requests').insert(insertData);
-    if (error) {
-      // Fallback if type column is not present in old schema
-      if (error.message.includes('type')) {
-        delete insertData.type;
-        const { error: err2 } = await supabase.from('unlock_requests').insert(insertData);
-        if (err2) return res.json({ success: false, message: 'Gagal mengirim permintaan buka akses: ' + err2.message });
-      } else {
+      // Also insert into unlock_requests for fallback
+      const insertData = { region, tanggal, status: 'PENDING' };
+      await supabase.from('unlock_requests').insert(insertData);
+
+      return res.json({ success: true, message: 'Permintaan revisi realisasi produksi tanggal ' + tanggal + ' telah dikirim ke Admin untuk diverifikasi.' });
+    } else {
+      // Request unlock for Estimasi Panen
+      const { data: existing } = await supabase.from('unlock_requests')
+        .select('id').eq('region', region).eq('tanggal', tanggal).eq('status', 'PENDING').maybeSingle();
+
+      if (existing) {
+        return res.json({ success: false, message: 'Permintaan buka akses pengisian estimasi untuk tanggal ini sudah diajukan dan sedang menunggu persetujuan Admin.' });
+      }
+
+      const insertData = { region, tanggal, status: 'PENDING' };
+      const { error } = await supabase.from('unlock_requests').insert(insertData);
+      if (error) {
         return res.json({ success: false, message: 'Gagal mengirim permintaan buka akses: ' + error.message });
       }
-    }
 
-    return res.json({ success: true, message: 'Permintaan revisi/buka akses tanggal ' + tanggal + ' telah dikirim ke Admin untuk diverifikasi.' });
+      return res.json({ success: true, message: 'Permintaan buka akses pengisian estimasi tanggal ' + tanggal + ' telah dikirim ke Admin untuk diverifikasi.' });
+    }
   }
 
   if (actionCall === 'checkRevisionStatus') {
@@ -55,33 +68,32 @@ module.exports = async (req, res) => {
       return res.json({ success: false, message: 'Data tidak lengkap (tanggal/region).' });
     }
 
-    let { data, error } = await supabase.from('unlock_requests')
+    // First check delete_requests for UNLOCK_REALISASI
+    const { data: delData } = await supabase.from('delete_requests')
       .select('status')
       .eq('region', region)
       .eq('tanggal', tanggal)
-      .eq('type', 'REVISI_REALISASI')
+      .eq('type', 'UNLOCK_REALISASI')
       .order('requested_at', { ascending: false })
       .limit(1);
 
-    if (error && error.message.includes('type')) {
-      // Fallback query without type filter
-      const resFallback = await supabase.from('unlock_requests')
-        .select('status')
-        .eq('region', region)
-        .eq('tanggal', tanggal)
-        .order('requested_at', { ascending: false })
-        .limit(1);
-      data = resFallback.data;
-      error = resFallback.error;
+    if (delData && delData.length > 0) {
+      return res.json({ success: true, status: delData[0].status });
     }
 
-    if (error) return res.json({ success: false, message: 'Gagal mengecek status revisi: ' + error.message });
+    // Fallback check unlock_requests
+    const { data: unlData } = await supabase.from('unlock_requests')
+      .select('status')
+      .eq('region', region)
+      .eq('tanggal', tanggal)
+      .order('requested_at', { ascending: false })
+      .limit(1);
 
-    if (data && data.length > 0) {
-      return res.json({ success: true, status: data[0].status });
-    } else {
-      return res.json({ success: true, status: 'NONE' });
+    if (unlData && unlData.length > 0) {
+      return res.json({ success: true, status: unlData[0].status });
     }
+
+    return res.json({ success: true, status: 'NONE' });
   }
 
   if (actionCall === 'checkUnlock') {

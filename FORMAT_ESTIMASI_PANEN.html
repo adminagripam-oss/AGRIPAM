@@ -1865,6 +1865,19 @@
                 }
                 
                 if (allRequests.length > 0) {
+                    // Deduplicate requests by region + tanggal + jam
+                    let seenKeys = new Set();
+                    let uniqueRequests = [];
+                    // Prioritize 'delete' api (UNLOCK_REALISASI / Buka Real. Produksi) first
+                    allRequests.sort((a,b) => (a._api === 'delete' ? -1 : 1));
+                    allRequests.forEach(req => {
+                        let key = req.region + '_' + req.tanggal + '_' + (req.jam || '');
+                        if (!seenKeys.has(key)) {
+                            seenKeys.add(key);
+                            uniqueRequests.push(req);
+                        }
+                    });
+                    allRequests = uniqueRequests;
                     allRequests.sort((a,b) => new Date(b.requested_at) - new Date(a.requested_at));
                     document.getElementById("adminApprovalTable").classList.remove("hidden");
                     const tbody = document.getElementById("adminApprovalBody");
