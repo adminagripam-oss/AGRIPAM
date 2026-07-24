@@ -1,7 +1,7 @@
 // ==========================================
 // Shadcn Alert Toast System
 // ==========================================
-window.showAlert = function (variant, title, message) {
+window.showAlert = function (variant, title, message, durationMs) {
   let container = document.getElementById('custom-alert-container');
   if (!container) {
     container = document.createElement('div');
@@ -9,45 +9,60 @@ window.showAlert = function (variant, title, message) {
     document.body.appendChild(container);
   }
   const alertEl = document.createElement('div');
-  alertEl.className = 'shadcn-alert shadcn-alert-' + variant;
+  alertEl.className = 'shadcn-alert shadcn-alert-' + (variant || 'invert');
+  
   let iconSvg = '';
   if (variant === 'success' || variant === 'invert') {
-    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>';
+    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
   } else if (variant === 'warning') {
-    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
+    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-warning"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
+  } else if (variant === 'destructive') {
+    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-destructive"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>';
   } else {
-    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>';
+    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
   }
-  alertEl.innerHTML = iconSvg + '<h5 class="shadcn-alert-title">' + (title || 'Notification!') + '</h5><div class="shadcn-alert-desc">' + message + '</div>';
+
+  const displayTitle = title || 'AGRIPAM Update';
+
+  alertEl.innerHTML = iconSvg + 
+    '<div class="flex-1 pr-4">' +
+      '<h5 class="shadcn-alert-title">' + displayTitle + '</h5>' +
+      '<div class="shadcn-alert-desc">' + message + '</div>' +
+    '</div>' +
+    '<button type="button" class="shadcn-alert-close" onclick="this.parentElement.remove()" title="Tutup">&times;</button>' +
+    '<div class="shadcn-alert-progress"></div>';
+
   container.appendChild(alertEl);
+
+  const duration = durationMs || 5000;
+
   setTimeout(function () {
-    alertEl.classList.add('hiding');
-    setTimeout(function () { alertEl.remove(); }, 300);
-  }, 4000);
+    if (alertEl && alertEl.parentNode) {
+      alertEl.classList.add('hiding');
+      setTimeout(function () { if (alertEl.parentNode) alertEl.remove(); }, 300);
+    }
+  }, duration);
 };
 
 // Override native alert globally!
 window.nativeAlert = window.alert;
-window.alert = function (msg) {
+window.alert = function (msg, titleOverride) {
   if (typeof msg === 'object') {
     try { msg = JSON.stringify(msg); } catch (e) { }
   }
   const lower = String(msg).toLowerCase();
   let variant = 'invert';
-  let title = 'Notification!';
+  let title = titleOverride || 'AGRIPAM Update';
 
-  if (lower.includes('berhasil') || lower.includes('sukses') || lower.includes('disetujui') || lower.includes('dihapus')) {
+  if (lower.includes('berhasil') || lower.includes('sukses') || lower.includes('disetujui') || lower.includes('dihapus') || lower.includes('disimpan')) {
     variant = 'invert';
-    title = 'Notification!';
-  } else if (lower.includes('gagal') || lower.includes('error') || lower.includes('kesalahan') || lower.includes('tidak ditemukan') || lower.includes('tidak valid') || lower.includes('berakhir') || lower.includes('ditutup')) {
+  } else if (lower.includes('gagal') || lower.includes('error') || lower.includes('kesalahan') || lower.includes('tidak ditemukan') || lower.includes('ditolak') || lower.includes('tidak valid') || lower.includes('berakhir') || lower.includes('ditutup')) {
     variant = 'destructive';
-    title = 'Error!';
-  } else if (lower.includes('peringatan') || lower.includes('warning') || lower.includes('di luar batas')) {
+  } else if (lower.includes('peringatan') || lower.includes('warning') || lower.includes('di luar batas') || lower.includes('harap')) {
     variant = 'warning';
-    title = 'Warning!';
   }
 
-  window.showAlert(variant, title, msg);
+  window.showAlert(variant, title, msg, 5000);
 };
 
 
