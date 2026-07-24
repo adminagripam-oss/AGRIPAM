@@ -3272,6 +3272,7 @@
 
     function clearSession() {
       sessionStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem("agripam_update_shown");
       if (sessionTimer) { clearTimeout(sessionTimer); sessionTimer = null; }
     }
 

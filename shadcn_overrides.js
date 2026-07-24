@@ -679,7 +679,11 @@ window.renderReuiRevisionAlert = function (status, dateStr, onActionCallbackName
 // ==========================================
 // AGRIPAM System Update Announcement Pop-up (REUI Style Pattern)
 // ==========================================
-window.showAgripamUpdateAnnouncement = function () {
+window.showAgripamUpdateAnnouncement = function (force) {
+  if (!force && sessionStorage.getItem('agripam_update_shown') === 'true') {
+    return; // Sudah pernah tampil di sesi ini, abaikan saat F5 / Refresh
+  }
+
   let container = document.getElementById('agripam-update-announcement');
   if (container) container.remove();
 
@@ -710,6 +714,7 @@ window.showAgripamUpdateAnnouncement = function () {
   `;
 
   document.body.appendChild(container);
+  sessionStorage.setItem('agripam_update_shown', 'true');
 
   setTimeout(function () {
     if (container && container.parentNode) {
@@ -725,6 +730,12 @@ document.addEventListener("DOMContentLoaded", function () {
   setTimeout(() => {
     // Automatically initialize dates
     window.initShadcnDate();
+
+    // Trigger update announcement pop-up for logged in session IF not shown yet
+    const rawSession = sessionStorage.getItem("agripam_session");
+    if (rawSession && typeof window.showAgripamUpdateAnnouncement === 'function') {
+      window.showAgripamUpdateAnnouncement();
+    }
 
     // Automatically initialize custom selects (by ID)
     if (document.getElementById('loginRegion')) window.initShadcnSelect('loginRegion');
