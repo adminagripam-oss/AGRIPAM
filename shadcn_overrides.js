@@ -474,12 +474,210 @@ window.renderReuiRevisionAlert = function (status, dateStr, onActionCallbackName
       </div>
     `;
   }
-
   return '';
 };
 
 // ==========================================
-// AGRIPAM System Update Announcement Pop-up (REUI Style)
+// Shadcn Alert Dialog (Confirm)
+// ==========================================
+window.showConfirm = function (title, description, type = 'destructive') {
+  return new Promise((resolve) => {
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'shadcn-dialog-overlay';
+
+    // Create content box
+    const dialog = document.createElement('div');
+    dialog.id = 'shadcn-dialog-content';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'flex flex-col space-y-2 text-center sm:text-left';
+
+    // Media / Icon wrapper
+    const media = document.createElement('div');
+    let iconHtml = '';
+
+    if (type === 'success') {
+      media.className = 'mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 sm:mx-0 sm:h-10 sm:w-10 dark:bg-emerald-900/20 dark:text-emerald-500 mb-2';
+      iconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>';
+    } else {
+      media.className = 'mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 sm:mx-0 sm:h-10 sm:w-10 dark:bg-red-900/20 dark:text-red-600 mb-2';
+      iconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>';
+    }
+    media.innerHTML = iconHtml;
+
+    // Title
+    const titleEl = document.createElement('h2');
+    titleEl.className = 'text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50';
+    titleEl.textContent = title;
+
+    // Description
+    const descEl = document.createElement('p');
+    descEl.className = 'text-sm text-slate-500 dark:text-slate-400 mt-2 whitespace-pre-line';
+    descEl.textContent = description;
+
+    header.appendChild(media);
+    header.appendChild(titleEl);
+    header.appendChild(descEl);
+
+    // Footer
+    const footer = document.createElement('div');
+    footer.className = 'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-6';
+
+    // Cancel Button
+    const btnCancel = document.createElement('button');
+    btnCancel.className = 'mt-2 sm:mt-0 inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-transparent px-4 py-2 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-slate-400 dark:focus:ring-offset-slate-900';
+    btnCancel.textContent = 'Batal';
+
+    // Action Button
+    const btnAction = document.createElement('button');
+    if (type === 'success') {
+      btnAction.className = 'inline-flex h-10 items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-emerald-700 dark:focus:ring-emerald-400 dark:focus:ring-offset-slate-900';
+      btnAction.textContent = 'Lanjutkan';
+    } else {
+      btnAction.className = 'inline-flex h-10 items-center justify-center rounded-md bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-600 dark:focus:ring-red-400 dark:focus:ring-offset-slate-900';
+      btnAction.textContent = 'Hapus';
+    }
+
+    footer.appendChild(btnCancel);
+    footer.appendChild(btnAction);
+
+    dialog.appendChild(header);
+    dialog.appendChild(footer);
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(dialog);
+
+    const closeDialog = (result) => {
+      overlay.classList.add('hiding');
+      dialog.classList.add('hiding');
+      setTimeout(() => {
+        overlay.remove();
+        dialog.remove();
+        resolve(result);
+      }, 200);
+    };
+
+    btnCancel.addEventListener('click', () => closeDialog(false));
+    btnAction.addEventListener('click', () => closeDialog(true));
+  });
+};
+
+// ==========================================
+// Shadcn Inline Alerts (for form hints)
+// ==========================================
+window.renderInlineAlert = function (msg) {
+  const lower = String(msg).toLowerCase();
+
+  if (lower.includes('hanya dapat diisi') && lower.includes('waktu server anda saat ini')) {
+    // Destructive Variant
+    const cleanMsg = msg.replace('❌ Gagal: ', '').replace('Gagal: ', '');
+    return `
+      <div class="relative w-full rounded-lg border border-red-200 text-red-900 bg-red-50 dark:border-red-900/50 dark:text-red-200 dark:bg-red-950/50 p-4 text-left mt-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-4 top-4 h-5 w-5 text-red-600 dark:text-red-500"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+        <h5 class="mb-1 ml-8 font-medium leading-none tracking-tight text-red-800 dark:text-red-300">Error! Waktu Pengisian Ditolak</h5>
+        <div class="text-sm ml-8 opacity-90 leading-relaxed">${cleanMsg}</div>
+      </div>
+    `;
+  }
+
+  if (lower.includes('waktu pengisian di luar batas')) {
+    // Warning Variant
+    const cleanMsg = msg.replace('⚠️ ', '');
+    return `
+      <div class="relative w-full rounded-lg border border-amber-200 text-amber-900 bg-amber-50 dark:border-amber-900/50 dark:text-amber-200 dark:bg-amber-950/50 p-4 text-left mt-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-4 top-4 h-5 w-5 text-amber-600 dark:text-amber-500"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+        <h5 class="mb-1 ml-8 font-medium leading-none tracking-tight text-amber-800 dark:text-amber-300">Warning! Di Luar Batas</h5>
+        <div class="text-sm ml-8 opacity-90 leading-relaxed">${cleanMsg}</div>
+      </div>
+    `;
+  }
+
+  // Invert Variant (Notification Alert)
+  if (lower.includes('disetujui') || lower.includes('dihapus') || lower.includes('berhasil') || lower.includes('sukses') || lower.includes('notification')) {
+    const cleanMsg = msg.replace('✅ ', '').replace('❌ ', '');
+    return `
+      <div class="relative w-full rounded-xl border border-slate-800 bg-slate-900 text-slate-50 p-4 text-left mt-2 shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-4 top-4 h-5 w-5 text-emerald-500"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+        <h5 class="mb-1 ml-8 font-semibold leading-none tracking-tight text-white">Notification!</h5>
+        <div class="text-sm ml-8 text-slate-300 opacity-90 leading-relaxed">${cleanMsg}</div>
+      </div>
+    `;
+  }
+
+  return null;
+};
+
+// ==========================================
+// REUI Alert Components for Revision Request
+// ==========================================
+window.renderReuiRevisionAlert = function (status, dateStr, onActionCallbackName) {
+  const formattedDate = dateStr ? dateStr.split('-').reverse().join('/') : '';
+  const actionFn = onActionCallbackName || 'ajukanRevisiTanggal';
+
+  if (status === 'NONE') {
+    return `
+      <div class="relative w-full rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm dark:border-slate-800 dark:bg-slate-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-slate-900 dark:text-slate-50 mb-4 transition-all">
+        <div class="flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-emerald-600 dark:text-emerald-500 shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div>
+            <h5 class="font-semibold leading-none tracking-tight text-slate-900 dark:text-slate-100">Hello</h5>
+            <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">Ajukan Revisi Realisasi Tanggal Ini${formattedDate ? ' (' + formattedDate + ')' : ''}</div>
+          </div>
+        </div>
+        <button type="button" onclick="${actionFn}()" class="inline-flex h-9 items-center justify-center rounded-lg bg-emerald-800 hover:bg-emerald-900 text-white px-5 py-2 text-xs font-bold tracking-wider shadow transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-700 shrink-0 whitespace-nowrap">
+          REVISI
+        </button>
+      </div>
+    `;
+  }
+
+  if (status === 'PENDING') {
+    return `
+      <div class="relative w-full rounded-xl border border-amber-200 bg-amber-50/70 dark:border-amber-900/50 dark:bg-amber-950/40 p-4 text-left shadow-sm flex items-center gap-3 text-slate-900 dark:text-slate-50 mb-4 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-amber-600 dark:text-amber-500 shrink-0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div>
+          <h5 class="font-semibold leading-none tracking-tight text-amber-900 dark:text-amber-200">Hello</h5>
+          <div class="text-sm text-amber-800 dark:text-amber-300 mt-1">Permintaan revisi tanggal ini${formattedDate ? ' (' + formattedDate + ')' : ''} sedang menunggu persetujuan Admin</div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (status === 'REJECTED') {
+    return `
+      <div class="relative w-full rounded-xl border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/50 p-4 text-left shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-red-900 dark:text-red-200 mb-4 transition-all">
+        <div class="flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-red-600 dark:text-red-500 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+          <div>
+            <h5 class="font-semibold leading-none tracking-tight text-red-800 dark:text-red-300">Perhatian</h5>
+            <div class="text-sm opacity-90 mt-1">Permintaan revisi tanggal ini${formattedDate ? ' (' + formattedDate + ')' : ''} ditolak oleh Admin</div>
+          </div>
+        </div>
+        <button type="button" onclick="${actionFn}()" class="inline-flex h-9 items-center justify-center rounded-lg bg-emerald-800 hover:bg-emerald-900 text-white px-5 py-2 text-xs font-bold tracking-wider shadow transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-700 shrink-0 whitespace-nowrap">
+          REVISI
+        </button>
+      </div>
+    `;
+  }
+
+  if (status === 'APPROVED') {
+    return `
+      <div class="relative w-full rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-900/50 dark:bg-emerald-950/50 p-4 text-left shadow-sm flex items-center gap-3 text-emerald-900 dark:text-emerald-200 mb-4 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-emerald-600 dark:text-emerald-500 shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <div>
+          <h5 class="font-semibold leading-none tracking-tight text-emerald-800 dark:text-emerald-300">Success! All good</h5>
+          <div class="text-sm opacity-90 mt-1">Akses revisi tanggal ini${formattedDate ? ' (' + formattedDate + ')' : ''} telah disetujui Admin</div>
+        </div>
+      </div>
+    `;
+  }
+  return '';
+};
+
+// ==========================================
+// AGRIPAM System Update Announcement Pop-up (REUI Style Pattern)
 // ==========================================
 window.showAgripamUpdateAnnouncement = function () {
   let container = document.getElementById('agripam-update-announcement');
@@ -490,63 +688,38 @@ window.showAgripamUpdateAnnouncement = function () {
   container.className = 'fixed top-5 right-5 z-[100000] max-w-md w-[calc(100%-2.5rem)]';
   
   container.innerHTML = `
-    <div class="relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-slate-900 text-white p-5 shadow-2xl backdrop-blur-md dark:bg-slate-950 dark:border-emerald-500/40 font-sans transition-all duration-300">
-      <div class="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-emerald-500/20 blur-2xl pointer-events-none"></div>
+    <div class="relative w-full rounded-xl border border-slate-200 bg-white p-4 text-left shadow-xl dark:border-slate-800 dark:bg-slate-950 text-slate-900 dark:text-slate-50 transition-all font-sans overflow-hidden">
+      <div class="flex items-start gap-3">
+        <!-- ShieldCheckIcon -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+        
+        <div class="flex-1 min-w-0">
+          <!-- AlertTitle -->
+          <h5 class="font-semibold leading-none tracking-tight text-slate-900 dark:text-slate-100 text-sm mb-1.5">Agripam Update</h5>
+          
+          <!-- AlertDescription -->
+          <div class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            Fitur Revisi Realisasi Tanggal Lampau: Akun Regional kini dapat mengajukan permohonan revisi laporan panen tanggal sebelumnya untuk disetujui/ditolak oleh Admin.
+          </div>
 
-      <div class="flex items-start justify-between gap-3 mb-3">
-        <div class="flex items-center gap-2.5">
-          <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="M4 14.5A8.5 8.5 0 0 0 19.5 10"/></svg>
-          </div>
-          <div>
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> UPDATE PEMBARUAN AGRIPAM
-            </span>
-            <h4 class="text-sm font-bold text-white tracking-tight mt-0.5">Fitur Terbaru Sistem AGRIPAM</h4>
-          </div>
-        </div>
-        <button type="button" onclick="document.getElementById('agripam-update-announcement').remove()" class="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-800">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
-      </div>
-
-      <div class="space-y-2 text-xs text-slate-300 leading-relaxed mb-4">
-        <div class="flex items-start gap-2 bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/50">
-          <span class="text-emerald-400 font-bold shrink-0 mt-0.5">✨</span>
-          <div>
-            <strong class="text-emerald-300 block font-semibold">Fitur Revisi Realisasi Tanggal Lampau:</strong>
-            Akun Regional kini dapat mengajukan permohonan revisi laporan panen tanggal sebelumnya untuk disetujui/ditolak oleh Admin.
-          </div>
-        </div>
-        <div class="flex items-start gap-2 bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/50">
-          <span class="text-emerald-400 font-bold shrink-0 mt-0.5">🎯</span>
-          <div>
-            <strong class="text-emerald-300 block font-semibold">Navigasi Tanggal Terpusat:</strong>
-            Pemilihan tanggal terpusat pada Filter Tampilan Data untuk menjaga akurasi realisasi harian.
+          <!-- AlertAction -->
+          <div class="mt-3 flex items-center justify-end gap-2">
+            <button type="button" onclick="document.getElementById('agripam-update-announcement').remove()" class="inline-flex h-7 items-center justify-center rounded-md border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-100 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors">
+              Dismiss
+            </button>
+            <button type="button" onclick="document.getElementById('agripam-update-announcement').remove()" class="inline-flex h-7 items-center justify-center rounded-md bg-emerald-700 hover:bg-emerald-800 text-white px-3 text-xs font-medium shadow transition-colors">
+              Update
+            </button>
           </div>
         </div>
       </div>
 
-      <div class="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-800 pt-2.5">
-        <span>Menutup otomatis dalam <strong id="update-timer-count" class="text-emerald-400 font-bold">5</strong>s</span>
-        <button type="button" onclick="document.getElementById('agripam-update-announcement').remove()" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
-          Paham & Mengerti &rarr;
-        </button>
-      </div>
-
+      <!-- 5s Progress Bar -->
       <div class="shadcn-alert-progress"></div>
     </div>
   `;
 
   document.body.appendChild(container);
-
-  let secondsLeft = 5;
-  const countEl = document.getElementById('update-timer-count');
-  const interval = setInterval(function () {
-    secondsLeft--;
-    if (countEl) countEl.textContent = Math.max(0, secondsLeft);
-    if (secondsLeft <= 0) clearInterval(interval);
-  }, 1000);
 
   setTimeout(function () {
     if (container && container.parentNode) {
