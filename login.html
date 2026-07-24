@@ -3862,6 +3862,9 @@
                 setLoading(false);
               }
               updateRunningText();
+              if (typeof window.showAgripamUpdateAnnouncement === 'function') {
+                setTimeout(window.showAgripamUpdateAnnouncement, 500);
+              }
             }, 1000);
 
           } else {

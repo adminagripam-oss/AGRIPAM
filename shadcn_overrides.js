@@ -478,10 +478,96 @@ window.renderReuiRevisionAlert = function (status, dateStr, onActionCallbackName
   return '';
 };
 
+// ==========================================
+// AGRIPAM System Update Announcement Pop-up (REUI Style)
+// ==========================================
+window.showAgripamUpdateAnnouncement = function () {
+  let container = document.getElementById('agripam-update-announcement');
+  if (container) container.remove();
+
+  container = document.createElement('div');
+  container.id = 'agripam-update-announcement';
+  container.className = 'fixed top-5 right-5 z-[100000] max-w-md w-[calc(100%-2.5rem)]';
+  
+  container.innerHTML = `
+    <div class="relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-slate-900 text-white p-5 shadow-2xl backdrop-blur-md dark:bg-slate-950 dark:border-emerald-500/40 font-sans transition-all duration-300">
+      <div class="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-emerald-500/20 blur-2xl pointer-events-none"></div>
+
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="M4 14.5A8.5 8.5 0 0 0 19.5 10"/></svg>
+          </div>
+          <div>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> UPDATE PEMBARUAN AGRIPAM
+            </span>
+            <h4 class="text-sm font-bold text-white tracking-tight mt-0.5">Fitur Terbaru Sistem AGRIPAM</h4>
+          </div>
+        </div>
+        <button type="button" onclick="document.getElementById('agripam-update-announcement').remove()" class="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-800">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-2 text-xs text-slate-300 leading-relaxed mb-4">
+        <div class="flex items-start gap-2 bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/50">
+          <span class="text-emerald-400 font-bold shrink-0 mt-0.5">✨</span>
+          <div>
+            <strong class="text-emerald-300 block font-semibold">Fitur Revisi Realisasi Tanggal Lampau:</strong>
+            Akun Regional kini dapat mengajukan permohonan revisi laporan panen tanggal sebelumnya untuk disetujui/ditolak oleh Admin.
+          </div>
+        </div>
+        <div class="flex items-start gap-2 bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/50">
+          <span class="text-emerald-400 font-bold shrink-0 mt-0.5">🎯</span>
+          <div>
+            <strong class="text-emerald-300 block font-semibold">Navigasi Tanggal Terpusat:</strong>
+            Pemilihan tanggal terpusat pada Filter Tampilan Data untuk menjaga akurasi realisasi harian.
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-800 pt-2.5">
+        <span>Menutup otomatis dalam <strong id="update-timer-count" class="text-emerald-400 font-bold">5</strong>s</span>
+        <button type="button" onclick="document.getElementById('agripam-update-announcement').remove()" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
+          Paham & Mengerti &rarr;
+        </button>
+      </div>
+
+      <div class="shadcn-alert-progress"></div>
+    </div>
+  `;
+
+  document.body.appendChild(container);
+
+  let secondsLeft = 5;
+  const countEl = document.getElementById('update-timer-count');
+  const interval = setInterval(function () {
+    secondsLeft--;
+    if (countEl) countEl.textContent = Math.max(0, secondsLeft);
+    if (secondsLeft <= 0) clearInterval(interval);
+  }, 1000);
+
+  setTimeout(function () {
+    if (container && container.parentNode) {
+      container.classList.add('opacity-0', 'transition-all', 'duration-300');
+      setTimeout(function () {
+        if (container && container.parentNode) container.remove();
+      }, 300);
+    }
+  }, 5000);
+};
+
 document.addEventListener("DOMContentLoaded", function () {
   setTimeout(() => {
     // Automatically initialize dates
     window.initShadcnDate();
+
+    // Trigger update announcement pop-up for logged in session
+    const rawSession = sessionStorage.getItem("agripam_session");
+    if (rawSession && typeof window.showAgripamUpdateAnnouncement === 'function') {
+      window.showAgripamUpdateAnnouncement();
+    }
 
     // Automatically initialize custom selects (by ID)
     if (document.getElementById('loginRegion')) window.initShadcnSelect('loginRegion');
@@ -489,4 +575,3 @@ document.addEventListener("DOMContentLoaded", function () {
     if (document.getElementById('jam')) window.initShadcnSelect('jam');
   }, 500);
 });
-
