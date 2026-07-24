@@ -480,7 +480,12 @@ window.renderReuiRevisionAlert = function (status, dateStr, onActionCallbackName
 // ==========================================
 // Shadcn Alert Dialog (Confirm)
 // ==========================================
-window.showConfirm = function (title, description, type = 'destructive') {
+window.showConfirm = function (title, description, type = 'destructive', options = {}) {
+  if (typeof type === 'object' && type !== null) {
+    options = type;
+    type = options.type || 'destructive';
+  }
+
   return new Promise((resolve) => {
     // Create overlay
     const overlay = document.createElement('div');
@@ -498,9 +503,15 @@ window.showConfirm = function (title, description, type = 'destructive') {
     const media = document.createElement('div');
     let iconHtml = '';
 
-    if (type === 'success') {
+    if (type === 'success' || type === 'oke' || type === 'emerald') {
       media.className = 'mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 sm:mx-0 sm:h-10 sm:w-10 dark:bg-emerald-900/20 dark:text-emerald-500 mb-2';
       iconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>';
+    } else if (type === 'revision' || type === 'emerald-dark') {
+      media.className = 'mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 sm:mx-0 sm:h-10 sm:w-10 dark:bg-emerald-950/40 dark:text-emerald-400 mb-2';
+      iconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>';
+    } else if (type === 'warning') {
+      media.className = 'mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 sm:mx-0 sm:h-10 sm:w-10 dark:bg-amber-900/20 dark:text-amber-500 mb-2';
+      iconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
     } else {
       media.className = 'mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 sm:mx-0 sm:h-10 sm:w-10 dark:bg-red-900/20 dark:text-red-600 mb-2';
       iconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>';
@@ -528,16 +539,22 @@ window.showConfirm = function (title, description, type = 'destructive') {
     // Cancel Button
     const btnCancel = document.createElement('button');
     btnCancel.className = 'mt-2 sm:mt-0 inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-transparent px-4 py-2 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-slate-400 dark:focus:ring-offset-slate-900';
-    btnCancel.textContent = 'Batal';
+    btnCancel.textContent = options.cancelText || 'Batal';
 
     // Action Button
     const btnAction = document.createElement('button');
-    if (type === 'success') {
-      btnAction.className = 'inline-flex h-10 items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-emerald-700 dark:focus:ring-emerald-400 dark:focus:ring-offset-slate-900';
-      btnAction.textContent = 'Lanjutkan';
+    if (type === 'oke' || type === 'success' || type === 'emerald') {
+      btnAction.className = options.confirmClass || 'inline-flex h-10 items-center justify-center rounded-md bg-emerald-600 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-emerald-700 dark:focus:ring-emerald-400 dark:focus:ring-offset-slate-900';
+      btnAction.textContent = options.confirmText || 'Oke';
+    } else if (type === 'revision' || type === 'emerald-dark') {
+      btnAction.className = options.confirmClass || 'inline-flex h-10 items-center justify-center rounded-md bg-emerald-800 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-emerald-800 dark:hover:bg-emerald-900 dark:focus:ring-emerald-700 dark:focus:ring-offset-slate-900';
+      btnAction.textContent = options.confirmText || 'Revisi';
+    } else if (type === 'warning') {
+      btnAction.className = options.confirmClass || 'inline-flex h-10 items-center justify-center rounded-md bg-amber-600 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+      btnAction.textContent = options.confirmText || 'Lanjutkan';
     } else {
-      btnAction.className = 'inline-flex h-10 items-center justify-center rounded-md bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-600 dark:focus:ring-red-400 dark:focus:ring-offset-slate-900';
-      btnAction.textContent = 'Hapus';
+      btnAction.className = options.confirmClass || 'inline-flex h-10 items-center justify-center rounded-md bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-600 dark:focus:ring-red-400 dark:focus:ring-offset-slate-900';
+      btnAction.textContent = options.confirmText || 'Hapus';
     }
 
     footer.appendChild(btnCancel);

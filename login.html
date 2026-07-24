@@ -2566,7 +2566,7 @@
 
         var confirmFn = window.showConfirm ? function(t, m, type) { return window.showConfirm(t, m, type); } : function(t, m) { return Promise.resolve(confirm(m)); };
 
-        confirmFn("Ajukan Revisi Realisasi", "Ajukan permohonan buka akses revisi realisasi produksi ke Admin untuk tanggal " + tanggal + "?", "warning")
+        confirmFn("Ajukan Revisi Realisasi", "Ajukan permohonan buka akses revisi realisasi produksi ke Admin untuk tanggal " + tanggal + "?", "revision", { confirmText: "Revisi" })
           .then(function(ok) {
             if (!ok) return;
             setLoading(true, "Mengirim permintaan revisi...");
@@ -3526,7 +3526,7 @@
 
       var confirmFn = window.showConfirm ? function(t, m, type) { return window.showConfirm(t, m, type); } : function(t, m) { return Promise.resolve(confirm(m)); };
 
-      confirmFn("Ajukan Buka Akses Estimasi", "Ajukan permohonan buka akses pengisian estimasi ke Admin untuk tanggal " + tanggal + "?", "warning")
+      confirmFn("Ajukan Buka Akses Estimasi", "Ajukan permohonan buka akses pengisian estimasi ke Admin untuk tanggal " + tanggal + "?", "oke", { confirmText: "Oke" })
         .then(function (ok) {
           if (!ok) return;
 
