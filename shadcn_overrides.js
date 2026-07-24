@@ -395,6 +395,74 @@ window.renderInlineAlert = function (msg) {
   return null;
 };
 
+// ==========================================
+// REUI Alert Components for Revision Request
+// ==========================================
+window.renderReuiRevisionAlert = function (status, dateStr, onActionCallbackName) {
+  const formattedDate = dateStr ? dateStr.split('-').reverse().join('/') : '';
+  const actionFn = onActionCallbackName || 'ajukanRevisiTanggal';
+
+  if (status === 'NONE') {
+    return `
+      <div class="relative w-full rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm dark:border-slate-800 dark:bg-slate-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-slate-900 dark:text-slate-50 mb-4 transition-all">
+        <div class="flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-emerald-600 dark:text-emerald-500 shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div>
+            <h5 class="font-semibold leading-none tracking-tight text-slate-900 dark:text-slate-100">Hello</h5>
+            <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">Ajukan Revisi Realisasi Tanggal Ini${formattedDate ? ' (' + formattedDate + ')' : ''}</div>
+          </div>
+        </div>
+        <button type="button" onclick="${actionFn}()" class="inline-flex h-9 items-center justify-center rounded-lg bg-emerald-800 hover:bg-emerald-900 text-white px-5 py-2 text-xs font-bold tracking-wider shadow transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-700 shrink-0 whitespace-nowrap">
+          REVISI
+        </button>
+      </div>
+    `;
+  }
+
+  if (status === 'PENDING') {
+    return `
+      <div class="relative w-full rounded-xl border border-amber-200 bg-amber-50/70 dark:border-amber-900/50 dark:bg-amber-950/40 p-4 text-left shadow-sm flex items-center gap-3 text-slate-900 dark:text-slate-50 mb-4 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-amber-600 dark:text-amber-500 shrink-0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div>
+          <h5 class="font-semibold leading-none tracking-tight text-amber-900 dark:text-amber-200">Hello</h5>
+          <div class="text-sm text-amber-800 dark:text-amber-300 mt-1">Permintaan revisi tanggal ini${formattedDate ? ' (' + formattedDate + ')' : ''} sedang menunggu persetujuan Admin</div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (status === 'REJECTED') {
+    return `
+      <div class="relative w-full rounded-xl border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/50 p-4 text-left shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-red-900 dark:text-red-200 mb-4 transition-all">
+        <div class="flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-red-600 dark:text-red-500 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+          <div>
+            <h5 class="font-semibold leading-none tracking-tight text-red-800 dark:text-red-300">Perhatian</h5>
+            <div class="text-sm opacity-90 mt-1">Permintaan revisi tanggal ini${formattedDate ? ' (' + formattedDate + ')' : ''} ditolak oleh Admin</div>
+          </div>
+        </div>
+        <button type="button" onclick="${actionFn}()" class="inline-flex h-9 items-center justify-center rounded-lg bg-emerald-800 hover:bg-emerald-900 text-white px-5 py-2 text-xs font-bold tracking-wider shadow transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-700 shrink-0 whitespace-nowrap">
+          REVISI
+        </button>
+      </div>
+    `;
+  }
+
+  if (status === 'APPROVED') {
+    return `
+      <div class="relative w-full rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-900/50 dark:bg-emerald-950/50 p-4 text-left shadow-sm flex items-center gap-3 text-emerald-900 dark:text-emerald-200 mb-4 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-emerald-600 dark:text-emerald-500 shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <div>
+          <h5 class="font-semibold leading-none tracking-tight text-emerald-800 dark:text-emerald-300">Success! All good</h5>
+          <div class="text-sm opacity-90 mt-1">Akses revisi tanggal ini${formattedDate ? ' (' + formattedDate + ')' : ''} telah disetujui Admin</div>
+        </div>
+      </div>
+    `;
+  }
+
+  return '';
+};
+
 document.addEventListener("DOMContentLoaded", function () {
   setTimeout(() => {
     // Automatically initialize dates

@@ -133,6 +133,25 @@ module.exports = async (req, res) => {
     const offsetHours = isWita ? 8 : 7;
     const offsetMs = offsetHours * 60 * 60 * 1000;
     
+    // ✅ Validasi Tanggal Sebelumnya (Past Date) — Harus Memiliki Persetujuan Admin (status: APPROVED)
+    const nowWib = new Date(Date.now() + 7 * 60 * 60 * 1000);
+    const todayStr = nowWib.toISOString().split('T')[0];
+    if (tanggal < todayStr) {
+      const { data: appReq } = await supabase.from('unlock_requests')
+        .select('status')
+        .eq('region', region)
+        .eq('tanggal', tanggal)
+        .eq('status', 'APPROVED')
+        .limit(1);
+
+      if (!appReq || appReq.length === 0) {
+        return res.json({
+          success: false,
+          message: `❌ Akses revisi untuk tanggal ${tanggal} belum disetujui Admin. Silakan ajukan permohonan revisi terlebih dahulu.`
+        });
+      }
+    }
+
     // Parse tanggal and jam
     const [yyyy, mm, dd] = tanggal.split('-').map(Number);
     const [hh, min] = jam.split('.').map(Number);
@@ -179,6 +198,25 @@ module.exports = async (req, res) => {
     const check = await verifyToken(token, region);
     if (!check.valid) return res.json({ success: false, message: check.message });
     if (!tanggal || !region || !jam) return res.json({ success: false, message: 'Tanggal, Region, dan Jam wajib diisi.' });
+
+    // ✅ Validasi Tanggal Sebelumnya (Past Date) — Harus Memiliki Persetujuan Admin (status: APPROVED)
+    const nowWibDel = new Date(Date.now() + 7 * 60 * 60 * 1000);
+    const todayStrDel = nowWibDel.toISOString().split('T')[0];
+    if (tanggal < todayStrDel) {
+      const { data: appReq } = await supabase.from('unlock_requests')
+        .select('status')
+        .eq('region', region)
+        .eq('tanggal', tanggal)
+        .eq('status', 'APPROVED')
+        .limit(1);
+
+      if (!appReq || appReq.length === 0) {
+        return res.json({
+          success: false,
+          message: `❌ Akses revisi untuk tanggal ${tanggal} belum disetujui Admin. Silakan ajukan permohonan revisi terlebih dahulu.`
+        });
+      }
+    }
 
     const { data: deleted, error } = await supabase.from('database_input').delete().eq('tanggal', tanggal).eq('region', region).eq('jam', jam).select('id');
     if (error) return res.json({ success: false, message: 'Gagal menghapus data: ' + error.message });

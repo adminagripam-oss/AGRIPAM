@@ -2290,6 +2290,7 @@
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Tanggal Laporan</label>
                     <input type="date" id="tanggal" name="tanggal" readonly disabled
                       class="w-full border border-gray-200 bg-gray-100 rounded-lg p-2 text-sm text-slate-500 cursor-not-allowed">
+                    <div id="revisionAlertContainer" class="mt-3"></div>
                   </div>
 
                   <div>
@@ -2469,8 +2470,116 @@
       }
 
       function onFilterTanggalChange() {
+        var filterStart = document.getElementById("filterTanggalStart");
+        var tglInput = document.getElementById("tanggal");
+        if (filterStart && tglInput && filterStart.value) {
+          tglInput.value = filterStart.value;
+        }
         checkAccumulation();
         updateRunningText();
+        checkPastDateRevisionStatus();
+      }
+
+      function onTanggalChange() {
+        var filterStart = document.getElementById("filterTanggalStart");
+        var tglInput = document.getElementById("tanggal");
+        if (tglInput && filterStart && tglInput.value) {
+          filterStart.value = tglInput.value;
+        }
+        currentJamData = {};
+        updateJamHint();
+        checkAccumulation();
+        updateRunningText();
+        checkPastDateRevisionStatus();
+      }
+
+      function checkPastDateRevisionStatus() {
+        var s = loadSession();
+        var filterStart = document.getElementById("filterTanggalStart");
+        var tglInput = document.getElementById("tanggal");
+        var alertContainer = document.getElementById("revisionAlertContainer");
+        if (!alertContainer || !s) return;
+
+        var tanggal = (filterStart && filterStart.value) ? filterStart.value : (tglInput ? tglInput.value : "");
+        if (tglInput && tanggal) tglInput.value = tanggal;
+
+        if (!tanggal) {
+          alertContainer.innerHTML = "";
+          setPanenInputsDisabled(false);
+          return;
+        }
+
+        var nowWib = new Date(Date.now() + 7 * 60 * 60 * 1000);
+        var todayStr = nowWib.toISOString().split('T')[0];
+
+        if (s.region === "ADMIN" || tanggal >= todayStr) {
+          alertContainer.innerHTML = "";
+          setPanenInputsDisabled(false);
+          return;
+        }
+
+        jsonpRequest(
+          { action: "checkRevisionStatus", tanggal: tanggal, region: s.region, token: s.token },
+          function (res) {
+            var status = (res && res.success) ? res.status : "NONE";
+            if (window.renderReuiRevisionAlert) {
+              alertContainer.innerHTML = window.renderReuiRevisionAlert(status, tanggal, "ajukanRevisiTanggal");
+            }
+            if (status === "APPROVED") {
+              setPanenInputsDisabled(false);
+            } else {
+              setPanenInputsDisabled(true);
+            }
+          },
+          function () {
+            if (window.renderReuiRevisionAlert) {
+              alertContainer.innerHTML = window.renderReuiRevisionAlert("NONE", tanggal, "ajukanRevisiTanggal");
+            }
+            setPanenInputsDisabled(true);
+          }
+        );
+      }
+
+      function setPanenInputsDisabled(disabled) {
+        var submitBtn = document.getElementById("submitBtn");
+        var deleteBtn = document.getElementById("deleteBtn");
+        var tonaseInput = document.getElementById("tonase");
+        var jamSelect = document.getElementById("jam");
+
+        if (submitBtn) submitBtn.disabled = disabled;
+        if (deleteBtn) deleteBtn.disabled = disabled;
+        if (tonaseInput) tonaseInput.disabled = disabled;
+        if (jamSelect) jamSelect.disabled = disabled;
+      }
+
+      function ajukanRevisiTanggal() {
+        var s = requireSession();
+        if (!s) return;
+        var filterStart = document.getElementById("filterTanggalStart");
+        var tglInput = document.getElementById("tanggal");
+        var tanggal = (filterStart && filterStart.value) ? filterStart.value : (tglInput ? tglInput.value : "");
+        if (!tanggal) {
+          alert("Harap pilih tanggal terlebih dahulu!");
+          return;
+        }
+
+        setLoading(true, "Mengirim permintaan revisi...");
+        jsonpRequest(
+          { action: "requestRevision", tanggal: tanggal, region: s.region, token: s.token, type: "REVISI_REALISASI" },
+          function (res) {
+            setLoading(false);
+            if (res && res.success) {
+              window.showAlert("invert", "Notification!", res.message);
+            } else {
+              alert(res.message || "Gagal mengajukan permohonan revisi.");
+            }
+            checkPastDateRevisionStatus();
+          },
+          function (errMsg) {
+            setLoading(false);
+            alert("Error: " + errMsg);
+          }
+        );
       }
 
       var dailyNationalChart = null;
@@ -3030,7 +3139,15 @@
       "requestDelete": "deleteRequest",
       "getDeleteRequests": "deleteRequest",
       "resolveDeleteRequest": "deleteRequest",
-      "getSurat": "sap"
+      "getSurat": "sap",
+      "requestUnlock": "unlockRequest",
+      "checkUnlock": "unlockRequest",
+      "getUnlockRequests": "unlockRequest",
+      "resolveUnlockRequest": "unlockRequest",
+      "requestRevision": "unlockRequest",
+      "checkRevisionStatus": "unlockRequest",
+      "getRevisionRequests": "unlockRequest",
+      "resolveRevisionRequest": "unlockRequest"
     };
     var MAX_RETRIES = 2;
     var RETRY_DELAY_MS = 3000;
@@ -4103,6 +4220,7 @@
         }
         if (adminContainer) adminContainer.style.display = "none";
         if (panenInputFields) panenInputFields.style.display = "block";
+        checkPastDateRevisionStatus();
 
         var chartTitle = document.getElementById("chartTitle");
         if (chartTitle) {
@@ -5302,21 +5420,29 @@
 
         // Initialize dashboard data for regional users on page load
         if (s.region !== "ADMIN") {
+          var filterStart = document.getElementById("filterTanggalStart");
           var tglInput = document.getElementById("tanggal");
-          if (tglInput && !tglInput.value) {
+          if ((!filterStart || !filterStart.value) && (!tglInput || !tglInput.value)) {
             var now = new Date();
             var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             var wibTime = new Date(utc + (7 * 3600000));
             var yyyy = wibTime.getFullYear();
             var MM = String(wibTime.getMonth() + 1).padStart(2, '0');
             var dd = String(wibTime.getDate()).padStart(2, '0');
-            tglInput.value = yyyy + "-" + MM + "-" + dd;
+            var todayStr = yyyy + "-" + MM + "-" + dd;
+            if (filterStart) filterStart.value = todayStr;
+            if (tglInput) tglInput.value = todayStr;
+          } else if (filterStart && filterStart.value && tglInput) {
+            tglInput.value = filterStart.value;
           }
           if (typeof checkAccumulation === 'function') {
             checkAccumulation();
           }
           if (typeof updateRunningText === 'function') {
             updateRunningText();
+          }
+          if (typeof checkPastDateRevisionStatus === 'function') {
+            checkPastDateRevisionStatus();
           }
         }
       } else {
