@@ -77,6 +77,32 @@
 - Berjalan otomatis per jam dari pukul `06.00` hingga `17.30` WIB.
 - Mengambil screenshot visual dashboard, mengunggah ke Google Drive, dan mengirimkan kartu laporan ke grup WhatsApp manajemen via **Fonnte API Gateway**.
 
+### 3.7 Alur Permohonan Revisi Tanggal Lampau (Past Date Revision & Approval System)
+- **Navigasi Tanggal Terpusat**: Mengunci input tanggal di dalam kartu "Input Laporan Panen" (`readonly disabled`) dan menjadikan `#filterTanggalStart` ("TANGGAL" pada Filter Tampilan Data) sebagai *single source of truth* navigasi tanggal.
+- **Pengajuan Revisi Regional (`ajukanRevisiTanggal`)**:
+  - Jika Akun Regional memilih tanggal di masa lampau yang terkunci, form input akan menampilkan Alert REUI beserta tombol **`REVISI`** (berwarna Hijau Tua `bg-emerald-800`).
+  - Menekan tombol **`REVISI`** akan memicu REUI Confirm Dialog (`showConfirm`) berikon perisai hijau (`ShieldCheckIcon`) dengan tombol **`Revisi`** warna **Hijau Tua**.
+  - Permohonan revisi otomatis terkirim ke backend (`/api/unlockRequest` / `/api/deleteRequest`) dengan status `PENDING` dan tipe `UNLOCK_REALISASI`.
+- **Panel Persetujuan Admin (`Persetujuan Request (Hapus & Buka Akses)`)**:
+  - Admin Pusat menerima permohonan dan dapat menyetujui (**`Terima`**) atau menolak (**`Tolak`**).
+  - **Diferensiasi Tipe Request pada Tabel Admin**:
+    - **`Buka Est. Panen`**: Pengajuan permohonan buka akses dari modal Infografis Rencana Panen & Estimasi Panen.
+    - **`Buka Real. Produksi`**: Pengajuan permohonan revisi laporan dari Input Laporan Panen / Realisasi Tiap Jam.
+    - **`Hapus Data`**: Pengajuan permohonan hapus data laporan.
+  - **Validasi Sisi Server (`/api/realisasi.js`)**: Memblokir perubahan/penghapusan tanggal lampau dari API kecuali jika terdapat rekaman berstatus `APPROVED` di database.
+
+### 3.8 Pengumuman Pembaruan Sistem REUI (Agripam Update Pop-up & Confirm Dialog)
+- **Agripam Update Pop-up (`showAgripamUpdateAnnouncement`)**:
+  - Dirancang sesuai komponen REUI Alert (`<Alert>`, `<ShieldCheckIcon>`, `<AlertTitle>`, `<AlertDescription>`).
+  - **Efek Visual**: Berada tepat di tengah layar (`fixed inset-0`) dengan layar latar belakang **Backdrop Blur** (`backdrop-blur-md bg-black/40`), tanpa tombol aksi agar tidak mengganggu visual, dan kartu berukuran besar yang sangat jelas/menonjol.
+  - **Timer Countdown**: Dilengkapi progress bar countdown 5 detik dan akan menutup secara otomatis.
+  - **Kontrol Sesi Login**: Pop-up pengumuman **HANYA muncul 1 kali saat proses login berhasil**, dan secara otomatis diabaikan saat pengguna melakukan **Refresh / F5** berdasarkan audit `sessionStorage` (`agripam_update_shown`).
+- **Sistem Dialog Konfirmasi REUI (`window.showConfirm`)**:
+  - Menggantikan dialog bawaan browser `confirm()` secara menyeluruh.
+  - Beradaptasi sesuai konteks aksi:
+    - **Buka Akses Estimasi**: Berikon perisai hijau, tombol bertuliskan **`Oke`** berwarna **Hijau** (`bg-emerald-600`).
+    - **Revisi Realisasi**: Berikon perisai hijau, tombol bertuliskan **`Revisi`** berwarna **Hijau Tua** (`bg-emerald-800`).
+
 ---
 
 ## 4. Arsitektur Teknis & Teknologi
@@ -191,6 +217,10 @@ graph TD
 
 | Tanggal | Fitur / Modifikasi | Rincian |
 |---|---|---|
+| **2026-07-24** | **Sistem Pengumuman Agripam Update REUI** | Menambahkan pengumuman pop-up bergaya REUI Alert (`ShieldCheckIcon`) dengan layar latar belakang Backdrop Blur (`backdrop-blur-md bg-black/40`), timer 5 detik, dan kontrol sesi (`agripam_update_shown`) sehingga HANYA tampil 1x saat login dan diabaikan saat F5/refresh. |
+| **2026-07-24** | **Fitur Revisi Tanggal Lampau (Past Date Revision)** | Menghubungkan navigasi tanggal terpusat via `#filterTanggalStart`. Mengunci input tanggal Laporan Panen. Menambahkan tombol REUI `REVISI` (Hijau Tua) untuk pengajuan revisi tanggal lampau dari Regional ke Admin Pusat. |
+| **2026-07-24** | **Diferensiasi Tipe Request Admin** | Memperbarui tabel persetujuan Admin (*Persetujuan Request (Hapus & Buka Akses)*) agar membedakan secara eksplisit antara permohonan **`Buka Est. Panen`** (dari Estimasi Panen), **`Buka Real. Produksi`** (dari Input Realisasi Panen), dan **`Hapus Data`**. |
+| **2026-07-24** | **Sistem REUI Confirm Dialog (`window.showConfirm`)** | Menghapus dialog `confirm()` bawaan browser. Menggantinya dengan REUI Modal Dialog yang mendukung varian **`Oke`** (tombol Hijau `bg-emerald-600`) untuk Buka Akses Estimasi dan **`Revisi`** (tombol Hijau Tua `bg-emerald-800`) untuk Revisi Realisasi. |
 | **2026-07-23** | **Pemisahan Regional (Kalbar 1 → 1A & 1B)** | Mengubah nama `Kalimantan Barat 1` menjadi `Kalimantan Barat 1A` dan menambah akun `Kalimantan Barat 1B`. Mengubah pemetaan `CRO VI` mencakup `['Kalimantan Barat 1A', 'Kalimantan Barat 1B', 'Kalimantan Barat 2']`. Mengubah password Jambi (`ROJ4mb1`). |
 | **2026-07-23** | **Otimisasi Paginasi Paralel API** | Memperbaiki batas 2.000 baris Supabase PostgREST di `/api/realisasi` & `/api/estimasi` menggunakan query paralel (`Promise.all` 10 page × 1.000 baris) agar grafik tren bulanan tampil utuh tanpa terputus di pertengahan bulan. |
 | **2026-07-23** | **Konfigurasi CSP & Vercel** | Menambahkan `https://unpkg.com` dan `'unsafe-eval'` pada `Content-Security-Policy` di `vercel.json` untuk mendukung CDN React 18, Babel, dan Lucide. Menurunkan risiko timeout dengan set `maxDuration` 30 detik. |
