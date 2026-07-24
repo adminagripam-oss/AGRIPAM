@@ -685,17 +685,17 @@ window.showAgripamUpdateAnnouncement = function () {
 
   container = document.createElement('div');
   container.id = 'agripam-update-announcement';
-  container.className = 'fixed top-5 right-5 z-[100000] max-w-md w-[calc(100%-2.5rem)]';
+  container.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100000] max-w-md w-[calc(100%-2.5rem)] shadow-2xl transition-all duration-300';
   
   container.innerHTML = `
-    <div class="relative w-full rounded-xl border border-slate-200 bg-white p-4 text-left shadow-xl dark:border-slate-800 dark:bg-slate-950 text-slate-900 dark:text-slate-50 transition-all font-sans overflow-hidden">
-      <div class="flex items-start gap-3">
+    <div class="relative w-full rounded-xl border border-slate-200 bg-white p-5 text-left shadow-2xl dark:border-slate-800 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans overflow-hidden">
+      <div class="flex items-start gap-3.5">
         <!-- ShieldCheckIcon -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
         
         <div class="flex-1 min-w-0">
           <!-- AlertTitle -->
-          <h5 class="font-semibold leading-none tracking-tight text-slate-900 dark:text-slate-100 text-sm mb-1.5">Agripam Update</h5>
+          <h5 class="font-semibold leading-none tracking-tight text-slate-900 dark:text-slate-100 text-base mb-2">Agripam Update</h5>
           
           <!-- AlertDescription -->
           <div class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -703,19 +703,19 @@ window.showAgripamUpdateAnnouncement = function () {
           </div>
 
           <!-- AlertAction -->
-          <div class="mt-3 flex items-center justify-end gap-2">
-            <button type="button" onclick="document.getElementById('agripam-update-announcement').remove()" class="inline-flex h-7 items-center justify-center rounded-md border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-100 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors">
+          <div class="mt-4 flex items-center justify-end gap-2">
+            <button type="button" onclick="document.getElementById('agripam-update-announcement').remove()" class="inline-flex h-8 items-center justify-center rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-100 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors">
               Dismiss
             </button>
-            <button type="button" onclick="document.getElementById('agripam-update-announcement').remove()" class="inline-flex h-7 items-center justify-center rounded-md bg-emerald-700 hover:bg-emerald-800 text-white px-3 text-xs font-medium shadow transition-colors">
+            <button type="button" onclick="document.getElementById('agripam-update-announcement').remove()" class="inline-flex h-8 items-center justify-center rounded-md bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 text-xs font-semibold shadow transition-colors">
               Update
             </button>
           </div>
         </div>
       </div>
 
-      <!-- 5s Progress Bar -->
-      <div class="shadcn-alert-progress"></div>
+      <!-- 8s Progress Bar -->
+      <div class="shadcn-alert-progress" style="animation-duration: 8s;"></div>
     </div>
   `;
 
@@ -723,12 +723,12 @@ window.showAgripamUpdateAnnouncement = function () {
 
   setTimeout(function () {
     if (container && container.parentNode) {
-      container.classList.add('opacity-0', 'transition-all', 'duration-300');
+      container.classList.add('opacity-0', 'scale-95', 'transition-all', 'duration-300');
       setTimeout(function () {
         if (container && container.parentNode) container.remove();
       }, 300);
     }
-  }, 5000);
+  }, 8000);
 };
 
 document.addEventListener("DOMContentLoaded", function () {
