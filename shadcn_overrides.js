@@ -685,10 +685,10 @@ window.showAgripamUpdateAnnouncement = function () {
 
   container = document.createElement('div');
   container.id = 'agripam-update-announcement';
-  container.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100000] max-w-2xl w-[calc(100%-3rem)] shadow-2xl transition-all duration-300';
+  container.className = 'fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 backdrop-blur-md p-4 transition-all duration-300';
   
   container.innerHTML = `
-    <div class="relative w-full rounded-2xl border border-slate-200 bg-white p-7 text-left shadow-2xl dark:border-slate-800 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans overflow-hidden">
+    <div class="relative max-w-2xl w-full rounded-2xl border border-slate-200 bg-white p-7 text-left shadow-2xl dark:border-slate-800 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans overflow-hidden animate-in zoom-in-95 duration-200">
       <div class="flex items-start gap-4">
         <!-- ShieldCheckIcon (Enlarged) -->
         <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-9 w-9 text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
@@ -704,8 +704,8 @@ window.showAgripamUpdateAnnouncement = function () {
         </div>
       </div>
 
-      <!-- 8s Progress Bar -->
-      <div class="shadcn-alert-progress" style="animation-duration: 8s;"></div>
+      <!-- 5s Progress Bar -->
+      <div class="shadcn-alert-progress" style="animation-duration: 5s;"></div>
     </div>
   `;
 
@@ -713,24 +713,18 @@ window.showAgripamUpdateAnnouncement = function () {
 
   setTimeout(function () {
     if (container && container.parentNode) {
-      container.classList.add('opacity-0', 'scale-95', 'transition-all', 'duration-300');
+      container.classList.add('opacity-0', 'transition-all', 'duration-300');
       setTimeout(function () {
         if (container && container.parentNode) container.remove();
       }, 300);
     }
-  }, 8000);
+  }, 5000);
 };
 
 document.addEventListener("DOMContentLoaded", function () {
   setTimeout(() => {
     // Automatically initialize dates
     window.initShadcnDate();
-
-    // Trigger update announcement pop-up for logged in session
-    const rawSession = sessionStorage.getItem("agripam_session");
-    if (rawSession && typeof window.showAgripamUpdateAnnouncement === 'function') {
-      window.showAgripamUpdateAnnouncement();
-    }
 
     // Automatically initialize custom selects (by ID)
     if (document.getElementById('loginRegion')) window.initShadcnSelect('loginRegion');
