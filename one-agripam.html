@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>One AgriPaM | Agrinas Universe</title>
+<meta name="description" content="Kumpulan akses poin informasi ke dalam satu platform – Agrinas Palma Nusantara Universe."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --red:#e62429;--red-dark:#a8171b;--gold:#f0b429;--gold-glow:#ffda6a;
+  --dark:#0a0a0f;--dark-3:#1a1a24;--text:#e8e8f0;--text-dim:#8888a8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--dark);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* COSMIC BG */
+#cosmos{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+#cosmos canvas{width:100%;height:100%;}
+.bg-overlay{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%,rgba(230,36,41,.18) 0%,transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 80%,rgba(240,180,41,.08) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 50% at 20% 80%,rgba(100,60,200,.1) 0%,transparent 60%);
+}
+.scanlines{
+  position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,transparent 0,transparent 3px,rgba(0,0,0,.08) 3px,rgba(0,0,0,.08) 4px);
+}
+.particles-wrap{position:fixed;inset:0;z-index:3;pointer-events:none;overflow:hidden;}
+.particle{
+  position:absolute;border-radius:50%;background:var(--gold);opacity:0;
+  animation:float-p var(--dur,8s) var(--delay,0s) infinite ease-in-out;
+}
+@keyframes float-p{
+  0%{opacity:0;transform:translateY(100vh) scale(0);}
+  10%{opacity:.6;}90%{opacity:.3;}
+  100%{opacity:0;transform:translateY(-20vh) scale(1.5);}
+}
+
+/* WRAPPER */
+.wrap{position:relative;z-index:10;max-width:700px;margin:0 auto;padding:48px 20px 80px;animation:fade-up .8s ease both;}
+@keyframes fade-up{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:40px;}
+.logo-ring{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;
+  width:110px;height:110px;margin-bottom:22px;
+}
+.logo-ring::before{
+  content:'';position:absolute;inset:-3px;border-radius:50%;
+  background:conic-gradient(var(--red) 0deg,var(--gold) 90deg,var(--red-dark) 180deg,var(--gold) 270deg,var(--red) 360deg);
+  animation:spin 8s linear infinite;
+}
+.logo-ring::after{content:'';position:absolute;inset:0;border-radius:50%;background:var(--dark-3);z-index:1;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.logo-inner{
+  position:relative;z-index:2;width:96px;height:96px;border-radius:50%;
+  background:radial-gradient(circle at 40% 30%,#2a2a40,var(--dark-3));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:44px;color:var(--gold);
+  text-shadow:0 0 20px var(--gold),0 0 40px rgba(240,180,41,.5);
+  border:2px solid rgba(240,180,41,.3);
+}
+.title-plate{
+  display:inline-block;background:var(--red);padding:4px 24px;margin-bottom:8px;
+  clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+}
+.title-plate span{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:4px;color:#fff;}
+.site-title{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,10vw,72px);line-height:1;letter-spacing:3px;
+  background:linear-gradient(135deg,#fff 0%,var(--gold) 50%,#fff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:shimmer 4s ease-in-out infinite;
+}
+@keyframes shimmer{
+  0%,100%{filter:drop-shadow(0 0 20px rgba(240,180,41,.3));}
+  50%{filter:drop-shadow(0 0 40px rgba(240,180,41,.6));}
+}
+.site-sub{font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:5px;text-transform:uppercase;color:var(--text-dim);margin-top:6px;}
+.site-desc{font-size:14px;color:var(--text-dim);margin-top:14px;max-width:380px;margin-left:auto;margin-right:auto;line-height:1.6;}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:12px;margin:32px 0 28px;}
+.div-line{flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(240,180,41,.5),transparent);}
+.div-icon{font-size:18px;color:var(--gold);text-shadow:0 0 10px var(--gold);}
+.section-label{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:6px;color:var(--text-dim);text-align:center;margin-bottom:20px;}
+
+/* GRID */
+.grid{display:flex;flex-direction:column;gap:14px;}
+
+/* CATEGORY */
+.cat{display:flex;align-items:center;gap:10px;margin:24px 0 10px;}
+.cat-line{flex:1;height:1px;background:linear-gradient(to right,rgba(255,255,255,.08),transparent);}
+.cat-title{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:5px;color:var(--text-dim);white-space:nowrap;}
+
+/* HERO CARD */
+.card{
+  position:relative;display:block;text-decoration:none;
+  border-radius:4px;overflow:hidden;background:var(--dark-3);
+  border:1px solid rgba(255,255,255,.04);
+  transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s ease;
+  cursor:pointer;
+}
+.card::before{
+  content:'';position:absolute;inset:0;border-radius:4px;
+  background:linear-gradient(135deg,transparent 0%,rgba(240,180,41,.3) 30%,rgba(230,36,41,.5) 50%,rgba(240,180,41,.3) 70%,transparent 100%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:destination-out;mask-composite:exclude;
+  opacity:0;transition:opacity .3s;pointer-events:none;padding:1px;
+}
+.card:hover::before{opacity:1;}
+.card:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 12px 40px rgba(230,36,41,.22),0 0 60px rgba(240,180,41,.1);}
+.card.featured{background:linear-gradient(135deg,#1c1020,#1a1018,#1c1220);}
+
+/* STRIPE */
+.stripe{
+  position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:var(--sc,var(--red));box-shadow:0 0 12px var(--sc,var(--red));
+  transition:width .3s;
+}
+.card:hover .stripe{width:5px;box-shadow:0 0 20px var(--sc,var(--red)),0 0 40px var(--sc,var(--red));}
+
+/* CARD INNER */
+.inner{display:flex;align-items:center;gap:18px;padding:18px 20px 18px 28px;}
+.card.featured .inner{padding:20px 20px 20px 28px;}
+
+/* BADGE */
+.badge{position:relative;flex-shrink:0;width:54px;height:54px;display:flex;align-items:center;justify-content:center;}
+.card.featured .badge{width:64px;height:64px;}
+.badge-bg{
+  position:absolute;inset:0;
+  background:var(--bb,rgba(230,36,41,.12));
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  border:1px solid var(--bd,rgba(230,36,41,.4));
+  transition:all .3s;
+}
+.card:hover .badge-bg{background:var(--bh,rgba(230,36,41,.28));box-shadow:0 0 20px var(--bg2,rgba(230,36,41,.4));}
+.icon{position:relative;z-index:1;font-size:22px;}
+.card.featured .icon{font-size:28px;}
+
+/* HERO TEXT */
+.htext{flex:1;min-width:0;}
+.codename{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:4px;color:var(--sc,var(--red));opacity:.8;margin-bottom:2px;}
+.hname{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#fff;line-height:1;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card.featured .hname{font-size:26px;}
+.hpower{font-family:'Rajdhani',sans-serif;font-size:12px;color:var(--text-dim);letter-spacing:.8px;}
+
+/* ARROW */
+.arrow{flex-shrink:0;opacity:.4;transition:transform .2s,opacity .2s,color .2s;}
+.card:hover .arrow{transform:translateX(5px);opacity:1;color:var(--gold);}
+.arrow svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* POWER BAR */
+.pbar{height:2px;background:linear-gradient(to right,var(--sc,var(--red)),transparent);opacity:0;transition:opacity .3s;}
+.card:hover .pbar{opacity:1;}
+
+/* RIBBON */
+.ribbon{
+  position:absolute;top:10px;right:14px;
+  background:var(--gold);color:#000;
+  font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;padding:2px 10px;
+  clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
+}
+
+/* INTRO STAGGER */
+.card:nth-child(1){animation:card-in .5s .10s ease both;}
+.card:nth-child(2){animation:card-in .5s .17s ease both;}
+.cat:nth-child(3){animation:card-in .5s .22s ease both;}
+.card:nth-child(4){animation:card-in .5s .27s ease both;}
+.card:nth-child(5){animation:card-in .5s .34s ease both;}
+.card:nth-child(6){animation:card-in .5s .41s ease both;}
+.card:nth-child(7){animation:card-in .5s .48s ease both;}
+.cat:nth-child(8){animation:card-in .5s .53s ease both;}
+.card:nth-child(9){animation:card-in .5s .58s ease both;}
+.card:nth-child(10){animation:card-in .5s .65s ease both;}
+.card:nth-child(11){animation:card-in .5s .72s ease both;}
+.card:nth-child(12){animation:card-in .5s .79s ease both;}
+.card:nth-child(13){animation:card-in .5s .86s ease both;}
+@keyframes card-in{from{opacity:0;transform:translateX(-20px);}to{opacity:1;transform:translateX(0);}}
+
+/* RIPPLE */
+.ripple{
+  position:absolute;border-radius:50%;background:rgba(255,255,255,.12);
+  transform:scale(0);animation:ripple-a .6s linear;pointer-events:none;
+}
+@keyframes ripple-a{to{transform:scale(4);opacity:0;}}
+
+/* FOOTER */
+.footer{margin-top:52px;text-align:center;padding-top:32px;border-top:1px solid rgba(255,255,255,.05);}
+.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;background:linear-gradient(135deg,var(--text-dim),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.footer-tag{font-size:11px;letter-spacing:3px;color:var(--text-dim);margin-top:6px;}
+.footer-copy{font-size:11px;color:rgba(136,136,168,.5);margin-top:16px;}
+
+/* RESPONSIVE */
+@media(max-width:480px){
+  .wrap{padding:32px 14px 60px;}
+  .inner{padding:14px 14px 14px 22px;gap:12px;}
+  .hname{font-size:17px;}
+  .card.featured .hname{font-size:20px;}
+  .badge{width:46px;height:46px;}
+  .icon{font-size:18px;}
+}
+</style>
+</head>
+<body>
+
+<div id="cosmos"><canvas id="starfield"></canvas></div>
+<div class="bg-overlay"></div>
+<div class="scanlines"></div>
+<div class="particles-wrap" id="pw"></div>
+
+<div class="wrap">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo-ring"><div class="logo-inner">A</div></div>
+  <div class="title-plate"><span>AGRINAS UNIVERSE</span></div>
+  <h1 class="site-title">ONE AGRIPAM</h1>
+  <p class="site-sub">Official Access Portal</p>
+  <p class="site-desc">Kumpulan akses poin informasi ke dalam satu platform — Agrinas Palma Nusantara Universe</p>
+</header>
+
+<div class="divider"><div class="div-line"></div><div class="div-icon">◆</div><div class="div-line"></div></div>
+<p class="section-label">— Select Your Mission —</p>
+
+<div class="grid" id="heroGrid">
+
+<!-- ① PALM OPS SENTINEL -->
+<a href="https://operasional.agrinaspalma.app" target="_blank" rel="noopener noreferrer"
+   class="card featured" style="--sc:#e62429;">
+  <div class="stripe"></div>
+  <div class="ribbon">FLAGSHIP</div>
+  <div class="inner">
+    <div class="badge">
+      <div class="badge-bg" style="--bb:rgba(230,36,41,.2);--bd:rgba(230,36,41,.5);--bh:rgba(230,36,41,.4);--bg2:rgba(230,36,41,.5);"></div>
+      <span class="icon">⚡</span>
+    </div>
+    <div class="htext">
+      <div class="codename">CODENAME: THE SENTINEL</div>
+      <div class="hname">PALM OPS — PENA</div>
+      <div class="hpower">Power: Operational Command System · Realtime Intelligence</div>
+    </div>
+    <div class="arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>
+  <div class="pbar"></div>
+</a>
+
+<!-- ② AGRIPAM THE HARVEST GUARDIAN -->
+<a href="http://agri-pam.id" target="_blank" rel="noopener noreferrer"
+   class="card featured" style="--sc:#f0b429;">
+  <div class="stripe"></div>
+  <div class="ribbon">PRIME</div>
+  <div class="inner">
+    <div class="badge">
+      <div class="badge-bg" style="--bb:rgba(240,180,41,.15);--bd:rgba(240,180,41,.5);--bh:rgba(240,180,41,.35);--bg2:rgba(240,180,41,.5);"></div>
+      <span class="icon">🌿</span>
+    </div>
+    <div class="htext">
+      <div class="codename" style="color:#f0b429;">CODENAME: THE HARVEST GUARDIAN</div>
+      <div class="hname">AGRIPAM</div>
+      <div class="hpower">Power: Panen Monitoring · Dashboard Real-time · Estimasi Produksi</div>
+    </div>
+    <div class="arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>
+  <div class="pbar" style="background:linear-gradient(to right,#f0b429,transparent);"></div>
+</a>
+
+<!-- CATEGORY 1 -->
+<div class="cat">
+  <div class="cat-line"></div>
+  <div class="cat-title">⚙ OPERATIONAL SUPPORT DIVISION</div>
+  <div class="cat-line"></div>
+</div>
+
+<!-- ③ PETA KEBUN THE CARTOGRAPHER -->
+<a href="https://drive.google.com/drive/u/1/folders/1V9hwGVoTokTFCIbcjfyd0S71ia2rQKHM"
+   target="_blank" rel="noopener noreferrer" class="card" style="--sc:#22c55e;">
+  <div class="stripe"></div>
+  <div class="inner">
+    <div class="badge">
+      <div class="badge-bg" style="--bb:rgba(34,197,94,.12);--bd:rgba(34,197,94,.4);--bh:rgba(34,197,94,.28);--bg2:rgba(34,197,94,.4);"></div>
+      <span class="icon">🗺️</span>
+    </div>
+    <div class="htext">
+      <div class="codename" style="color:#22c55e;">CODENAME: THE CARTOGRAPHER</div>
+      <div class="hname">PETA KEBUN</div>
+      <div class="hpower">Power: Territorial Mapping · Land Intelligence · GeoSurvey</div>
+    </div>
+    <div class="arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>
+  <div class="pbar" style="background:linear-gradient(to right,#22c55e,transparent);"></div>
+</a>
+
+<!-- ④ SIPERDIN THE VOYAGER -->
+<a href="https://sites.google.com/view/siperdin-div-umum/siperdin"
+   target="_blank" rel="noopener noreferrer" class="card" style="--sc:#38bdf8;">
+  <div class="stripe"></div>
+  <div class="inner">
+    <div class="badge">
+      <div class="badge-bg" style="--bb:rgba(56,189,248,.12);--bd:rgba(56,189,248,.4);--bh:rgba(56,189,248,.28);--bg2:rgba(56,189,248,.4);"></div>
+      <span class="icon">✈️</span>
+    </div>
+    <div class="htext">
+      <div class="codename" style="color:#38bdf8;">CODENAME: THE VOYAGER</div>
+      <div class="hname">SIPERDIN</div>
+      <div class="hpower">Power: Mission Travel Control · Trip Authorization · Field Ops Dispatch</div>
+    </div>
+    <div class="arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>
+  <div class="pbar" style="background:linear-gradient(to right,#38bdf8,transparent);"></div>
+</a>
+
+<!-- ⑤ ASTA THE ARCHIVIST -->
+<a href="https://asta.agrinaspalma.app/beranda"
+   target="_blank" rel="noopener noreferrer" class="card" style="--sc:#a855f7;">
+  <div class="stripe"></div>
+  <div class="inner">
+    <div class="badge">
+      <div class="badge-bg" style="--bb:rgba(168,85,247,.12);--bd:rgba(168,85,247,.4);--bh:rgba(168,85,247,.28);--bg2:rgba(168,85,247,.4);"></div>
+      <span class="icon">📜</span>
+    </div>
+    <div class="htext">
+      <div class="codename" style="color:#a855f7;">CODENAME: THE ARCHIVIST</div>
+      <div class="hname">ASTA</div>
+      <div class="hpower">Power: Document Mastery · Surat Terpadu · Archive Vault</div>
+    </div>
+    <div class="arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>
+  <div class="pbar" style="background:linear-gradient(to right,#a855f7,transparent);"></div>
+</a>
+
+<!-- CATEGORY 2 -->
+<div class="cat">
+  <div class="cat-line"></div>
+  <div class="cat-title">📊 DATA INTELLIGENCE SQUADRON</div>
+  <div class="cat-line"></div>
+</div>
+
+<!-- ⑥ AGRIDAM THE DATA MASTER -->
+<a href="https://docs.google.com/spreadsheets/d/1FmGrmwdetFH3v8nk2PfmmatlPPxJWletUfBZOd1vu-I/edit?gid=57150856#gid=57150856"
+   target="_blank" rel="noopener noreferrer" class="card" style="--sc:#f0b429;">
+  <div class="stripe"></div>
+  <div class="inner">
+    <div class="badge">
+      <div class="badge-bg" style="--bb:rgba(240,180,41,.12);--bd:rgba(240,180,41,.4);--bh:rgba(240,180,41,.28);--bg2:rgba(240,180,41,.4);"></div>
+      <span class="icon">📊</span>
+    </div>
+    <div class="htext">
+      <div class="codename" style="color:#f0b429;">CODENAME: THE DATA MASTER</div>
+      <div class="hname">AGRIDAM</div>
+      <div class="hpower">Power: Master Data Intelligence · Analytics Core · Agrinas Knowledge Vault</div>
+    </div>
+    <div class="arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>
+  <div class="pbar" style="background:linear-gradient(to right,#f0b429,transparent);"></div>
+</a>
+
+<!-- ⑦ MONITORING TENAGA PANEN THE FIELD COMMANDER -->
+<a href="https://docs.google.com/spreadsheets/d/1RJrFMGUC-XijmB6MWr0bUJNzuN7BM1j8R_D0vOt0s8I/edit?gid=1786513632#gid=1786513632"
+   target="_blank" rel="noopener noreferrer" class="card" style="--sc:#fb923c;">
+  <div class="stripe"></div>
+  <div class="inner">
+    <div class="badge">
+      <div class="badge-bg" style="--bb:rgba(251,146,60,.12);--bd:rgba(251,146,60,.4);--bh:rgba(251,146,60,.28);--bg2:rgba(251,146,60,.4);"></div>
+      <span class="icon">👷</span>
+    </div>
+    <div class="htext">
+      <div class="codename" style="color:#fb923c;">CODENAME: THE FIELD COMMANDER</div>
+      <div class="hname">MONITORING TENAGA PANEN</div>
+      <div class="hpower">Power: Workforce Command · Manpower Tracking · Field Ops Control</div>
+    </div>
+    <div class="arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>
+  <div class="pbar" style="background:linear-gradient(to right,#fb923c,transparent);"></div>
+</a>
+
+<!-- ⑧ LHP AGRINAS 2026 THE CHRONICLER -->
+<a href="https://docs.google.com/spreadsheets/d/1WXzIMkSkhA6czkCfmTFD2pB3HFlYe2dOMjMWnbbOyOs/edit?gid=439555558#gid=439555558"
+   target="_blank" rel="noopener noreferrer" class="card" style="--sc:#e62429;">
+  <div class="stripe"></div>
+  <div class="inner">
+    <div class="badge">
+      <div class="badge-bg" style="--bb:rgba(230,36,41,.12);--bd:rgba(230,36,41,.4);--bh:rgba(230,36,41,.28);--bg2:rgba(230,36,41,.4);"></div>
+      <span class="icon">🚩</span>
+    </div>
+    <div class="htext">
+      <div class="codename">CODENAME: THE CHRONICLER</div>
+      <div class="hname">LHP AGRINAS 2026</div>
+      <div class="hpower">Power: Production Chronicle · Annual Log · Harvest Report Mastery</div>
+    </div>
+    <div class="arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>
+  <div class="pbar"></div>
+</a>
+
+<!-- ⑨ REKAP LAPORAN BULANAN THE STRATEGIST -->
+<a href="https://docs.google.com/spreadsheets/d/11zLza-U4WAk6avAP_9-cFsHAh65JulH7u4HkzMsXMR0/edit?gid=603394544#gid=603394544"
+   target="_blank" rel="noopener noreferrer" class="card" style="--sc:#2dd4bf;">
+  <div class="stripe"></div>
+  <div class="inner">
+    <div class="badge">
+      <div class="badge-bg" style="--bb:rgba(45,212,191,.12);--bd:rgba(45,212,191,.4);--bh:rgba(45,212,191,.28);--bg2:rgba(45,212,191,.4);"></div>
+      <span class="icon">🔎</span>
+    </div>
+    <div class="htext">
+      <div class="codename" style="color:#2dd4bf;">CODENAME: THE STRATEGIST</div>
+      <div class="hname">REKAP LAPORAN BULANAN</div>
+      <div class="hpower">Power: Monthly Strategic Intelligence · Trend Analysis · Report Synthesis</div>
+    </div>
+    <div class="arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>
+  <div class="pbar" style="background:linear-gradient(to right,#2dd4bf,transparent);"></div>
+</a>
+
+<!-- ⑩ MONITORING SURAT DOPS THE COURIER -->
+<a href="https://docs.google.com/spreadsheets/d/1BVw3SeWhHCM89KCeRRfCsqaKi4SJ5IMstb2M5cZcJZw/edit?gid=904489282#gid=904489282"
+   target="_blank" rel="noopener noreferrer" class="card" style="--sc:#818cf8;">
+  <div class="stripe"></div>
+  <div class="inner">
+    <div class="badge">
+      <div class="badge-bg" style="--bb:rgba(129,140,248,.12);--bd:rgba(129,140,248,.4);--bh:rgba(129,140,248,.28);--bg2:rgba(129,140,248,.4);"></div>
+      <span class="icon">📥</span>
+    </div>
+    <div class="htext">
+      <div class="codename" style="color:#818cf8;">CODENAME: THE COURIER</div>
+      <div class="hname">MONITORING SURAT DOPS</div>
+      <div class="hpower">Power: DOPS Mail Surveillance · Correspondence Tracker · Document Intercept</div>
+    </div>
+    <div class="arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>
+  <div class="pbar" style="background:linear-gradient(to right,#818cf8,transparent);"></div>
+</a>
+
+</div><!-- /grid -->
+
+<footer class="footer">
+  <div class="footer-logo">AGRINAS UNIVERSE</div>
+  <div class="footer-tag">PT AGRINAS PALMA NUSANTARA</div>
+  <div class="footer-copy">&copy; 2026 Agrinas Palma Nusantara &middot; All Rights Reserved</div>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+/* ---- STARFIELD ---- */
+(function(){
+  var c=document.getElementById('starfield'),ctx=c.getContext('2d'),W,H,stars=[];
+  function resize(){
+    W=c.width=window.innerWidth;H=c.height=window.innerHeight;
+    stars=[];var n=Math.floor(W*H/3500);
+    for(var i=0;i<n;i++) stars.push({
+      x:Math.random()*W,y:Math.random()*H,
+      r:Math.random()*1.4+.3,
+      a:Math.random(),sp:Math.random()*.3+.05,
+      tw:Math.random()*Math.PI*2,
+      col:Math.random()>.95?'#f0b429':Math.random()>.9?'#e62429':'#fff'
+    });
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    stars.forEach(function(s){
+      s.tw+=s.sp*.05;
+      ctx.globalAlpha=s.a*(.5+.5*Math.sin(s.tw));
+      ctx.fillStyle=s.col;
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+    });
+    ctx.globalAlpha=1;requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);resize();draw();
+})();
+
+/* ---- PARTICLES ---- */
+(function(){
+  var pw=document.getElementById('pw');
+  for(var i=0;i<35;i++){
+    var p=document.createElement('div');p.className='particle';
+    p.style.left=Math.random()*100+'vw';
+    p.style.setProperty('--dur',(7+Math.random()*10)+'s');
+    p.style.setProperty('--delay',(Math.random()*9)+'s');
+    var size=(Math.random()*2+1)+'px';p.style.width=size;p.style.height=size;
+    if(Math.random()>.7){p.style.background='#e62429';p.style.boxShadow='0 0 4px #e62429';}
+    else{p.style.boxShadow='0 0 4px #f0b429';}
+    pw.appendChild(p);
+  }
+})();
+
+/* ---- RIPPLE ---- */
+document.querySelectorAll('.card').forEach(function(card){
+  card.addEventListener('click',function(e){
+    var rect=card.getBoundingClientRect();
+    var rip=document.createElement('span');rip.className='ripple';
+    var s=Math.max(rect.width,rect.height);
+    rip.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(e.clientX-rect.left-s/2)+'px;top:'+(e.clientY-rect.top-s/2)+'px;';
+    card.appendChild(rip);setTimeout(function(){rip.remove();},700);
+  });
+});
+</script>
+</body>
+</html>
