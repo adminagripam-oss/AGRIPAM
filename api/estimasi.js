@@ -140,27 +140,40 @@ module.exports = async (req, res) => {
     //   • Hari ini  31 Juli  → estimasi 2 Agustus ❌ (terlalu jauh ke depan)
     //   • Hari ini  31 Juli  → estimasi 30 Juni   ❌ (masa lalu)
     const { today: todayWIB, tomorrow: tomorrowWIB } = getWIBDateInfo();
-    if (tanggal !== todayWIB && tanggal !== tomorrowWIB) {
-      const isInPast = tanggal < todayWIB;
-      const [ty, tm, td] = todayWIB.split('-');
-      const [ry, rm, rd] = tomorrowWIB.split('-');
-      const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-      const todayLabel    = `${td} ${monthNames[parseInt(tm,10)-1]} ${ty}`;
-      const tomorrowLabel = `${rd} ${monthNames[parseInt(rm,10)-1]} ${ry}`;
-      return res.json({
-        success: false,
-        message: isInPast
-          ? `❌ Input estimasi ditolak! Tanggal (${tanggal}) sudah lewat. Estimasi hanya bisa diisi untuk hari ini (${todayLabel}) atau besok / H+1 (${tomorrowLabel}).`
-          : `❌ Input estimasi ditolak! Tanggal (${tanggal}) terlalu jauh ke depan. Estimasi hanya bisa diisi untuk hari ini (${todayLabel}) atau besok / H+1 (${tomorrowLabel}).`
-      });
+    if (tanggal !== todayWIB && tanggal !== tomorrowWIB && check.region !== 'ADMIN') {
+      const { data: appReq } = await supabase.from('unlock_requests')
+        .select('status')
+        .eq('region', region)
+        .eq('tanggal', tanggal)
+        .eq('status', 'APPROVED')
+        .limit(1);
+
+      if (!appReq || appReq.length === 0) {
+        const isInPast = tanggal < todayWIB;
+        const [ty, tm, td] = todayWIB.split('-');
+        const [ry, rm, rd] = tomorrowWIB.split('-');
+        const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        const todayLabel    = `${td} ${monthNames[parseInt(tm,10)-1]} ${ty}`;
+        const tomorrowLabel = `${rd} ${monthNames[parseInt(rm,10)-1]} ${ry}`;
+        return res.json({
+          success: false,
+          message: isInPast
+            ? `❌ Input estimasi ditolak! Tanggal (${tanggal}) sudah lewat. Estimasi hanya bisa diisi untuk hari ini (${todayLabel}) atau besok / H+1 (${tomorrowLabel}). Silakan ajukan permohonan buka akses ke Admin.`
+            : `❌ Input estimasi ditolak! Tanggal (${tanggal}) terlalu jauh ke depan. Estimasi hanya bisa diisi untuk hari ini (${todayLabel}) atau besok / H+1 (${tomorrowLabel}).`
+        });
+      }
     }
 
     const { data: existing } = await supabase.from('data_estimasi').select('id').eq('tanggal', tanggal).eq('region', region).maybeSingle();
 
     if (existing) {
-      const parts = tanggal.split('-');
-      const displayDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : tanggal;
-      return res.json({ success: false, message: `Data estimasi tanggal ${displayDate} sudah ada. Gunakan 'Hapus Estimasi' untuk merevisi.` });
+      const { error: updateError } = await supabase.from('data_estimasi').update({
+        restan_lalu: restanLalu, luas_panen_ha: luasPanen, tk_panen_hk: tkPanen,
+        estimasi_panen_kg: estPanen, output_panen: outPanen, estimasi_kirim_kg: estKirim, estimasi_restan_kg: estRestan
+      }).eq('id', existing.id);
+
+      if (updateError) return res.json({ success: false, message: 'Gagal memperbarui estimasi: ' + updateError.message });
+      return res.json({ success: true, message: 'Data estimasi berhasil diperbarui!' });
     }
 
     const { error } = await supabase.from('data_estimasi').insert({
@@ -185,6 +198,23 @@ module.exports = async (req, res) => {
     }
 
     if (!tanggal || !region) return res.json({ success: false, message: 'Tanggal dan Region wajib diisi.' });
+
+    const { today: todayWIB, tomorrow: tomorrowWIB } = getWIBDateInfo();
+    if (tanggal !== todayWIB && tanggal !== tomorrowWIB && check.region !== 'ADMIN') {
+      const { data: appReq } = await supabase.from('unlock_requests')
+        .select('status')
+        .eq('region', region)
+        .eq('tanggal', tanggal)
+        .eq('status', 'APPROVED')
+        .limit(1);
+
+      if (!appReq || appReq.length === 0) {
+        return res.json({
+          success: false,
+          message: `❌ Penghapusan estimasi untuk tanggal ${tanggal} terkunci. Silakan ajukan permohonan buka akses ke Admin.`
+        });
+      }
+    }
 
     const { data: deleted, error } = await supabase.from('data_estimasi').delete().eq('tanggal', tanggal).eq('region', region).select('id');
     if (error) return res.json({ success: false, message: 'Gagal menghapus estimasi: ' + error.message });
