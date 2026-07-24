@@ -2559,27 +2559,37 @@
         var tglInput = document.getElementById("tanggal");
         var tanggal = (filterStart && filterStart.value) ? filterStart.value : (tglInput ? tglInput.value : "");
         if (!tanggal) {
-          alert("Harap pilih tanggal terlebih dahulu!");
+          if (window.showAlert) window.showAlert("warning", "AGRIPAM Update", "Harap pilih tanggal terlebih dahulu!");
+          else alert("Harap pilih tanggal terlebih dahulu!");
           return;
         }
 
-        setLoading(true, "Mengirim permintaan revisi...");
-        jsonpRequest(
-          { action: "requestRevision", tanggal: tanggal, region: s.region, token: s.token, type: "REVISI_REALISASI" },
-          function (res) {
-            setLoading(false);
-            if (res && res.success) {
-              window.showAlert("invert", "Notification!", res.message);
-            } else {
-              alert(res.message || "Gagal mengajukan permohonan revisi.");
-            }
-            checkPastDateRevisionStatus();
-          },
-          function (errMsg) {
-            setLoading(false);
-            alert("Error: " + errMsg);
-          }
-        );
+        var confirmFn = window.showConfirm ? function(t, m, type) { return window.showConfirm(t, m, type); } : function(t, m) { return Promise.resolve(confirm(m)); };
+
+        confirmFn("Ajukan Revisi Realisasi", "Ajukan permohonan buka akses revisi realisasi produksi ke Admin untuk tanggal " + tanggal + "?", "warning")
+          .then(function(ok) {
+            if (!ok) return;
+            setLoading(true, "Mengirim permintaan revisi...");
+            jsonpRequest(
+              { action: "requestRevision", tanggal: tanggal, region: s.region, token: s.token, type: "REVISI_REALISASI" },
+              function (res) {
+                setLoading(false);
+                if (res && res.success) {
+                  if (window.showAlert) window.showAlert("invert", "AGRIPAM Update", res.message);
+                  else alert(res.message);
+                } else {
+                  if (window.showAlert) window.showAlert("destructive", "AGRIPAM Update", res && res.message ? res.message : "Gagal mengajukan permohonan revisi.");
+                  else alert(res.message || "Gagal mengajukan permohonan revisi.");
+                }
+                checkPastDateRevisionStatus();
+              },
+              function (errMsg) {
+                setLoading(false);
+                if (window.showAlert) window.showAlert("destructive", "AGRIPAM Update", "Error: " + errMsg);
+                else alert("Error: " + errMsg);
+              }
+            );
+          });
       }
 
       var dailyNationalChart = null;
@@ -3514,25 +3524,32 @@
       var s = loadSession();
       if (!tanggal || !s) return;
 
-      if (!confirm("Ajukan permohonan buka akses pengisian estimasi ke Admin untuk tanggal " + tanggal + "?")) return;
+      var confirmFn = window.showConfirm ? function(t, m, type) { return window.showConfirm(t, m, type); } : function(t, m) { return Promise.resolve(confirm(m)); };
 
-      setLoading(true, "Mengirim pengajuan...");
-      fetch("/api/unlockRequest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "requestUnlock", tanggal: tanggal, region: s.region, token: s.token })
-      })
-        .then(function (r) { return r.json(); })
-        .then(function (res) {
-          setLoading(false);
-          alert(res.message || (res.success ? "Pengajuan berhasil" : "Pengajuan gagal"));
-          if (res.success) {
-            checkEstimasi(); // Refresh status
-          }
-        })
-        .catch(function (err) {
-          setLoading(false);
-          alert("Gagal menghubungi server.");
+      confirmFn("Ajukan Buka Akses Estimasi", "Ajukan permohonan buka akses pengisian estimasi ke Admin untuk tanggal " + tanggal + "?", "warning")
+        .then(function (ok) {
+          if (!ok) return;
+
+          setLoading(true, "Mengirim pengajuan...");
+          fetch("/api/unlockRequest", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "requestUnlock", tanggal: tanggal, region: s.region, token: s.token, type: "UNLOCK_ESTIMASI" })
+          })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+              setLoading(false);
+              var alertFn = window.showAlert || alert;
+              alertFn(res.success ? "invert" : "destructive", "AGRIPAM Update", res.message || (res.success ? "Pengajuan berhasil" : "Pengajuan gagal"));
+              if (res.success) {
+                checkEstimasi(); // Refresh status
+              }
+            })
+            .catch(function (err) {
+              setLoading(false);
+              var alertFn = window.showAlert || alert;
+              alertFn("destructive", "AGRIPAM Update", "Gagal menghubungi server.");
+            });
         });
     }
 

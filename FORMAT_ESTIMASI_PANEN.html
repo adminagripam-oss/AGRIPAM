@@ -1844,16 +1844,24 @@
                 if (resDelete.success && resDelete.data) {
                     resDelete.data.forEach(d => { 
                         d._api = 'delete'; 
-                        if (d.type === 'UNLOCK_REALISASI') {
-                            d.displayType = 'Buka Akses Realisasi';
+                        if (d.type === 'UNLOCK_REALISASI' || d.type === 'REVISI_REALISASI') {
+                            d.displayType = 'Buka Real. Produksi';
                         } else {
-                            d.displayType = 'Hapus ' + d.type;
+                            d.displayType = 'Hapus ' + (d.type || 'Data');
                         }
                         allRequests.push(d); 
                     });
                 }
                 if (resUnlock.success && resUnlock.data) {
-                    resUnlock.data.forEach(d => { d._api = 'unlock'; d.displayType = 'Buka Akses Estimasi'; allRequests.push(d); });
+                    resUnlock.data.forEach(d => { 
+                        d._api = 'unlock'; 
+                        if (d.type === 'REVISI_REALISASI' || d.type === 'UNLOCK_REALISASI') {
+                            d.displayType = 'Buka Real. Produksi';
+                        } else {
+                            d.displayType = 'Buka Est. Panen';
+                        }
+                        allRequests.push(d); 
+                    });
                 }
                 
                 if (allRequests.length > 0) {
