@@ -685,31 +685,21 @@ window.showAgripamUpdateAnnouncement = function () {
 
   container = document.createElement('div');
   container.id = 'agripam-update-announcement';
-  container.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100000] max-w-md w-[calc(100%-2.5rem)] shadow-2xl transition-all duration-300';
+  container.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100000] max-w-2xl w-[calc(100%-3rem)] shadow-2xl transition-all duration-300';
   
   container.innerHTML = `
-    <div class="relative w-full rounded-xl border border-slate-200 bg-white p-5 text-left shadow-2xl dark:border-slate-800 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans overflow-hidden">
-      <div class="flex items-start gap-3.5">
-        <!-- ShieldCheckIcon -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+    <div class="relative w-full rounded-2xl border border-slate-200 bg-white p-7 text-left shadow-2xl dark:border-slate-800 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans overflow-hidden">
+      <div class="flex items-start gap-4">
+        <!-- ShieldCheckIcon (Enlarged) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-9 w-9 text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
         
         <div class="flex-1 min-w-0">
           <!-- AlertTitle -->
-          <h5 class="font-semibold leading-none tracking-tight text-slate-900 dark:text-slate-100 text-base mb-2">Agripam Update</h5>
+          <h4 class="font-bold leading-none tracking-tight text-slate-900 dark:text-slate-100 text-xl mb-2.5">Agripam Update</h4>
           
           <!-- AlertDescription -->
-          <div class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+          <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
             Fitur Revisi Realisasi Tanggal Lampau: Akun Regional kini dapat mengajukan permohonan revisi laporan panen tanggal sebelumnya untuk disetujui/ditolak oleh Admin.
-          </div>
-
-          <!-- AlertAction -->
-          <div class="mt-4 flex items-center justify-end gap-2">
-            <button type="button" onclick="document.getElementById('agripam-update-announcement').remove()" class="inline-flex h-8 items-center justify-center rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-100 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors">
-              Dismiss
-            </button>
-            <button type="button" onclick="document.getElementById('agripam-update-announcement').remove()" class="inline-flex h-8 items-center justify-center rounded-md bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 text-xs font-semibold shadow transition-colors">
-              Update
-            </button>
           </div>
         </div>
       </div>
