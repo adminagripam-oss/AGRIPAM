@@ -217,6 +217,7 @@ graph TD
 
 | Tanggal | Fitur / Modifikasi | Rincian |
 |---|---|---|
+| **2026-07-25** | **Pembaruan Luasan & Penamaan Kalbar 1A & 1B** | Mengubah label `Kalbar 1A Ex Duta Palma` menjadi `Kalbar 1A`. Mengakomodasi luasan persis Kalbar 1A (39.838,88 Ha) dan Kalbar 1B (38.117,11 Ha) dengan total luasan Planted tetap 444.447 Ha di seluruh modul Rencana & Realisasi, Estimasi Panen, Panen Monitoring, Validasi Data, dan SAP Persuratan. |
 | **2026-07-24** | **Sistem Pengumuman Agripam Update REUI** | Menambahkan pengumuman pop-up bergaya REUI Alert (`ShieldCheckIcon`) dengan layar latar belakang Backdrop Blur (`backdrop-blur-md bg-black/40`), timer 5 detik, dan kontrol sesi (`agripam_update_shown`) sehingga HANYA tampil 1x saat login dan diabaikan saat F5/refresh. |
 | **2026-07-24** | **Fitur Revisi Tanggal Lampau (Past Date Revision)** | Menghubungkan navigasi tanggal terpusat via `#filterTanggalStart`. Mengunci input tanggal Laporan Panen. Menambahkan tombol REUI `REVISI` (Hijau Tua) untuk pengajuan revisi tanggal lampau dari Regional ke Admin Pusat. |
 | **2026-07-24** | **Diferensiasi Tipe Request Admin** | Memperbarui tabel persetujuan Admin (*Persetujuan Request (Hapus & Buka Akses)*) agar membedakan secara eksplisit antara permohonan **`Buka Est. Panen`** (dari Estimasi Panen), **`Buka Real. Produksi`** (dari Input Realisasi Panen), dan **`Hapus Data`**. |
