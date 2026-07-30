@@ -1392,9 +1392,9 @@
 
                 setChartData({ labels, realisasi, estimasi });
 
-              // ----------------------------------------------------
-              // CASE 2: Tab Mingguan
-              // ----------------------------------------------------
+                // ----------------------------------------------------
+                // CASE 2: Tab Mingguan
+                // ----------------------------------------------------
               } else if (activeTab === 'mingguan') {
                 const targetRegion = filters.regional;
                 const numWeeks = lastDay > 28 ? 5 : 4;
@@ -1431,9 +1431,9 @@
 
                 setChartData({ labels: weekLabels, realisasi: weekRealValues, estimasi: weekEstValues });
 
-              // ----------------------------------------------------
-              // CASE 3: Tab Bulanan
-              // ----------------------------------------------------
+                // ----------------------------------------------------
+                // CASE 3: Tab Bulanan
+                // ----------------------------------------------------
               } else if (activeTab === 'bulanan') {
                 const monthLabels = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
                 const monthKeys = Array.from({ length: 12 }, (_, i) => `${parts[0]}-${String(i + 1).padStart(2, '0')}`);
@@ -3646,7 +3646,7 @@
 
         const opt = {
           margin: [5, 5, 5, 5],
-          filename: `RENCANA_REALISASI_PANEN_HARIAN_${selectedDate}.pdf`,
+          filename: `Rencana & Realisasi Panen ${selectedDate}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2.5, useCORS: true, letterRendering: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }

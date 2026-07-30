@@ -74,9 +74,11 @@ app.use((req, res, next) => {
 // Serve API routes
 app.all('/api/:route', async (req, res) => {
   const route = req.params.route;
+  const handlerPath = path.join(__dirname, 'api', `${route}.js`);
+  if (!fs.existsSync(handlerPath)) {
+    return res.status(404).json({ success: false, message: `API route /api/${route} not found` });
+  }
   try {
-    const handlerPath = path.join(__dirname, 'api', `${route}.js`);
-    // Clear require cache for development to pick up api changes instantly
     try {
       delete require.cache[require.resolve(handlerPath)];
     } catch (_) {}
@@ -85,14 +87,13 @@ app.all('/api/:route', async (req, res) => {
     await handler(req, res);
   } catch (err) {
     console.error(`Error handling API route /api/${route}:`, err);
-    res.status(500).json({ success: false, message: `Server error: ${err.message}` });
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, message: `Server error: ${err.message}` });
+    }
   }
 });
 
-// Serve static files from root (images, CSS, JS assets — cached normally)
-app.use(express.static(__dirname));
-
-// Fallback for html pages (anti-cache headers sudah diterapkan oleh middleware di atas)
+// Page routes & clean URLs
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -105,11 +106,22 @@ app.get('/laporan-produksi', (req, res) => {
   res.sendFile(path.join(__dirname, 'laporan_produksi.html'));
 });
 
+// Serve static files from root with .html auto-extension
+app.use(express.static(__dirname, { extensions: ['html'] }));
+
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
 
 app.listen(port, () => {
   console.log(`============================================================`);
   console.log(`  AGRI-PAM Local Dev Server started at:`);
-  console.log(`  http://localhost:${port}`);
+  console.log(`  http://localhost:3000`);
   console.log(`============================================================`);
 });
 
