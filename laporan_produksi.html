@@ -2975,23 +2975,67 @@
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
+            if (!rows || rows.length < 2) {
+              alert("File target kosong atau tidak valid.");
+              return;
+            }
+
+            // Deteksi format header (Baris 0)
+            const header = rows[0] ? rows[0].map(c => String(c || '').trim()) : [];
+            let regionColIdx = 0;
+            let dateColStart = 1;
+
+            // Jika header mengandung "CRO" di kolom 0 atau "Regional" di kolom 1, gunakan format baru
+            const isNewFormat = (header[0] && header[0].toLowerCase().includes('cro')) || 
+                                (header[1] && header[1].toLowerCase() === 'regional');
+
+            if (isNewFormat) {
+              regionColIdx = 1; // Kolom Regional (nama wilayah)
+              dateColStart = 2; // Tanggal mulai dari kolom Tgl 1 (index 2)
+            }
+
             const parsedData = {};
             for (let i = 1; i < rows.length; i++) {
               const row = rows[i];
-              if (!row || !row[0]) continue;
-              const regionName = row[0].toString().trim();
-              if (regionName === "Total Target (Ton)" || regionName === "") continue;
+              if (!row) continue;
+              const rawRegion = row[regionColIdx];
+              if (rawRegion === undefined || rawRegion === null) continue;
+
+              const regionName = String(rawRegion).trim();
+
+              // Abaikan header, baris kosong, subtotal, dan total
+              if (!regionName || 
+                  regionName.toLowerCase().startsWith('subtotal') || 
+                  regionName.toLowerCase().includes('total target') || 
+                  regionName.toLowerCase() === 'regional' ||
+                  regionName.toLowerCase() === 'wilayah' ||
+                  regionName.toLowerCase().includes('cro / wilayah')) {
+                continue;
+              }
 
               const dates = {};
               for (let d = 1; d <= 31; d++) {
-                dates[d] = parseFloat(row[d]) || 0;
+                const colIdx = dateColStart + (d - 1);
+                dates[d] = parseFloat(row[colIdx]) || 0;
               }
-              parsedData[regionName] = dates;
+
+              // Jika format lama mengandung "Kalbar 1", petakan ke Kalbar 1A & Kalbar 1B
+              if (regionName === "Kalbar 1") {
+                parsedData["Kalbar 1A"] = dates;
+                parsedData["Kalbar 1B"] = dates;
+              } else {
+                parsedData[regionName] = dates;
+              }
+            }
+
+            if (Object.keys(parsedData).length === 0) {
+              alert("Tidak ada data target wilayah yang valid berhasil dibaca dari file.");
+              return;
             }
 
             setTargetData(parsedData);
           } catch (err) {
-            alert("Gagal memparsing file Excel: " + err.message);
+            alert("Gagal memparsing file target: " + err.message);
           } finally {
             setUploading(false);
           }
@@ -3105,12 +3149,12 @@
                   onClick={() => fileInputRef.current?.click()}
                   className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center cursor-pointer hover:border-brand-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                 >
-                  <input ref={fileInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={e => handleFile(e.target.files[0])} />
+                  <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={e => handleFile(e.target.files[0])} />
                   <div className="w-16 h-16 rounded-full bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 mx-auto mb-4">
                     <Icon name="upload-cloud" size={32} />
                   </div>
-                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Unggah Excel Target Bulanan</h3>
-                  <p className="text-xs text-slate-500">Pilih file berformat .xlsx yang berisi target harian per wilayah (Tgl 1 - Tgl 31)</p>
+                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Unggah Target Bulanan (.csv / .xlsx)</h3>
+                  <p className="text-xs text-slate-500">Mendukung format baru (CRO, Regional, Tgl 1-31) & format lama (.csv atau .xlsx)</p>
                 </div>
               )}
 
@@ -3646,7 +3690,7 @@
 
         const opt = {
           margin: [5, 5, 5, 5],
-          filename: `Rencana & Realisasi Panen ${selectedDate}.pdf`,
+          filename: `Rencana & Realisasi Panen  ${selectedDate}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2.5, useCORS: true, letterRendering: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }

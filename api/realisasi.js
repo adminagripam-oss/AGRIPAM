@@ -115,28 +115,20 @@ module.exports = async (req, res) => {
       return res.json({ success: false, message: 'Data tidak lengkap.' });
     }
 
-    // ✅ Validasi bulan berjalan (WIB)
-    const currentMonth = getCurrentMonthWIB(); // e.g. '2026-07'
-    const inputMonth   = tanggal.substring(0, 7); // e.g. '2026-07'
-    if (inputMonth !== currentMonth) {
-      const [cy, cm] = currentMonth.split('-');
-      const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-      const bulanIni = `${monthNames[parseInt(cm, 10) - 1]} ${cy}`;
-      return res.json({
-        success: false,
-        message: `❌ Input ditolak! Tanggal yang Anda masukkan (${tanggal}) berada di luar bulan berjalan. Hanya data bulan ${bulanIni} yang diizinkan.`
-      });
-    }
-
     // ✅ Validasi Batas Waktu Input Per-Jam berdasarkan Zona Waktu
     const isWita = WITA_REGIONS.includes(region);
     const offsetHours = isWita ? 8 : 7;
     const offsetMs = offsetHours * 60 * 60 * 1000;
     
-    // ✅ Validasi Tanggal Sebelumnya (Past Date) — Harus Memiliki Persetujuan Admin (status: APPROVED)
+    // ✅ Validasi Tanggal / Bulan Lintas Periode (Harus Memiliki Persetujuan Admin atau Role ADMIN)
     const nowWib = new Date(Date.now() + 7 * 60 * 60 * 1000);
     const todayStr = nowWib.toISOString().split('T')[0];
-    if (tanggal < todayStr) {
+    const currentMonth = getCurrentMonthWIB();
+    const inputMonth   = tanggal.substring(0, 7);
+
+    const isPastOrDiffMonth = (tanggal < todayStr) || (inputMonth !== currentMonth);
+
+    if (isPastOrDiffMonth && check.region !== 'ADMIN') {
       const { data: appReq } = await supabase.from('unlock_requests')
         .select('status')
         .eq('region', region)
@@ -145,6 +137,16 @@ module.exports = async (req, res) => {
         .limit(1);
 
       if (!appReq || appReq.length === 0) {
+        if (inputMonth !== currentMonth) {
+          const [cy, cm] = currentMonth.split('-');
+          const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+          const bulanIni = `${monthNames[parseInt(cm, 10) - 1]} ${cy}`;
+          return res.json({
+            success: false,
+            message: `❌ Akses revisi untuk tanggal ${tanggal} (luar bulan ${bulanIni}) belum disetujui Admin. Silakan ajukan permohonan revisi terlebih dahulu.`
+          });
+        }
+
         return res.json({
           success: false,
           message: `❌ Akses revisi untuk tanggal ${tanggal} belum disetujui Admin. Silakan ajukan permohonan revisi terlebih dahulu.`
