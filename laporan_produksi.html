@@ -586,32 +586,43 @@
     }
 
     // ============================================================
+    // ============================================================
     // SIDEBAR COMPONENTS
     // ============================================================
-    function SidebarBrand({ collapsed, onToggle }) {
+    function SidebarBrand({ collapsed, onToggle, isMobile, onCloseMobile }) {
       return (
-        <div className={`px-4 py-5 border-b border-slate-100 flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
+        <div className={`px-4 py-5 border-b border-slate-100 flex items-center ${collapsed && !isMobile ? 'justify-center' : 'justify-between'}`}>
           <div className="flex items-center gap-3">
             <img src="/LOGO AGRIPAM.jpeg" alt="Logo AGRIPAM" className="w-9 h-9 rounded-lg object-contain shadow-sm flex-shrink-0" />
-            {!collapsed && (
+            {(!collapsed || isMobile) && (
               <div className="transition-opacity duration-300">
                 <div className="text-[13px] font-extrabold text-slate-800 leading-tight font-extrabold tracking-tight">AGRI-PAM</div>
                 <div className="text-[10px] text-slate-400 leading-tight">Agrinas Panen Monitoring</div>
               </div>
             )}
           </div>
-          <button
-            onClick={onToggle}
-            className={`p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`}
-            title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-          >
-            <Icon name="chevron-left" size={16} />
-          </button>
+          {isMobile ? (
+            <button
+              onClick={onCloseMobile}
+              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
+              title="Close Menu"
+            >
+              <Icon name="x" size={18} />
+            </button>
+          ) : (
+            <button
+              onClick={onToggle}
+              className={`p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`}
+              title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              <Icon name="chevron-left" size={16} />
+            </button>
+          )}
         </div>
       );
     }
 
-    function NavItem({ icon, label, active, badge, onClick, collapsed }) {
+    function NavItem({ icon, label, active, badge, onClick, collapsed, isMobile }) {
       return (
         <button
           onClick={onClick}
@@ -619,20 +630,20 @@
         ${active
               ? 'bg-brand-50 text-brand-700 font-semibold border-r-0'
               : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-            } ${collapsed ? 'justify-center w-12 px-0 mx-2' : 'w-full'}`}
-          style={active && !collapsed ? { borderRight: '3px solid #15803d', borderRadius: '8px 0 0 8px', marginRight: 0 } : {}}
-          title={collapsed ? label : undefined}
+            } ${collapsed && !isMobile ? 'justify-center w-12 px-0 mx-2' : 'w-full'}`}
+          style={active && (!collapsed || isMobile) ? { borderRight: '3px solid #15803d', borderRadius: '8px 0 0 8px', marginRight: 0 } : {}}
+          title={collapsed && !isMobile ? label : undefined}
         >
           <span className={`flex-shrink-0 ${active ? 'text-brand-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
             <Icon name={icon} size={16} />
           </span>
-          {!collapsed && (
+          {(!collapsed || isMobile) && (
             <span className="text-[13px] leading-tight flex-1 truncate transition-all duration-300">{label}</span>
           )}
-          {!collapsed && badge && (
+          {(!collapsed || isMobile) && badge && (
             <span className="text-[10px] bg-brand-100 text-brand-700 font-bold px-1.5 py-0.5 rounded-full">{badge}</span>
           )}
-          {!collapsed && active && <Icon name="chevron-right" size={12} className="text-brand-400" />}
+          {(!collapsed || isMobile) && active && <Icon name="chevron-right" size={12} className="text-brand-400" />}
         </button>
       );
     }
@@ -694,73 +705,104 @@
       );
     }
 
-    function Sidebar({ activeNav, setActiveNav, collapsed, setCollapsed }) {
+    function Sidebar({ activeNav, setActiveNav, collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
+      const handleNavClick = (navKey) => {
+        setActiveNav(navKey);
+        if (mobileOpen) setMobileOpen(false);
+      };
+
       return (
-        <aside className={`flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen transition-all duration-300 ease-in-out ${collapsed ? 'w-16' : 'w-64'}`}>
-          <SidebarBrand collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+        <>
+          {/* Mobile Backdrop */}
+          {mobileOpen && (
+            <div
+              className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
+              onClick={() => setMobileOpen(false)}
+            />
+          )}
 
-          {/* Main Nav — scrollable */}
-          <nav className="flex-1 overflow-y-auto py-3">
-            {!collapsed && (
-              <div className="px-5 mb-2 mt-1">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Menu Utama</span>
-              </div>
-            )}
-            <div className="space-y-0.5 px-1">
-              <NavItem icon="layout-dashboard" label="PANEN MONITORING" active={activeNav === 'dashboard' || activeNav === 'laporan-jam'} onClick={() => setActiveNav('dashboard')} collapsed={collapsed} />
-              <NavItem icon="check-square" label="VALIDASI DATA" active={activeNav === 'validasi'} onClick={() => setActiveNav('validasi')} collapsed={collapsed} />
-              <NavItem icon="calendar" label="RENCANA & REALISASI" active={activeNav === 'rencana-realisasi'} onClick={() => setActiveNav('rencana-realisasi')} collapsed={collapsed} />
-              <NavItem icon="trending-up" label="Estimasi Panen" active={activeNav === 'estimasi'} onClick={() => window.location.href = 'login.html?show=infografis'} collapsed={collapsed} />
-              <NavItem icon="archive" label="SAP Persuratan (Arsip)" active={activeNav === 'sap'} onClick={() => window.location.href = 'sap_admin.html'} collapsed={collapsed} />
-            </div>
-          </nav>
+          {/* Sidebar Drawer */}
+          <aside className={`flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen transition-all duration-300 ease-in-out z-50
+            fixed inset-y-0 left-0 lg:static
+            ${mobileOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'}
+            ${collapsed ? 'lg:w-16' : 'lg:w-64'}
+          `}>
+            <SidebarBrand
+              collapsed={collapsed}
+              onToggle={() => setCollapsed(!collapsed)}
+              isMobile={mobileOpen}
+              onCloseMobile={() => setMobileOpen(false)}
+            />
 
-          {/* Bottom: Admin Profile — pinned */}
-          <div className="flex-shrink-0 border-t border-slate-100">
-            <div className={`flex items-center gap-3 px-4 py-3 bg-slate-50 ${collapsed ? 'justify-center' : ''}`}>
-              <div className="w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0 shadow-sm">
-                AD
-              </div>
-              {!collapsed && (
-                <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-semibold text-slate-700 truncate">TANAMAN</div>
-
+            {/* Main Nav — scrollable */}
+            <nav className="flex-1 overflow-y-auto py-3">
+              {(!collapsed || mobileOpen) && (
+                <div className="px-5 mb-2 mt-1">
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Menu Utama</span>
                 </div>
               )}
-              {!collapsed && (
-                <button onClick={() => {
-                  sessionStorage.removeItem("agripam_session");
-                  window.location.replace("login.html");
-                }} className="text-slate-400 hover:text-slate-600 transition-colors logout-btn">
-                  <Icon name="log-out" size={15} />
-                </button>
-              )}
+              <div className="space-y-0.5 px-1">
+                <NavItem icon="layout-dashboard" label="PANEN MONITORING" active={activeNav === 'dashboard' || activeNav === 'laporan-jam'} onClick={() => handleNavClick('dashboard')} collapsed={collapsed} isMobile={mobileOpen} />
+                <NavItem icon="check-square" label="VALIDASI DATA" active={activeNav === 'validasi'} onClick={() => handleNavClick('validasi')} collapsed={collapsed} isMobile={mobileOpen} />
+                <NavItem icon="calendar" label="RENCANA & REALISASI" active={activeNav === 'rencana-realisasi'} onClick={() => handleNavClick('rencana-realisasi')} collapsed={collapsed} isMobile={mobileOpen} />
+                <NavItem icon="trending-up" label="Estimasi Panen" active={activeNav === 'estimasi'} onClick={() => { if (mobileOpen) setMobileOpen(false); window.location.href = 'login.html?show=infografis'; }} collapsed={collapsed} isMobile={mobileOpen} />
+                <NavItem icon="archive" label="SAP Persuratan (Arsip)" active={activeNav === 'sap'} onClick={() => { if (mobileOpen) setMobileOpen(false); window.location.href = 'sap_admin.html'; }} collapsed={collapsed} isMobile={mobileOpen} />
+              </div>
+            </nav>
+
+            {/* Bottom: Admin Profile — pinned */}
+            <div className="flex-shrink-0 border-t border-slate-100">
+              <div className={`flex items-center gap-3 px-4 py-3 bg-slate-50 ${collapsed && !mobileOpen ? 'justify-center' : ''}`}>
+                <div className="w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0 shadow-sm">
+                  AD
+                </div>
+                {(!collapsed || mobileOpen) && (
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] font-semibold text-slate-700 truncate">TANAMAN</div>
+                  </div>
+                )}
+                {(!collapsed || mobileOpen) && (
+                  <button onClick={() => {
+                    sessionStorage.removeItem("agripam_session");
+                    window.location.replace("login.html");
+                  }} className="text-slate-400 hover:text-slate-600 transition-colors logout-btn">
+                    <Icon name="log-out" size={15} />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        </>
       );
     }
 
     // ============================================================
     // TOP HEADER
     // ============================================================
-    function TopHeader({ theme, toggleTheme }) {
+    function TopHeader({ theme, toggleTheme, onToggleMobile }) {
       const now = useNow();
       const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
       return (
-        <header className="flex-shrink-0 bg-white border-b border-slate-200 px-6 py-2.5 flex items-center justify-between transition-colors duration-300">
+        <header className="flex-shrink-0 bg-white border-b border-slate-200 px-4 sm:px-6 py-2.5 flex items-center justify-between transition-colors duration-300">
           <div className="flex items-center gap-3">
-            <img src="/AGRINAS DANANTARA.png" alt="Agrinas Danantara" className="h-10 w-auto object-contain" />
-            <p className="text-[12px] text-slate-400 leading-tight">{dateStr}</p>
+            <button
+              onClick={onToggleMobile}
+              className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 lg:hidden focus:outline-none"
+              title="Toggle Menu"
+            >
+              <Icon name="menu" size={20} />
+            </button>
+            <img src="/AGRINAS DANANTARA.png" alt="Agrinas Danantara" className="h-8 sm:h-10 w-auto object-contain" />
+            <p className="text-[11px] sm:text-[12px] text-slate-400 leading-tight hidden xs:block">{dateStr}</p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* Live indicator */}
-            <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3 py-1">
+            <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-2.5 py-1">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span className="text-[11px] font-semibold text-green-700">LIVE</span>
+              <span className="text-[10px] sm:text-[11px] font-semibold text-green-700">LIVE</span>
             </div>
 
             {/* Clock */}
@@ -3974,6 +4016,7 @@
         _referenceDate: getTodayWIB()
       });
       const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+      const [mobileOpen, setMobileOpen] = useState(false);
       const [realisasiRecords, setRealisasiRecords] = useState([]);
       const [estimasiData, setEstimasiData] = useState({});
       const [kemarinRecords, setKemarinRecords] = useState([]);
@@ -4105,15 +4148,22 @@
       return (
         <div className="flex h-screen overflow-hidden bg-slate-50">
           {/* Sidebar */}
-          <Sidebar activeNav={activeNav} setActiveNav={setActiveNav} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+          <Sidebar
+            activeNav={activeNav}
+            setActiveNav={setActiveNav}
+            collapsed={sidebarCollapsed}
+            setCollapsed={setSidebarCollapsed}
+            mobileOpen={mobileOpen}
+            setMobileOpen={setMobileOpen}
+          />
 
           {/* Main */}
           <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-            <TopHeader theme={theme} toggleTheme={toggleTheme} />
+            <TopHeader theme={theme} toggleTheme={toggleTheme} onToggleMobile={() => setMobileOpen(prev => !prev)} />
 
             {/* Scrollable body */}
             <div className="flex-1 overflow-y-auto">
-              <div className="flex flex-col gap-5 p-6 max-w-screen-2xl mx-auto w-full">
+              <div className="flex flex-col gap-5 p-4 sm:p-6 max-w-screen-2xl mx-auto w-full">
                 {activeNav === 'validasi' ? (
                   <ValidationPanel
                     realisasiRecords={realisasiRecords}
