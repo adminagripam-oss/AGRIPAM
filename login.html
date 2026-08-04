@@ -2121,7 +2121,7 @@
                   <option value="Sumatera Barat">Sumatera Barat</option>
                   <option value="Sumatera Selatan">Sumatera Selatan</option>
                   <option value="Kalimantan Barat 1A">Kalimantan Barat 1A</option>
-<option value="Kalimantan Barat 1B">Kalimantan Barat 1B</option>
+                  <option value="Kalimantan Barat 1B">Kalimantan Barat 1B</option>
                   <option value="Kalimantan Barat 2">Kalimantan Barat 2</option>
                   <option value="Kalimantan Selatan 1">Kalimantan Selatan 1</option>
                   <option value="Kalimantan Selatan 2">Kalimantan Selatan 2</option>
@@ -2684,10 +2684,10 @@
           return;
         }
 
-        var confirmFn = window.showConfirm ? function(t, m, type) { return window.showConfirm(t, m, type); } : function(t, m) { return Promise.resolve(confirm(m)); };
+        var confirmFn = window.showConfirm ? function (t, m, type) { return window.showConfirm(t, m, type); } : function (t, m) { return Promise.resolve(confirm(m)); };
 
         confirmFn("Ajukan Revisi Realisasi", "Ajukan permohonan buka akses revisi realisasi produksi ke Admin untuk tanggal " + tanggal + "?", "revision", { confirmText: "Revisi" })
-          .then(function(ok) {
+          .then(function (ok) {
             if (!ok) return;
             setLoading(true, "Mengirim permintaan revisi...");
             jsonpRequest(
@@ -3644,7 +3644,7 @@
       var s = loadSession();
       if (!tanggal || !s) return;
 
-      var confirmFn = window.showConfirm ? function(t, m, type) { return window.showConfirm(t, m, type); } : function(t, m) { return Promise.resolve(confirm(m)); };
+      var confirmFn = window.showConfirm ? function (t, m, type) { return window.showConfirm(t, m, type); } : function (t, m) { return Promise.resolve(confirm(m)); };
 
       confirmFn("Ajukan Buka Akses Estimasi", "Ajukan permohonan buka akses pengisian estimasi ke Admin untuk tanggal " + tanggal + "?", "oke", { confirmText: "Oke" })
         .then(function (ok) {
@@ -4024,7 +4024,7 @@
     }
 
     // =========================================================================
-    // âœ… BARU: HEARTBEAT â€” perpanjang sesi otomatis setiap 30 menit
+    // BARU: HEARTBEAT ” perpanjang sesi otomatis setiap 30 menit
     // =========================================================================
     var heartbeatInterval = null;
 
@@ -4062,7 +4062,7 @@
     }
 
     // =========================================================================
-    // âœ… BARU: AUTO UPDATE ADMIN â€” update data panen tiap 30 detik tanpa refresh
+    // BARU: AUTO UPDATE ADMIN update data panen tiap 30 detik tanpa refresh
     // =========================================================================
     var adminAutoUpdateInterval = null;
 
