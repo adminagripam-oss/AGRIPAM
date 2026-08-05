@@ -106,6 +106,20 @@ app.get('/laporan-produksi', (req, res) => {
   res.sendFile(path.join(__dirname, 'laporan_produksi.html'));
 });
 
+// Clean URL routes for TKPanen router
+app.get('/login.html/TKPanen', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+app.get('/TKPanen', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+app.get('/tk-panen', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+
 // Serve static files from root with .html auto-extension
 app.use(express.static(__dirname, { extensions: ['html'] }));
 

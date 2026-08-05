@@ -1839,6 +1839,514 @@
 
   <!-- TailwindCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+
+
+
+    // =========================================================================
+    // FITUR TK PANEN (ROUTER & DATA INPUT)
+    // =========================================================================
+    var ALL_REGIONS = [
+      'Aceh', 'Sumatera Utara 1', 'Sumatera Utara 2 Ex Torganda', 'Riau 1', 'Riau 2', 'Riau 3', 'Riau 4',
+      'Bangka Belitung', 'Jambi', 'Sumatera Barat', 'Sumatera Selatan',
+      'Kalimantan Barat 1A', 'Kalimantan Barat 1B', 'Kalimantan Barat 2',
+      'Kalimantan Selatan 1', 'Kalimantan Selatan 2', 'Kalimantan Timur', 'Kalimantan Utara',
+      'Kalimantan Tengah 1', 'Kalimantan Tengah 2', 'Kalimantan Tengah 3',
+      'Sulawesi Tenggara', 'Sulawesi Tengah', 'Papua Selatan'
+    ];
+
+    var globalTKData = [];
+    var globalTKEdits = {};
+
+    function bukaTKPanenSection() {
+      try {
+        var s = loadSession();
+        if (!s) {
+          alert("Sesi tidak valid, silakan login ulang.");
+          prosesLogout();
+          return;
+        }
+
+        // 1. Ensure mainSection is visible and body has dashboard-active
+        var mainSection = document.getElementById("mainSection");
+        if (mainSection) mainSection.style.display = "flex";
+        document.body.classList.add("dashboard-active");
+
+        // 2. Hide all other full-screen/modal sections (infografis, sap, estimasi)
+        var infografisSec = document.getElementById("infografisSection");
+        var sapSec = document.getElementById("sapSection");
+        var estSec = document.getElementById("estimasiSection");
+        if (infografisSec) infografisSec.style.display = "none";
+        if (sapSec) sapSec.style.display = "none";
+        if (estSec) estSec.style.display = "none";
+
+        // 3. Switch main content: hide dashboard monitoring grid, show TK Panen content
+        var mainGrid = document.getElementById("dashboardMainGrid");
+        var tkContent = document.getElementById("tkPanenMainContent");
+        if (mainGrid) mainGrid.style.display = "none";
+        if (tkContent) {
+          tkContent.style.display = "block";
+          tkContent.classList.remove("hidden");
+        }
+
+        if (typeof setActiveSidebar === 'function') setActiveSidebar(3);
+
+        var session = loadSession();
+        var isUserAdmin = (session && session.region && session.region.toUpperCase() === "ADMIN");
+
+        var adminContainer = document.getElementById("tkAdminRegionContainer");
+        if (adminContainer) adminContainer.style.display = isUserAdmin ? "flex" : "none";
+        populateTKAdminRegionSelect();
+
+        loadTKPanenDataForSelectedRegion();
+      } catch (err) {
+        console.error("Error in bukaTKPanenSection:", err);
+      }
+    }
+
+    function tutupTKPanenSection() {
+      var tkContent = document.getElementById("tkPanenMainContent");
+      var mainGrid = document.getElementById("dashboardMainGrid");
+      var mainSection = document.getElementById("mainSection");
+      var infografisSec = document.getElementById("infografisSection");
+      var sapSec = document.getElementById("sapSection");
+      var estSec = document.getElementById("estimasiSection");
+
+      if (infografisSec) infografisSec.style.display = "none";
+      if (sapSec) sapSec.style.display = "none";
+      if (estSec) estSec.style.display = "none";
+      if (mainSection) mainSection.style.display = "flex";
+      document.body.classList.add("dashboard-active");
+
+      if (tkContent) tkContent.style.display = "none";
+      if (mainGrid) mainGrid.style.display = "block";
+      if (typeof setActiveSidebar === 'function') setActiveSidebar(0);
+    }
+
+    function populateTKAdminRegionSelect() {
+      var sel = document.getElementById("tkAdminRegionSelect");
+      if (!sel || sel.options.length > 1) return;
+      sel.innerHTML = '<option value="ALL">Semua Regional (23 Region)</option>';
+      ALL_REGIONS.forEach(function (r) {
+        var opt = document.createElement("option");
+        opt.value = r;
+        opt.textContent = r;
+        sel.appendChild(opt);
+      });
+    }
+
+    function loadTKPanenDataForSelectedRegion() {
+      var s = loadSession();
+      if (!s) return;
+
+      var isUserAdmin = (s.region && s.region.toUpperCase() === "ADMIN");
+      var sel = document.getElementById("tkAdminRegionSelect");
+      var regParam = isUserAdmin ? (sel ? sel.value : 'ALL') : s.region;
+
+      var summaryEl = document.getElementById("tkSummaryBadges");
+      if (summaryEl) {
+        summaryEl.innerHTML = '<div class="col-span-full py-4 text-center text-slate-400 font-semibold animate-pulse">Memuat ringkasan KPI untuk Region ' + regParam + '...</div>';
+      }
+
+      var tbody = document.getElementById("tkPanenTableBody");
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="14" class="py-12 text-center text-slate-500 font-semibold animate-pulse">Memuat data kebun untuk Region ' + regParam + '...</td></tr>';
+      }
+
+      globalTKData = [];
+      globalTKEdits = {};
+
+      fetch('/api/kebunTK?action=getKebun&region=' + encodeURIComponent(regParam) + '&_t=' + Date.now())
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (json.success) {
+            globalTKData = json.data || [];
+            globalTKEdits = {};
+            renderTKPanenTable(globalTKData, json.summary);
+          } else {
+            if (tbody) tbody.innerHTML = '<tr><td colspan="14" class="py-12 text-center text-red-500 font-semibold">Gagal memuat data: ' + json.message + '</td></tr>';
+            if (summaryEl) summaryEl.innerHTML = '';
+          }
+        })
+        .catch(function (err) {
+          console.error(err);
+          if (tbody) tbody.innerHTML = '<tr><td colspan="14" class="py-12 text-center text-red-500 font-semibold">Terjadi kesalahan koneksi.</td></tr>';
+          if (summaryEl) summaryEl.innerHTML = '';
+        });
+    }
+
+
+    function openEditKebunModal(id) {
+      var item = (globalTKData || []).find(function (k) { return k.id === id; });
+      if (!item) return;
+
+      var edit = globalTKEdits[id] || {};
+      var valJuli = edit.tk_juli !== undefined ? edit.tk_juli : (item.tk_juli || 0);
+      var valAgs = edit.tk_agustus !== undefined ? edit.tk_agustus : (item.tk_agustus || 0);
+
+      document.getElementById("editKebunId").value = item.id;
+      document.getElementById("editNamaKebun").value = item.nama_kebun || '-';
+      document.getElementById("editLuasanLahan").value = (item.luasan || 0).toLocaleString('id-ID') + ' Ha';
+      document.getElementById("editTKPanenJuli").value = valJuli;
+      document.getElementById("editTKPanenAgustus").value = valAgs;
+
+      document.getElementById("editKebunBackdrop").classList.remove("hidden");
+      document.getElementById("editKebunSheet").classList.remove("hidden");
+    }
+
+    function closeEditKebunModal() {
+      document.getElementById("editKebunBackdrop").classList.add("hidden");
+      document.getElementById("editKebunSheet").classList.add("hidden");
+    }
+
+    function saveEditKebunForm(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      if (!activeEditingKebunData) return;
+
+      var id = activeEditingKebunData.id;
+      if (!globalTKEdits[id]) globalTKEdits[id] = {};
+
+      Object.keys(activeEditingValues).forEach(function (fKey) {
+        globalTKEdits[id][fKey] = activeEditingValues[fKey];
+      });
+
+      closeEditKebunModal();
+
+      // Instant Re-render Table on Screen (Row color changes instantly to Soft Green if exact!)
+      renderTKPanenTable(globalTKData, currentSummaryData);
+
+      // Save to Backend Database
+      simpanTKPanenEdits();
+    }
+
+    var currentTableMonth = 'tk_juli';
+    var currentSummaryData = null;
+
+    function onTKTableMonthChange(selectedMonth) {
+      currentTableMonth = selectedMonth || 'tk_juli';
+      renderTKPanenTable(globalTKData, currentSummaryData);
+    }
+
+    var tkCurrentPage = 1;
+    var tkPageSize = 50;
+
+    function changeTKPage(page) {
+      tkCurrentPage = page;
+      if (globalTKData && globalTKData.length > 0) {
+        var filtered = globalTKData.filter(function(item) {
+            var search = document.getElementById("tkSearchInput") ? document.getElementById("tkSearchInput").value.toLowerCase() : "";
+            var text = (item.nama_kebun || "").toLowerCase() + (item.region || "").toLowerCase();
+            return text.indexOf(search) > -1;
+        });
+        renderTKPanenTable(filtered, currentSummaryData);
+      }
+    }
+
+    function renderTKPanenTable(items, summary) {
+      var tbody = document.getElementById("tkPanenTableBody");
+      var pagEl = document.getElementById("tkPaginationControls");
+      if (!tbody) return;
+
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="14" class="py-12 text-center text-slate-500 font-medium">Tidak ada data kebun.</td></tr>';
+        if (pagEl) pagEl.style.display = "none";
+        return;
+      }
+
+      var totalPages = Math.max(1, Math.ceil(items.length / tkPageSize));
+      if (tkCurrentPage > totalPages) tkCurrentPage = totalPages;
+      if (tkCurrentPage < 1) tkCurrentPage = 1;
+
+      var startIdx = (tkCurrentPage - 1) * tkPageSize;
+      var endIdx = startIdx + tkPageSize;
+      var paginatedItems = items.slice(startIdx, endIdx);
+
+      var html = "";
+      paginatedItems.forEach(function (item, idx) {
+        var globalIdx = startIdx + idx;
+        var edit = globalTKEdits[item.id] || {};
+
+        var valMei = item.tk_mei || 0;
+        var valJuni = edit.tk_juni !== undefined ? edit.tk_juni : (item.tk_juni || 0);
+        var targetJuli = edit.target_juli !== undefined ? edit.target_juli : (item.target_juli || 0);
+        var targetAgs = edit.target_agustus !== undefined ? edit.target_agustus : (item.target_agustus || 0);
+        var valJuli = edit.tk_juli !== undefined ? edit.tk_juli : (item.tk_juli || 0);
+        var valAgs = edit.tk_agustus !== undefined ? edit.tk_agustus : (item.tk_agustus || 0);
+
+        var reqTk = parseInt(item.req_tk, 10) || 0;
+
+        // Formula Rule: Hijau jika (Realisasi Juni [H] + Rencana Juli [I] + Rencana Ags [J] == Kebutuhan TK Panen), Merah jika > atau <
+        var sumThreeCols = valJuni + targetJuli + targetAgs;
+        var isTercukupi = (sumThreeCols === reqTk);
+
+        // Soft Green if sumThreeCols >= reqTk, Soft Red if sumThreeCols < reqTk
+        var rowClass = isTercukupi
+          ? "bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 border-b border-emerald-200 dark:border-emerald-900/50 text-slate-900 dark:text-white transition-colors"
+          : "bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/80 border-b border-red-200 dark:border-red-900/50 text-slate-900 dark:text-white transition-colors";
+
+        var stickyCellBg = isTercukupi
+          ? "bg-[#ecfdf5] dark:bg-[#064e3b]"
+          : "bg-[#fef2f2] dark:bg-[#7f1d1d]";
+
+        html += '<tr class="' + rowClass + ' text-xs sm:text-sm font-medium">';
+        html += '<td class="py-3 px-2 text-center font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap sticky left-0 z-10 w-[45px] min-w-[45px] border-r border-slate-300 dark:border-slate-700 ' + stickyCellBg + '">' + (globalIdx + 1) + '</td>';
+        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-slate-100 whitespace-nowrap sticky left-[45px] z-10 w-[70px] min-w-[70px] border-r border-slate-300 dark:border-slate-700 ' + stickyCellBg + '">' + (item.cro || '-') + '</td>';
+        html += '<td class="py-3 px-2 text-center font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap sticky left-[115px] z-10 w-[100px] min-w-[100px] border-r border-slate-300 dark:border-slate-700 ' + stickyCellBg + '">' + (item.region || '-') + '</td>';
+        html += '<td class="py-3 px-3 text-left font-black text-slate-900 dark:text-white whitespace-nowrap sticky left-[215px] z-10 w-[190px] min-w-[190px] border-r-2 border-slate-300 dark:border-slate-700 shadow-[4px_0_8px_-2px_rgba(0,0,0,0.12)] ' + stickyCellBg + '">' + (item.nama_kebun || '-') + '</td>';
+        html += '<td class="py-3 px-2 text-center font-mono text-xs text-slate-600 dark:text-slate-300 font-semibold whitespace-nowrap border-r border-slate-300 dark:border-slate-700">' + (item.name_tag || '-') + '</td>';
+        html += '<td class="py-3 px-2 text-center font-bold text-slate-900 dark:text-white whitespace-nowrap border-r border-slate-300 dark:border-slate-700">' + (item.luasan || 0).toLocaleString('id-ID') + '</td>';
+        html += '<td class="py-3 px-2 text-center font-black text-amber-800 dark:text-amber-300 whitespace-nowrap text-sm sm:text-base border-r border-slate-300 dark:border-slate-700">' + reqTk.toLocaleString('id-ID') + '</td>';
+
+        // Read-only Realisasi Mei
+        html += '<td class="py-3 px-2 text-center text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap border-r border-slate-300 dark:border-slate-700">' + valMei.toLocaleString('id-ID') + '</td>';
+
+        // Editable Col H: Realisasi TK Panen Juni
+        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap text-sm sm:text-base border-r border-slate-300 dark:border-slate-700">' + valJuni.toLocaleString('id-ID') + '</td>';
+
+        // Editable Col I: Rencana Pemenuhan TK Panen Juli
+        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap text-sm sm:text-base border-r border-slate-300 dark:border-slate-700">' + targetJuli.toLocaleString('id-ID') + '</td>';
+
+        // Editable Col J: Rencana Pemenuhan TK Panen Agustus
+        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap text-sm sm:text-base border-r border-slate-300 dark:border-slate-700">' + targetAgs.toLocaleString('id-ID') + '</td>';
+
+        // Read-only Realisasi Juli
+        html += '<td class="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-slate-300 dark:border-slate-700">' + valJuli.toLocaleString('id-ID') + '</td>';
+
+        // Read-only Realisasi Agustus
+        html += '<td class="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-slate-300 dark:border-slate-700">' + valAgs.toLocaleString('id-ID') + '</td>';
+
+        // Action Cell: Edit Button (Frozen on the Right side)
+        html += '<td class="py-3 px-2 text-center whitespace-nowrap sticky right-0 z-10 w-[65px] min-w-[65px] border-l-2 border-slate-300 dark:border-slate-700 shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.12)] ' + stickyCellBg + '">';
+        html += '<button onclick="openEditKebunModal(' + item.id + ')" class="p-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" title="Edit ' + (item.nama_kebun || '') + '">';
+        html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>';
+        html += '</button>';
+        html += '</td>';
+
+        html += '</tr>';
+      });
+
+      tbody.innerHTML = html;
+
+      // Render Pagination Controls
+      if (pagEl) {
+        pagEl.style.display = "block";
+        var pagHtml = '<div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-xs">' +
+          '<div class="text-slate-500 font-semibold">' +
+          'Menampilkan <span class="font-extrabold text-slate-800 dark:text-slate-200">' + Math.min(startIdx + 1, items.length) + '</span> - <span class="font-extrabold text-slate-800 dark:text-slate-200">' + Math.min(endIdx, items.length) + '</span> dari <span class="font-extrabold text-slate-800 dark:text-slate-200">' + items.length + '</span> Kebun' +
+          '</div>' +
+          '<div class="flex items-center gap-1.5">' +
+          '<button onclick="changeTKPage(' + (tkCurrentPage - 1) + ')" ' + (tkCurrentPage === 1 ? 'disabled class="px-3 py-1.5 rounded-xl font-bold text-slate-300 dark:text-slate-700 cursor-not-allowed"' : 'class="px-3 py-1.5 rounded-xl font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95"') + '>‹ Sebelumnya</button>' +
+          '<div class="flex items-center gap-1 px-1">';
+
+        for (var p = 1; p <= totalPages; p++) {
+          if (p === 1 || p === totalPages || Math.abs(p - tkCurrentPage) <= 2) {
+            var activeClass = p === tkCurrentPage ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800';
+            pagHtml += '<button onclick="changeTKPage(' + p + ')" class="w-8 h-8 rounded-xl font-extrabold text-xs transition-all ' + activeClass + '">' + p + '</button>';
+          }
+        }
+
+        pagHtml += '</div>' +
+          '<button onclick="changeTKPage(' + (tkCurrentPage + 1) + ')" ' + (tkCurrentPage === totalPages ? 'disabled class="px-3 py-1.5 rounded-xl font-bold text-slate-300 dark:text-slate-700 cursor-not-allowed"' : 'class="px-3 py-1.5 rounded-xl font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95"') + '>Selanjutnya ›</button>' +
+          '</div></div>';
+        pagEl.innerHTML = pagHtml;
+      }
+
+      // KPI Badges
+      var summaryEl = document.getElementById("tkSummaryBadges");
+      if (summaryEl) {
+        var reqTk = summary && summary.totalReqTk !== undefined ? summary.totalReqTk : items.reduce(function (s, x) { return s + (parseInt(x.req_tk) || 0); }, 0);
+        var tkJuni = summary && summary.totalJuni !== undefined ? summary.totalJuni : items.reduce(function (s, x) { return s + (parseInt(x.tk_juni) || 0); }, 0);
+        var kekurangTK = reqTk - tkJuni;
+
+        summaryEl.innerHTML = '<div class="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all duration-300">' +
+          '<span class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Kebun</span>' +
+          '<div class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">' + items.length + ' <span class="text-xs font-bold text-slate-500">Kebun</span></div>' +
+          '</div>' +
+          '<div class="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all duration-300">' +
+          '<span class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Luas</span>' +
+          '<div class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">' + (summary && summary.totalLuas ? summary.totalLuas : 0).toLocaleString('id-ID') + ' <span class="text-xs font-bold text-slate-500">Ha</span></div>' +
+          '</div>' +
+          '<div class="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all duration-300">' +
+          '<span class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kebutuhan Tenaga Panen</span>' +
+          '<div class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">' + reqTk.toLocaleString('id-ID') + ' <span class="text-xs font-bold text-slate-500">Orang</span></div>' +
+          '</div>' +
+          '<div class="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all duration-300">' +
+          '<span class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">TK Juni (Cut Off Juni)</span>' +
+          '<div class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">' + tkJuni.toLocaleString('id-ID') + ' <span class="text-xs font-bold text-slate-500">Orang</span></div>' +
+          '</div>' +
+          '<div class="bg-slate-900 text-white dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all duration-300">' +
+          '<span class="text-[11px] font-black text-slate-300 dark:text-slate-400 uppercase tracking-wider">Kekurangan Tenaga Panen</span>' +
+          '<div class="text-xl md:text-2xl font-black text-white mt-1">' + kekurangTK.toLocaleString('id-ID') + ' <span class="text-xs font-bold text-slate-300">Orang</span></div>' +
+          '</div>';
+      }
+    }
+
+    function onTKInputChange(id, field, value) {
+      if (!globalTKEdits[id]) globalTKEdits[id] = {};
+      globalTKEdits[id][field] = Math.max(0, parseFloat(value) || 0);
+    }
+
+    function simpanTKPanenEdits() {
+      var editKeys = Object.keys(globalTKEdits);
+      if (editKeys.length === 0) {
+        alert("Tidak ada perubahan data yang dibuat.");
+        return;
+      }
+
+      var s = loadSession();
+      if (!s) return;
+
+      var btn = document.getElementById("btnSaveTKPanen");
+      if (btn) btn.disabled = true;
+
+      var editsArray = editKeys.map(function (k) {
+        var obj = globalTKEdits[k];
+        obj.id = parseInt(k, 10);
+        return obj;
+      });
+
+      fetch('/api/kebunTK', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'updateTK',
+          region: s.region,
+          token: s.token,
+          edits: editsArray
+        })
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (btn) btn.disabled = false;
+          if (json.success) {
+            alert(json.message || "Data TK Panen berhasil disimpan!");
+            globalTKEdits = {};
+            loadTKPanenDataForSelectedRegion();
+          } else {
+            alert("Gagal menyimpan: " + json.message);
+          }
+        })
+        .catch(function (err) {
+          if (btn) btn.disabled = false;
+          alert("Terjadi kesalahan koneksi saat menyimpan.");
+        });
+    }
+
+
+    var activeEditingKebunData = null;
+
+    function openEditKebunModal(id) {
+      var item = (globalTKData || []).find(function (k) { return k.id === id; });
+      if (!item) return;
+
+      activeEditingKebunData = item;
+      var editObj = globalTKEdits[id] || {};
+
+      document.getElementById("editKebunId").value = id;
+      document.getElementById("editNamaKebun").value = item.nama_kebun || "-";
+      document.getElementById("editLuasanLahan").value = (item.luasan || 0).toLocaleString('id-ID') + " Ha";
+
+      var reqTk = parseInt(item.req_tk, 10) || 0;
+      document.getElementById("editReqTK").value = reqTk.toLocaleString('id-ID') + " Orang";
+
+      var valJuni = editObj.tk_juni !== undefined ? editObj.tk_juni : (item.tk_juni || 0);
+      var targetJuli = editObj.target_juli !== undefined ? editObj.target_juli : (item.target_juli || 0);
+      var targetAgs = editObj.target_agustus !== undefined ? editObj.target_agustus : (item.target_agustus || 0);
+
+      document.getElementById("editTKJuniVal").value = valJuni;
+      document.getElementById("editTargetJuliVal").value = targetJuli;
+      document.getElementById("editTargetAgsVal").value = targetAgs;
+
+      calculateThreeColSum();
+
+      var sheet = document.getElementById("editKebunSheet");
+      var backdrop = document.getElementById("editKebunBackdrop");
+      if (sheet) sheet.classList.remove("hidden");
+      if (backdrop) backdrop.classList.remove("hidden");
+    }
+
+    function calculateThreeColSum() {
+      if (!activeEditingKebunData) return;
+
+      var reqTk = parseInt(activeEditingKebunData.req_tk, 10) || 0;
+
+      var vJuni = parseFloat(document.getElementById("editTKJuniVal").value) || 0;
+      var vTarJuli = parseFloat(document.getElementById("editTargetJuliVal").value) || 0;
+      var vTarAgs = parseFloat(document.getElementById("editTargetAgsVal").value) || 0;
+
+      var sumThree = vJuni + vTarJuli + vTarAgs;
+
+      var msgEl = document.getElementById("threeColValidationMsg");
+      var msgText = document.getElementById("threeColValidationText");
+
+      if (sumThree === reqTk) {
+        if (msgEl) {
+          msgEl.className = "text-[11px] font-bold mt-2 text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-300 dark:border-emerald-900 shadow-xs";
+        }
+        if (msgText) {
+          msgText.innerHTML = "✅ <b>PAS / TERCUKUPI (Warna Baris Hijau)!</b><br/>Jumlah Col H + I + J = <b>" + sumThree + " / " + reqTk + " Orang</b> (Sama dengan Kebutuhan).";
+        }
+      } else {
+        if (msgEl) {
+          msgEl.className = "text-[11px] font-bold mt-2 text-red-800 dark:text-red-300 bg-red-50 dark:bg-red-950/40 p-3 rounded-xl border border-red-300 dark:border-red-900 shadow-xs";
+        }
+        var diffText = sumThree > reqTk
+          ? "(Lebih " + (sumThree - reqTk) + " Orang)"
+          : "(Kurang " + (reqTk - sumThree) + " Orang)";
+        if (msgText) {
+          msgText.innerHTML = "⚠️ <b>TIDAK SAMA DENGAN KEBUTUHAN (Warna Baris Merah)!</b><br/>Jumlah Col H + I + J = <b>" + sumThree + " / " + reqTk + " Orang</b> " + diffText + ".";
+        }
+      }
+    }
+
+    function closeEditKebunModal() {
+      var sheet = document.getElementById("editKebunSheet");
+      var backdrop = document.getElementById("editKebunBackdrop");
+      if (sheet) sheet.classList.add("hidden");
+      if (backdrop) backdrop.classList.add("hidden");
+    }
+
+    function saveEditKebunForm(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      if (!activeEditingKebunData) return;
+
+      var id = activeEditingKebunData.id;
+      var vJuni = Math.max(0, parseFloat(document.getElementById("editTKJuniVal").value) || 0);
+      var vTarJuli = Math.max(0, parseFloat(document.getElementById("editTargetJuliVal").value) || 0);
+      var vTarAgs = Math.max(0, parseFloat(document.getElementById("editTargetAgsVal").value) || 0);
+
+      if (!globalTKEdits[id]) globalTKEdits[id] = {};
+      globalTKEdits[id].tk_juni = vJuni;
+      globalTKEdits[id].target_juli = vTarJuli;
+      globalTKEdits[id].target_agustus = vTarAgs;
+
+      closeEditKebunModal();
+
+      // Instant Re-render Table on Screen
+      renderTKPanenTable(globalTKData, currentSummaryData);
+
+      // Save to Backend Database
+      simpanTKPanenEdits();
+    }
+
+    function filterTKPanenTable() {
+      var input = document.getElementById("tkSearchInput");
+      var filter = input ? input.value.toLowerCase() : "";
+      var tbody = document.getElementById("tkPanenTableBody");
+      if (!tbody) return;
+
+      var trs = tbody.getElementsByTagName("tr");
+      for (var i = 0; i < trs.length; i++) {
+        var text = trs[i].textContent || trs[i].innerText;
+        if (text.toLowerCase().indexOf(filter) > -1) {
+          trs[i].style.display = "";
+        } else {
+          trs[i].style.display = "none";
+        }
+      }
+    }
+
+  </script>
 
   <!-- Flatpickr (Shadcn Date Picker) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -2194,7 +2702,7 @@
   <div id="mainSection" style="display:none;" class="h-screen w-full flex overflow-hidden">
     <!-- LeftSidebar -->
     <aside id="leftSidebar"
-      class="bg-white border-r border-gray-200 flex flex-col py-4 space-y-4 flex-shrink-0 z-20 transition-all duration-300"
+      class="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col py-4 space-y-4 flex-shrink-0 z-20 transition-all duration-300"
       style="width: 16rem;">
       <!-- Sidebar Brand Logo -->
       <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 sidebar-brand">
@@ -2208,7 +2716,7 @@
       </div>
       <nav class="flex flex-col space-y-2 px-3 w-full">
         <!-- Button 1: Monitoring -->
-        <button onclick="tutupSAP(); tutupEstimasiModal(); setActiveSidebar(0);"
+        <button onclick="tutupTKPanenSection(); tutupSAP(); tutupEstimasiModal(); setActiveSidebar(0);"
           class="flex items-center p-3 rounded-lg transition-colors sidebar-active bg-green-50 text-green-600 w-full"
           data-purpose="nav-item" title="Monitoring">
           <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewbox="0 0 20 20">
@@ -2248,6 +2756,19 @@
               <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
           </span>
+        </button>
+        <!-- Button 4: TK Panen -->
+        <button id="btnOpenTKPanen" onclick="bukaTKPanenSection(); setActiveSidebar(3);"
+          class="flex items-center p-3 text-gray-400 hover:bg-gray-50 rounded-lg transition-colors relative w-full"
+          data-purpose="nav-item" title="TK Panen">
+          <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+            </path>
+          </svg>
+          <span
+            class="nav-text text-sm font-semibold ml-3 overflow-hidden whitespace-nowrap transition-all duration-300">TK
+            Panen</span>
         </button>
       </nav>
       <!-- Admin Dropdown placeholder so JS doesn't crash -->
@@ -2332,8 +2853,8 @@
       </header>
 
       <!-- MainContentContainer (Scrollable) -->
-      <main class="flex-1 overflow-y-auto p-6 custom-scrollbar flex flex-col justify-between">
-        <div>
+      <main id="mainSection" class="flex-1 overflow-y-auto p-6 custom-scrollbar flex flex-col justify-between">
+        <div id="dashboardMainGrid">
 
           <!-- Filter Bar -->
           <section class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
@@ -2501,32 +3022,161 @@
           </section>
         </div>
 
-        <!-- Ticker Row & Footer -->
-        <div>
-          <!-- Running Text Ticker (Exactly like Admin) -->
-          <section id="runningTextContainer"
-            class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex-shrink-0 mb-6"
-            style="display: none;">
-            <div class="flex items-stretch">
-              <div class="bg-red-600 flex items-center gap-2 px-4 py-2.5 flex-shrink-0">
-                <div class="w-1.5 h-1.5 rounded-full bg-white animate-pulse2"></div>
-                <span class="text-[11px] font-bold text-white uppercase tracking-wider whitespace-nowrap">AGRIPAM</span>
-              </div>
-              <div class="flex-1 overflow-hidden bg-red-50">
-                <div class="ticker-track py-2.5">
-                  <span class="text-[12.5px] text-red-800 font-medium px-8" id="runningTextContent">Mengambil data hasil
-                    produksi...</span>
+
+        <!-- ===================== TK PANEN MAIN CONTENT ===================== -->
+        <div id="tkPanenMainContent" style="display:none;" class="space-y-6">
+
+          <!-- Top Header Card -->
+          <div
+            class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-emerald-500/10 text-emerald-600 rounded-xl">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                    </path>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-xl font-extrabold text-slate-800 dark:text-slate-100">Pengisian TK Panen</h2>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Monitoring & Realisasi Tenaga Kerja Panen
+                    Kebun (Kolom I Juli & Kolom J Agustus)</p>
                 </div>
               </div>
             </div>
-          </section>
 
-          <footer class="flex flex-col items-center justify-center pb-6">
-            <p id="sessionInfo" style="display: none;"></p>
-            <span class="text-[9px] font-bold text-slate-400 tracking-[0.2em] uppercase">Patriot - Loyal -
-              Profesional</span>
-          </footer>
-        </div>
+            <div class="flex items-center gap-3">
+              <button id="btnSaveTKPanen" onclick="simpanTKPanenEdits()"
+                class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4">
+                  </path>
+                </svg>
+                <span>Simpan Data TK Panen</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Large Fluid KPI Cards Grid -->
+          <div id="tkSummaryBadges"
+            class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 w-full transition-all duration-300"></div>
+
+          <!-- Search & Regional Filter Row -->
+          <div
+            class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+            <div id="tkAdminRegionContainer" style="display:none;" class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-slate-500">Filter Regional:</span>
+              <select id="tkAdminRegionSelect" onchange="loadTKPanenDataForSelectedRegion()"
+                class="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200">
+                <option value="ALL">Semua Regional (23 Region)</option>
+              </select>
+            </div>
+
+            <div class="flex-1 max-w-md relative">
+              <input type="text" id="tkSearchInput" onkeyup="filterTKPanenTable()"
+                placeholder="Cari kebun, tag kebun, atau regional..."
+                class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" </div>
+            </div>
+
+
+            <!-- Kebun Table Card Container (Sleek Black Theme & Fluid Responsiveness) -->
+            <div
+              class="bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-900 dark:border-slate-700 overflow-hidden shadow-md w-full transition-all duration-300">
+              <div class="w-full overflow-x-auto relative">
+                <table class="w-full text-left text-xs sm:text-sm border-collapse" id="tkPanenTable"
+                  style="font-family: Calibri, 'Segoe UI', Arial, sans-serif;">
+                  <thead
+                    class="bg-slate-900 text-white dark:bg-slate-800 border-b-2 border-slate-900 dark:border-slate-700 sticky top-0 z-30">
+                    <tr class="text-xs sm:text-[13px] font-black uppercase tracking-wider text-white">
+                      <th
+                        class="py-3.5 px-2 text-center w-[45px] min-w-[45px] font-black whitespace-nowrap sticky top-0 left-0 z-40 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                        No</th>
+                      <th
+                        class="py-3.5 px-2 text-center w-[70px] min-w-[70px] font-black whitespace-nowrap sticky top-0 left-[45px] z-40 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                        CRO</th>
+                      <th
+                        class="py-3.5 px-2 text-center w-[100px] min-w-[100px] font-black whitespace-nowrap sticky top-0 left-[115px] z-40 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                        Wilayah</th>
+                      <th
+                        class="py-3.5 px-3 text-left w-[190px] min-w-[190px] font-black whitespace-nowrap sticky top-0 left-[215px] z-40 bg-slate-900 dark:bg-slate-800 border-r-2 border-slate-700 shadow-[4px_0_8px_-2px_rgba(0,0,0,0.3)]">
+                        Nama Kebun / PT HO</th>
+                      <th
+                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                        Tag</th>
+                      <th
+                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                        Luas (Ha)</th>
+                      <th
+                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                        Kebutuhan Tenaga Panen</th>
+                      <th
+                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-700 border-r border-slate-700">
+                        REALISASI TK PANEN MEI</th>
+                      <th
+                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                        REALISASI TK PANEN JUNI</th>
+                      <th
+                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                        RENCANA PEMENUHAN TK PANEN JULI</th>
+                      <th
+                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                        RENCANA PEMENUHAN TK PANEN AGUSTUS</th>
+                      <th
+                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                        REALISASI TK PANEN JULI</th>
+                      <th
+                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                        REALISASI TK PANEN AGUSTUS</th>
+                      <th
+                        class="py-3.5 px-2 text-center w-[65px] min-w-[65px] font-black whitespace-nowrap sticky top-0 right-0 z-40 bg-slate-900 dark:bg-slate-800 border-l-2 border-slate-700 shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.3)]">
+                        AKSI</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tkPanenTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                    <tr>
+                      <td colspan="14" class="py-12 text-center text-slate-500 font-semibold">Memuat data kebun...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 50 Rows Pagination Container -->
+            <div id="tkPaginationControls" class="mt-4" style="display:none;"></div>
+
+          </div>
+
+          <!-- Ticker Row & Footer -->
+          <div>
+            <!-- Running Text Ticker (Exactly like Admin) -->
+            <section id="runningTextContainer"
+              class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex-shrink-0 mb-6"
+              style="display: none;">
+              <div class="flex items-stretch">
+                <div class="bg-red-600 flex items-center gap-2 px-4 py-2.5 flex-shrink-0">
+                  <div class="w-1.5 h-1.5 rounded-full bg-white animate-pulse2"></div>
+                  <span
+                    class="text-[11px] font-bold text-white uppercase tracking-wider whitespace-nowrap">AGRIPAM</span>
+                </div>
+                <div class="flex-1 overflow-hidden bg-red-50">
+                  <div class="ticker-track py-2.5">
+                    <span class="text-[12.5px] text-red-800 font-medium px-8" id="runningTextContent">Mengambil data
+                      hasil
+                      produksi...</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <footer class="flex flex-col items-center justify-center pb-6">
+              <p id="sessionInfo" style="display: none;"></p>
+              <span class="text-[9px] font-bold text-slate-400 tracking-[0.2em] uppercase">Patriot - Loyal -
+                Profesional</span>
+            </footer>
+          </div>
       </main>
     </div>
     <script>
@@ -4168,9 +4818,9 @@
       var params = '?token=' + encodeURIComponent(s.token) + '&region=' + encodeURIComponent(s.region) + '&expiry=' + encodeURIComponent(s.expiry) + '&t=' + Date.now();
       var sapIframe = document.getElementById("sapIframe");
       if (region === 'ADMIN') {
-        sapIframe.src = 'sap_admin.html' + params;
+        sapIframe.src = '/sap_admin.html' + params;
       } else {
-        sapIframe.src = 'sap_regional.html' + params;
+        sapIframe.src = '/sap_regional.html' + params;
       }
 
       // Prepare classes and display â€” animate scale-in
@@ -4236,6 +4886,14 @@
 
     // Logout normal (dengan broadcast)
     function prosesLogout() {
+      globalTKData = [];
+      globalTKEdits = {};
+      var tbody = document.getElementById("tkPanenTableBody");
+      if (tbody) tbody.innerHTML = "";
+      var summaryEl = document.getElementById("tkSummaryBadges");
+      if (summaryEl) summaryEl.innerHTML = "";
+
+
       var s = loadSession();
       if (s) {
         // Beritahu server untuk hapus sesi â€” fire and forget
@@ -4383,30 +5041,7 @@
       "CRO X": ["Sulawesi Tenggara", "Sulawesi Tengah"]
     };
 
-    var ALL_REGIONS = [
-      "Aceh",
-      "Sumatera Utara 1",
-      "Sumatera Utara 2 Ex Torganda",
-      "Riau 1",
-      "Riau 2",
-      "Riau 3",
-      "Riau 4",
-      "Bangka Belitung",
-      "Jambi",
-      "Sumatera Barat",
-      "Sumatera Selatan",
-      "Kalimantan Barat 1A", "Kalimantan Barat 1B",
-      "Kalimantan Barat 2",
-      "Kalimantan Selatan 1",
-      "Kalimantan Selatan 2",
-      "Kalimantan Timur",
-      "Kalimantan Utara",
-      "Kalimantan Tengah 1",
-      "Kalimantan Tengah 2",
-      "Kalimantan Tengah 3",
-      "Sulawesi Tenggara",
-      "Sulawesi Tengah"
-    ];
+    // ALL_REGIONS defined at top script section
 
 
 
@@ -6054,6 +6689,114 @@
     })();
 
   </script>
+
+
+  </div>
+
+
+  <!-- Edit Kebun Sheet Modal (Shadcn Pattern) -->
+  <div id="editKebunBackdrop" onclick="closeEditKebunModal()"
+    class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 hidden transition-opacity"></div>
+  <div id="editKebunSheet"
+    class="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 z-50 hidden shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
+    <div>
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 class="text-lg font-black text-slate-900 dark:text-white">Edit Data Kebun</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="editKebunSubtitle">Lakukan perubahan data kebun
+            di sini. Klik simpan jika sudah selesai.</p>
+        </div>
+        <button onclick="closeEditKebunModal()"
+          class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <form id="editKebunForm" onsubmit="saveEditKebunForm(event)" class="py-6 space-y-4">
+        <input type="hidden" id="editKebunId" />
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Kebun / PT HO</label>
+          <input type="text" id="editNamaKebun"
+            class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-extrabold text-slate-900 dark:text-white"
+            readonly />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Luasan Lahan (Ha)</label>
+            <input type="text" id="editLuasanLahan"
+              class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300"
+              readonly />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Kebutuhan TK Panen</label>
+            <input type="text" id="editReqTK"
+              class="w-full px-3.5 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 rounded-xl text-xs font-black text-amber-900 dark:text-amber-200"
+              readonly />
+          </div>
+        </div>
+
+        <!-- Form Edit 3 Kolom Utama (Col H, Col I, Col J) -->
+        <div
+          class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3.5 shadow-xs">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700">
+            <label class="block text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">📌 PENGISIAN
+              KOLOM H, I, J</label>
+            <span
+              class="text-[10px] font-bold px-2.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-md">Col
+              H, I, J</span>
+          </div>
+
+          <!-- Col H: Realisasi TK Panen Juni -->
+          <div>
+            <label class="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">Col H: Realisasi TK
+              Panen Juni (Orang)</label>
+            <input type="number" min="0" id="editTKJuniVal" oninput="calculateThreeColSum()"
+              class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
+              placeholder="Masukkan realisasi Juni..." />
+          </div>
+
+          <!-- Col I: Rencana Pemenuhan TK Panen Juli -->
+          <div>
+            <label class="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">Col I: Rencana
+              Pemenuhan TK Panen Juli (Orang)</label>
+            <input type="number" min="0" id="editTargetJuliVal" oninput="calculateThreeColSum()"
+              class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 shadow-xs"
+              placeholder="Masukkan rencana Juli..." />
+          </div>
+
+          <!-- Col J: Rencana Pemenuhan TK Panen Agustus -->
+          <div>
+            <label class="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">Col J: Rencana
+              Pemenuhan TK Panen Agustus (Orang)</label>
+            <input type="number" min="0" id="editTargetAgsVal" oninput="calculateThreeColSum()"
+              class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 shadow-xs"
+              placeholder="Masukkan rencana Agustus..." />
+          </div>
+
+          <!-- Status Card Indicator -->
+          <div id="threeColValidationMsg"
+            class="text-[11px] font-bold mt-2 p-3 rounded-xl border flex flex-col gap-1 transition-all">
+            <span id="threeColValidationText">Perhitungan akumulasi 3 kolom...</span>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
+      <button type="button" onclick="closeEditKebunModal()"
+        class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+        Batal
+      </button>
+      <button type="button" onclick="saveEditKebunForm()"
+        class="px-5 py-2 bg-slate-900 hover:bg-black text-white dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white rounded-xl text-xs font-black shadow-md transition-all">
+        Simpan Perubahan
+      </button>
+    </div>
+  </div>
 </body>
 
 </html>
