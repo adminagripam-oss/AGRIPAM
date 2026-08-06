@@ -2250,10 +2250,12 @@
       document.getElementById("editReqTK").value = reqTk.toLocaleString('id-ID') + " Orang";
 
       var valJuni = editObj.tk_juni !== undefined ? editObj.tk_juni : (item.tk_juni || 0);
+      var valJuli = editObj.tk_juli !== undefined ? editObj.tk_juli : (item.tk_juli || 0);
       var targetJuli = editObj.target_juli !== undefined ? editObj.target_juli : (item.target_juli || 0);
       var targetAgs = editObj.target_agustus !== undefined ? editObj.target_agustus : (item.target_agustus || 0);
 
       document.getElementById("editTKJuniVal").value = valJuni;
+      if (document.getElementById("editTKJuliVal")) document.getElementById("editTKJuliVal").value = valJuli;
       document.getElementById("editTargetJuliVal").value = targetJuli;
       document.getElementById("editTargetAgsVal").value = targetAgs;
 
@@ -2271,30 +2273,31 @@
       var reqTk = parseInt(activeEditingKebunData.req_tk, 10) || 0;
 
       var vJuni = parseFloat(document.getElementById("editTKJuniVal").value) || 0;
+      var vJuli = document.getElementById("editTKJuliVal") ? (parseFloat(document.getElementById("editTKJuliVal").value) || 0) : 0;
       var vTarJuli = parseFloat(document.getElementById("editTargetJuliVal").value) || 0;
       var vTarAgs = parseFloat(document.getElementById("editTargetAgsVal").value) || 0;
 
-      var sumThree = vJuni + vTarJuli + vTarAgs;
+      var sumTotal = vJuni + vJuli + vTarJuli + vTarAgs;
 
       var msgEl = document.getElementById("threeColValidationMsg");
       var msgText = document.getElementById("threeColValidationText");
 
-      if (sumThree === reqTk) {
+      if (sumTotal === reqTk) {
         if (msgEl) {
           msgEl.className = "text-[11px] font-bold mt-2 text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-300 dark:border-emerald-900 shadow-xs";
         }
         if (msgText) {
-          msgText.innerHTML = "✅ <b>PAS / TERCUKUPI (Warna Baris Hijau)!</b><br/>Jumlah Col H + I + J = <b>" + sumThree + " / " + reqTk + " Orang</b> (Sama dengan Kebutuhan).";
+          msgText.innerHTML = "✅ <b>PAS / TERCUKUPI (Warna Baris Hijau)!</b><br/>Jumlah Total = <b>" + sumTotal + " / " + reqTk + " Orang</b> (Sama dengan Kebutuhan).";
         }
       } else {
         if (msgEl) {
           msgEl.className = "text-[11px] font-bold mt-2 text-red-800 dark:text-red-300 bg-red-50 dark:bg-red-950/40 p-3 rounded-xl border border-red-300 dark:border-red-900 shadow-xs";
         }
-        var diffText = sumThree > reqTk
-          ? "(Lebih " + (sumThree - reqTk) + " Orang)"
-          : "(Kurang " + (reqTk - sumThree) + " Orang)";
+        var diffText = sumTotal > reqTk
+          ? "(Lebih " + (sumTotal - reqTk) + " Orang)"
+          : "(Kurang " + (reqTk - sumTotal) + " Orang)";
         if (msgText) {
-          msgText.innerHTML = "⚠️ <b>TIDAK SAMA DENGAN KEBUTUHAN (Warna Baris Merah)!</b><br/>Jumlah Col H + I + J = <b>" + sumThree + " / " + reqTk + " Orang</b> " + diffText + ".";
+          msgText.innerHTML = "⚠️ <b>TIDAK SAMA DENGAN KEBUTUHAN (Warna Baris Merah)!</b><br/>Jumlah Total = <b>" + sumTotal + " / " + reqTk + " Orang</b> " + diffText + ".";
         }
       }
     }
@@ -2312,22 +2315,26 @@
 
       var id = activeEditingKebunData.id;
       var vJuni = Math.max(0, parseFloat(document.getElementById("editTKJuniVal").value) || 0);
+      var vJuli = document.getElementById("editTKJuliVal") ? Math.max(0, parseFloat(document.getElementById("editTKJuliVal").value) || 0) : 0;
       var vTarJuli = Math.max(0, parseFloat(document.getElementById("editTargetJuliVal").value) || 0);
       var vTarAgs = Math.max(0, parseFloat(document.getElementById("editTargetAgsVal").value) || 0);
 
       if (!globalTKEdits[id]) globalTKEdits[id] = {};
       globalTKEdits[id].tk_juni = vJuni;
+      globalTKEdits[id].tk_juli = vJuli;
       globalTKEdits[id].target_juli = vTarJuli;
       globalTKEdits[id].target_agustus = vTarAgs;
 
       // Update memory state so table re-renders instantly
       activeEditingKebunData.tk_juni = vJuni;
+      activeEditingKebunData.tk_juli = vJuli;
       activeEditingKebunData.target_juli = vTarJuli;
       activeEditingKebunData.target_agustus = vTarAgs;
 
       var item = (globalTKData || []).find(function (k) { return k.id === id; });
       if (item) {
         item.tk_juni = vJuni;
+        item.tk_juli = vJuli;
         item.target_juli = vTarJuli;
         item.target_agustus = vTarAgs;
       }
@@ -6782,12 +6789,20 @@
               class="text-[10px] font-bold px-2.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-md">Edit Kebun</span>
           </div>
 
-          <!-- Realisasi TK Panen Juni -->
+          <!-- Ketersediaan TK Panen Juni -->
           <div>
-            <label class="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">Realisasi TK Panen Juni</label>
+            <label class="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">Ketersediaan TK Panen Juni</label>
             <input type="number" min="0" id="editTKJuniVal" oninput="calculateThreeColSum()"
               class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
-              placeholder="Masukkan realisasi Juni..." />
+              placeholder="Masukkan ketersediaan Juni..." />
+          </div>
+
+          <!-- Ketersediaan TK Panen Juli -->
+          <div>
+            <label class="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">Ketersediaan TK Panen Juli</label>
+            <input type="number" min="0" id="editTKJuliVal" oninput="calculateThreeColSum()"
+              class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
+              placeholder="Masukkan ketersediaan Juli..." />
           </div>
 
           <!-- Rencana Pemenuhan TK Panen Juli -->

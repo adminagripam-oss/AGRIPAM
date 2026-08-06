@@ -133,7 +133,7 @@ module.exports = async (req, res) => {
     let updatedCount = 0;
     const nowIso = new Date().toISOString();
 
-    edits.forEach(edit => {
+    for (const edit of edits) {
       const targetId = parseInt(edit.id, 10);
       const itemIndex = kebunList.findIndex(k => k.id === targetId);
 
@@ -163,7 +163,7 @@ module.exports = async (req, res) => {
 
           // Attempt Supabase update
           try {
-            supabase.from('data_kebun_tk').update({
+            await supabase.from('data_kebun_tk').update({
               tk_juni: item.tk_juni,
               target_juli: item.target_juli,
               target_agustus: item.target_agustus,
@@ -175,7 +175,7 @@ module.exports = async (req, res) => {
           } catch (_) {}
         }
       }
-    });
+    }
 
     if (updatedCount > 0) {
       saveKebunData(kebunList);

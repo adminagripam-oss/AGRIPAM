@@ -4078,6 +4078,7 @@
                 return {
                   ...item,
                   tk_juni: edited.tk_juni,
+                  tk_juli: edited.tk_juli,
                   target_juli: edited.target_juli,
                   target_agustus: edited.target_agustus
                 };
@@ -4559,6 +4560,7 @@
                       e.preventDefault();
                       const item = activeEditKebun;
                       const vJuni = Math.max(0, parseFloat(document.getElementById("editTKJuniVal")?.value) || 0);
+                      const vTKJuli = Math.max(0, parseFloat(document.getElementById("editTKJuliVal")?.value) || 0);
                       const vTarJuli = Math.max(0, parseFloat(document.getElementById("editTargetJuliVal")?.value) || 0);
                       const vTarAgs = Math.max(0, parseFloat(document.getElementById("editTargetAgsVal")?.value) || 0);
 
@@ -4567,6 +4569,7 @@
                         [item.id]: {
                           ...edits[item.id],
                           tk_juni: vJuni,
+                          tk_juli: vTKJuli,
                           target_juli: vTarJuli,
                           target_agustus: vTarAgs
                         }
@@ -4625,7 +4628,7 @@
 
                       <div>
                         <label className="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">
-                          Realisasi TK Panen Juni
+                          Ketersediaan TK Panen Juni
                         </label>
                         <input
                           type="number"
@@ -4633,7 +4636,21 @@
                           id="editTKJuniVal"
                           defaultValue={(edits[activeEditKebun.id]?.tk_juni !== undefined ? edits[activeEditKebun.id].tk_juni : activeEditKebun.tk_juni) || 0}
                           className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
-                          placeholder="Masukkan realisasi Juni..."
+                          placeholder="Masukkan ketersediaan Juni..."
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">
+                          Ketersediaan TK Panen Juli
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          id="editTKJuliVal"
+                          defaultValue={(edits[activeEditKebun.id]?.tk_juli !== undefined ? edits[activeEditKebun.id].tk_juli : activeEditKebun.tk_juli) || 0}
+                          className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
+                          placeholder="Masukkan ketersediaan Juli..."
                         />
                       </div>
 
