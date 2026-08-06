@@ -4059,22 +4059,39 @@
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((r, i, arr) => (
           <span key={r.name}>
-            <strong>{r.name}</strong> Kekurangan <strong>{Number(Math.max(0, r.deficit)).toLocaleString('id-ID')}</strong> Orang{i < arr.length - 1 ? ', ' : '.'}
+            <strong className="text-[#facc15] font-bold drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{r.name}</strong> Kekurangan <strong className="text-[#facc15] font-bold drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{Number(Math.max(0, r.deficit)).toLocaleString('id-ID')}</strong> Orang{i < arr.length - 1 ? ', ' : '.'}
           </span>
         ));
 
       return (
-        <div className="bg-[#FFFF00] rounded-2xl p-6 text-black shadow-sm border border-slate-200 mb-6 font-['Arial']">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-emerald-100 rounded-lg">
-              <Icon name="zap" size={20} className="text-emerald-600" />
-            </div>
-            <h2 className="text-lg font-bold tracking-wide">Executive Intelligence Highlight</h2>
-          </div>
+        <div className="relative rounded-2xl mb-6 overflow-hidden border border-[#b8860b] shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+          {/* Inner dark gradient with tech-like radial overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#23252b] via-[#1a1c21] to-[#111215] z-0"></div>
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-400 via-transparent to-transparent z-0"></div>
           
-          <p className="text-sm leading-relaxed text-justify">
-            Berdasarkan data ketersediaan TK Panen cut-off <strong>{cutOffMonth}</strong>, dengan Kekurangan tenaga Panen <strong>{Number(Math.max(0, kekurangTK)).toLocaleString('id-ID')}</strong> Orang, dengan Total Kebutuhan Yakni <strong>{Number(totalReqTk).toLocaleString('id-ID')}</strong> Orang. Adapun Dengan Detail setiap Regional {regionDetailsElements}
-          </p>
+          <div className="relative z-10 p-5 md:p-6 flex flex-col md:flex-row gap-6 font-['Arial']">
+            {/* Left Column */}
+            <div className="md:w-1/3 flex flex-col justify-center border-b md:border-b-0 md:border-r border-[#b8860b]/40 pb-6 md:pb-0 md:pr-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-[#d4af37] via-[#aa8022] to-[#8b6508] shadow-[0_0_15px_rgba(212,175,55,0.4)] border border-[#fadd82]/50">
+                  <Icon name="zap" size={28} className="text-[#2a2c32] fill-current" />
+                </div>
+                <h2 className="text-xl md:text-2xl font-bold text-white leading-tight tracking-wide drop-shadow-md">
+                  Executive Intelligence Highlight
+                </h2>
+              </div>
+              <p className="text-sm text-slate-300 leading-relaxed pr-2">
+                Berdasarkan data ketersediaan TK Panen cut-off <strong className="text-[#facc15] font-bold drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{cutOffMonth}</strong>, dengan Kekurangan tenaga Panen <strong className="text-[#facc15] font-bold drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{Number(Math.max(0, kekurangTK)).toLocaleString('id-ID')}</strong> Orang.
+              </p>
+            </div>
+
+            {/* Right Column */}
+            <div className="md:w-2/3 flex items-center">
+              <p className="text-xs md:text-[13px] leading-[1.8] text-slate-300 text-justify">
+                {regionDetailsElements}
+              </p>
+            </div>
+          </div>
         </div>
       );
     }
