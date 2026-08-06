@@ -3048,8 +3048,8 @@
             let dateColStart = 1;
 
             // Jika header mengandung "CRO" di kolom 0 atau "Regional" di kolom 1, gunakan format baru
-            const isNewFormat = (header[0] && header[0].toLowerCase().includes('cro')) || 
-                                (header[1] && header[1].toLowerCase() === 'regional');
+            const isNewFormat = (header[0] && header[0].toLowerCase().includes('cro')) ||
+              (header[1] && header[1].toLowerCase() === 'regional');
 
             if (isNewFormat) {
               regionColIdx = 1; // Kolom Regional (nama wilayah)
@@ -3066,12 +3066,12 @@
               const regionName = String(rawRegion).trim();
 
               // Abaikan header, baris kosong, subtotal, dan total
-              if (!regionName || 
-                  regionName.toLowerCase().startsWith('subtotal') || 
-                  regionName.toLowerCase().includes('total target') || 
-                  regionName.toLowerCase() === 'regional' ||
-                  regionName.toLowerCase() === 'wilayah' ||
-                  regionName.toLowerCase().includes('cro / wilayah')) {
+              if (!regionName ||
+                regionName.toLowerCase().startsWith('subtotal') ||
+                regionName.toLowerCase().includes('total target') ||
+                regionName.toLowerCase() === 'regional' ||
+                regionName.toLowerCase() === 'wilayah' ||
+                regionName.toLowerCase().includes('cro / wilayah')) {
                 continue;
               }
 
@@ -4023,10 +4023,62 @@
     }
 
     // ============================================================
-    
+
     // ============================================================
-    // TK PANEN VIEW (Realisasi Tenaga Kerja Panen Kebun Juli & Agustus)
+    // TK PANEN VIEW (Realisasi Tenaga Kerja Panen Kebun)
     // ============================================================
+
+    function ExecutiveIntelligenceHighlight({ kebunData, summary }) {
+      if (!kebunData || kebunData.length === 0) return null;
+
+      // Group by region
+      const regionStats = {};
+      kebunData.forEach(k => {
+        const reg = k.region || 'Unknown';
+        if (!regionStats[reg]) {
+          regionStats[reg] = { req: 0, avail: 0 };
+        }
+        regionStats[reg].req += parseFloat(k.req_tk) || 0;
+        const cutOffField = summary?.cutOffField || 'tk_juli';
+        regionStats[reg].avail += parseFloat(k[cutOffField]) || 0;
+      });
+
+      const regions = Object.keys(regionStats).map(reg => {
+        const req = regionStats[reg].req;
+        const avail = regionStats[reg].avail;
+        const deficit = req - avail;
+        return { name: reg, req, avail, deficit };
+      });
+
+      const cutOffMonth = summary?.cutOffMonth || 'Juli';
+      const totalReqTk = summary?.totalReqTk || 0;
+      const kekurangTK = summary?.kekurangTK || 0;
+
+      const regionDetailsElements = regions
+        .filter(r => r.name !== 'Unknown')
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((r, i, arr) => (
+          <span key={r.name}>
+            <strong>{r.name}</strong> Kekurangan <strong>{Number(Math.max(0, r.deficit)).toLocaleString('id-ID')}</strong> Orang{i < arr.length - 1 ? ', ' : '.'}
+          </span>
+        ));
+
+      return (
+        <div className="bg-white rounded-2xl p-6 text-black shadow-sm border border-slate-200 mb-6 font-['Arial']">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-emerald-100 rounded-lg">
+              <Icon name="zap" size={20} className="text-emerald-600" />
+            </div>
+            <h2 className="text-lg font-bold tracking-wide">Executive Intelligence Highlight</h2>
+          </div>
+          
+          <p className="text-sm leading-relaxed text-justify">
+            Berdasarkan data ketersediaan TK Panen cut-off <strong>{cutOffMonth}</strong>, dengan Kekurangan tenaga Panen <strong>{Number(Math.max(0, kekurangTK)).toLocaleString('id-ID')}</strong> Orang, dengan Total Kebutuhan Yakni <strong>{Number(totalReqTk).toLocaleString('id-ID')}</strong> Orang. Adapun Dengan Detail setiap Regional {regionDetailsElements}
+          </p>
+        </div>
+      );
+    }
+
     function TKPanenView({ userSession }) {
       const [kebunData, setKebunData] = useState([]);
       const [summary, setSummary] = useState({});
@@ -4067,56 +4119,56 @@
         fetchKebunData(selectedRegion);
       }, [selectedRegion]);
 
-        const handleSaveEdits = async (editPayload) => {
-          setSaving(true);
-          
-          // Optimistic UI Update: Langsung ubah state tabel
-          setKebunData(prevData => {
-            return prevData.map(item => {
-              const edited = editPayload.find(e => e.id === item.id);
-              if (edited) {
-                return {
-                  ...item,
-                  tk_juni: edited.tk_juni,
-                  tk_juli: edited.tk_juli,
-                  target_juli: edited.target_juli,
-                  target_agustus: edited.target_agustus
-                };
-              }
-              return item;
-            });
-          });
-          
-          try {
-            const res = await fetch('/api/kebunTK', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                action: 'updateTK',
-                region: userRegion,
-                token: userSession ? userSession.token : '',
-                edits: editPayload
-              })
-            });
+      const handleSaveEdits = async (editPayload) => {
+        setSaving(true);
 
-            const json = await res.json();
-            if (json.success) {
-              setToastMsg({ type: 'success', text: json.message || 'Data TK Panen berhasil disimpan!' });
-              setEdits({});
-              setActiveEditKebun(null);
-              // Fetch data di background untuk memastikan sinkronisasi
-              fetchKebunData(selectedRegion);
-            } else {
-              setToastMsg({ type: 'error', text: json.message || 'Gagal menyimpan data TK Panen.' });
+        // Optimistic UI Update: Langsung ubah state tabel
+        setKebunData(prevData => {
+          return prevData.map(item => {
+            const edited = editPayload.find(e => e.id === item.id);
+            if (edited) {
+              return {
+                ...item,
+                tk_juni: edited.tk_juni,
+                tk_juli: edited.tk_juli,
+                target_juli: edited.target_juli,
+                target_agustus: edited.target_agustus
+              };
             }
-          } catch (err) {
-            console.error("Error saving TK data:", err);
-            setToastMsg({ type: 'error', text: 'Terjadi kesalahan saat menyimpan data.' });
-          } finally {
-            setSaving(false);
-            setTimeout(() => setToastMsg(null), 4000);
+            return item;
+          });
+        });
+
+        try {
+          const res = await fetch('/api/kebunTK', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'updateTK',
+              region: userRegion,
+              token: userSession ? userSession.token : '',
+              edits: editPayload
+            })
+          });
+
+          const json = await res.json();
+          if (json.success) {
+            setToastMsg({ type: 'success', text: json.message || 'Data TK Panen berhasil disimpan!' });
+            setEdits({});
+            setActiveEditKebun(null);
+            // Fetch data di background untuk memastikan sinkronisasi
+            fetchKebunData(selectedRegion);
+          } else {
+            setToastMsg({ type: 'error', text: json.message || 'Gagal menyimpan data TK Panen.' });
           }
-        };
+        } catch (err) {
+          console.error("Error saving TK data:", err);
+          setToastMsg({ type: 'error', text: 'Terjadi kesalahan saat menyimpan data.' });
+        } finally {
+          setSaving(false);
+          setTimeout(() => setToastMsg(null), 4000);
+        }
+      };
 
       const [currentPage, setCurrentPage] = useState(1);
       const pageSize = 30;
@@ -4130,21 +4182,21 @@
         if (diff > 0) {
           return (
             <div className="inline-flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs">
-              <svg className="w-3 h-3 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z"/></svg>
+              <svg className="w-3 h-3 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z" /></svg>
               <span>+{formatRibuan(diff)}</span>
             </div>
           );
         } else if (diff < 0) {
           return (
             <div className="inline-flex items-center justify-center gap-1 text-red-600 dark:text-red-400 font-extrabold text-xs">
-              <svg className="w-3 h-3 fill-current text-red-600 dark:text-red-400" viewBox="0 0 24 24"><path d="M12 20l8-16H4z"/></svg>
+              <svg className="w-3 h-3 fill-current text-red-600 dark:text-red-400" viewBox="0 0 24 24"><path d="M12 20l8-16H4z" /></svg>
               <span>{formatRibuan(diff)}</span>
             </div>
           );
         } else {
           return (
             <div className="inline-flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs">
-              <svg className="w-3 h-3 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z"/></svg>
+              <svg className="w-3 h-3 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z" /></svg>
               <span>0</span>
             </div>
           );
@@ -4167,18 +4219,20 @@
       const endIdx = startIdx + pageSize;
       const paginatedKebun = filteredKebun.slice(startIdx, endIdx);
 
+      const cutOffField = summary.cutOffField || 'tk_juli';
+      const cutOffMonth = summary.cutOffMonth || 'Juli';
+
       const totalReqTk = summary.totalReqTk !== undefined ? summary.totalReqTk : filteredKebun.reduce((s, x) => s + (parseInt(x.req_tk) || 0), 0);
-      const totalJuni = summary.totalJuni !== undefined ? summary.totalJuni : filteredKebun.reduce((s, x) => s + (parseInt(x.tk_juni) || 0), 0);
-      const kekurangTK = totalReqTk - totalJuni;
+      const totalCutOff = summary.totalCutOff !== undefined ? summary.totalCutOff : filteredKebun.reduce((s, x) => s + (parseInt(x[cutOffField]) || 0), 0);
+      const kekurangTK = totalReqTk - totalCutOff;
 
       return (
         <div className="flex flex-col gap-6 w-full">
           {toastMsg && (
-            <div className={`fixed top-5 right-5 z-50 px-4 py-3 rounded-xl shadow-xl border text-sm font-semibold flex items-center gap-2 animate-bounce ${
-              toastMsg.type === 'success' ? 'bg-emerald-500 text-white border-emerald-600' :
-              toastMsg.type === 'warning' ? 'bg-amber-500 text-white border-amber-600' :
-              'bg-rose-500 text-white border-rose-600'
-            }`}>
+            <div className={`fixed top-5 right-5 z-50 px-4 py-3 rounded-xl shadow-xl border text-sm font-semibold flex items-center gap-2 animate-bounce ${toastMsg.type === 'success' ? 'bg-emerald-500 text-white border-emerald-600' :
+                toastMsg.type === 'warning' ? 'bg-amber-500 text-white border-amber-600' :
+                  'bg-rose-500 text-white border-rose-600'
+              }`}>
               <Icon name={toastMsg.type === 'success' ? 'check-circle' : 'alert-circle'} size={18} />
               <span>{toastMsg.text}</span>
             </div>
@@ -4215,11 +4269,10 @@
                   handleSaveEdits(payload);
                 }}
                 disabled={saving || Object.keys(edits).length === 0}
-                className={`px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg transition-all ${
-                  Object.keys(edits).length > 0
+                className={`px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg transition-all ${Object.keys(edits).length > 0
                     ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-emerald-600/20'
                     : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 {saving ? (
                   <>
@@ -4235,6 +4288,8 @@
               </button>
             </div>
           </div>
+          
+          <ExecutiveIntelligenceHighlight kebunData={filteredKebun} summary={summary} />
 
           {/* Large Fluid 5 KPI Badges */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 w-full transition-all duration-300">
@@ -4253,19 +4308,19 @@
             <div className="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
               <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kebutuhan Tenaga Panen</span>
               <div className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {formatRibuan(totalReqTk)} <span className="text-xs font-bold text-slate-500">Orang</span>
+                {Number(totalReqTk).toLocaleString('id-ID')} <span className="text-xs font-bold text-slate-500">Orang</span>
               </div>
             </div>
             <div className="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-              <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">TK Juni (Cut Off Juni)</span>
+              <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">TK {cutOffMonth} (Cut Off {cutOffMonth})</span>
               <div className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {formatRibuan(totalJuni)} <span className="text-xs font-bold text-slate-500">Orang</span>
+                {Number(totalCutOff).toLocaleString('id-ID')} <span className="text-xs font-bold text-slate-500">Orang</span>
               </div>
             </div>
             <div className="bg-slate-900 text-white dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
               <span className="text-[11px] font-black text-slate-300 dark:text-slate-400 uppercase tracking-wider">Kekurangan Tenaga Panen</span>
               <div className="text-xl md:text-2xl font-black text-white mt-1">
-                {formatRibuan(kekurangTK)} <span className="text-xs font-bold text-slate-300">Orang</span>
+                {Number(kekurangTK).toLocaleString('id-ID')} <span className="text-xs font-bold text-slate-300">Orang</span>
               </div>
             </div>
           </div>
@@ -4340,7 +4395,7 @@
                     <th rowSpan="2" className="py-3.5 px-3 text-left w-[190px] min-w-[190px] font-black whitespace-nowrap sticky left-[215px] z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r-2 border-b border-black shadow-[4px_0_8px_-2px_rgba(0,0,0,0.3)]">Nama Kebun / PT HO</th>
                     <th rowSpan="2" className="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">Name Tag Kebun</th>
                     <th rowSpan="2" className="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">Luasan</th>
-                    <th rowSpan="2" className="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">Kebutuhan<br/>Tenaga Panen</th>
+                    <th rowSpan="2" className="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">Kebutuhan<br />Tenaga Panen</th>
                     {/* Grouped: Ketersedian TK PANEN */}
                     <th colSpan="7" className="py-2.5 px-2 text-center font-black whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black">Ketersedian TK PANEN</th>
                     {/* Grouped: Rencana Pemenuhan TK Panen */}
@@ -4481,11 +4536,10 @@
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition-all ${
-                    currentPage === 1
+                  className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition-all ${currentPage === 1
                       ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed'
                       : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95'
-                  }`}
+                    }`}
                 >
                   <Icon name="chevron-left" size={16} />
                   <span>Sebelumnya</span>
@@ -4502,11 +4556,10 @@
                           {showEllipsis && <span className="px-1 text-slate-400 font-bold">...</span>}
                           <button
                             onClick={() => setCurrentPage(page)}
-                            className={`w-8 h-8 rounded-xl font-extrabold text-xs transition-all ${
-                              currentPage === page
+                            className={`w-8 h-8 rounded-xl font-extrabold text-xs transition-all ${currentPage === page
                                 ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
                                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                            }`}
+                              }`}
                           >
                             {page}
                           </button>
@@ -4518,11 +4571,10 @@
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition-all ${
-                    currentPage === totalPages
+                  className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition-all ${currentPage === totalPages
                       ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed'
                       : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95'
-                  }`}
+                    }`}
                 >
                   <span>Selanjutnya</span>
                   <Icon name="chevron-right" size={16} />
