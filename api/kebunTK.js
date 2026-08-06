@@ -96,11 +96,21 @@ module.exports = async (req, res) => {
       });
     }
 
+    // Calculate dynamic month (H-1)
+    const monthNames = ['januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember'];
+    const today = new Date();
+    // Default to July (index 6) if the app was meant for July/August, but let's make it truly dynamic
+    let targetMonthIdx = today.getMonth() - 1;
+    if (targetMonthIdx < 0) targetMonthIdx = 11;
+    const targetMonthStr = monthNames[targetMonthIdx];
+    const tkField = 'tk_' + targetMonthStr;
+    const cutOffLabel = targetMonthStr.charAt(0).toUpperCase() + targetMonthStr.slice(1);
+
     // Calculate summary statistics
     const totalLuas = result.reduce((sum, item) => sum + (parseFloat(item.luasan) || 0), 0);
     const totalReqTk = result.reduce((sum, item) => sum + (parseFloat(item.req_tk) || 0), 0);
-    const totalJuni = result.reduce((sum, item) => sum + (parseFloat(item.tk_juni) || 0), 0);
-    const kekurangTK = totalReqTk - totalJuni;
+    const totalCutOff = result.reduce((sum, item) => sum + (parseFloat(item[tkField]) || 0), 0);
+    const kekurangTK = totalReqTk - totalCutOff;
 
     return res.json({
       success: true,
@@ -109,8 +119,10 @@ module.exports = async (req, res) => {
       summary: {
         totalLuas: Math.round(totalLuas * 100) / 100,
         totalReqTk: Math.round(totalReqTk),
-        totalJuni: Math.round(totalJuni),
-        kekurangTK: Math.round(kekurangTK)
+        totalCutOff: Math.round(totalCutOff),
+        kekurangTK: Math.round(kekurangTK),
+        cutOffMonth: cutOffLabel,
+        cutOffField: tkField
       }
     });
   }
