@@ -2154,9 +2154,12 @@
       // KPI Badges
       var summaryEl = document.getElementById("tkSummaryBadges");
       if (summaryEl) {
+        var cutOffField = summary && summary.cutOffField ? summary.cutOffField : 'tk_juli';
+        var cutOffMonth = summary && summary.cutOffMonth ? summary.cutOffMonth : 'Juli';
+
         var reqTk = summary && summary.totalReqTk !== undefined ? summary.totalReqTk : items.reduce(function (s, x) { return s + (parseInt(x.req_tk) || 0); }, 0);
-        var tkJuni = summary && summary.totalJuni !== undefined ? summary.totalJuni : items.reduce(function (s, x) { return s + (parseInt(x.tk_juni) || 0); }, 0);
-        var kekurangTK = reqTk - tkJuni;
+        var tkCutOff = summary && summary.totalCutOff !== undefined ? summary.totalCutOff : items.reduce(function (s, x) { return s + (parseInt(x[cutOffField]) || 0); }, 0);
+        var kekurangTK = reqTk - tkCutOff;
 
         summaryEl.innerHTML = '<div class="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all duration-300">' +
           '<span class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Kebun</span>' +
@@ -2171,8 +2174,8 @@
           '<div class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">' + reqTk.toLocaleString('id-ID') + ' <span class="text-xs font-bold text-slate-500">Orang</span></div>' +
           '</div>' +
           '<div class="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all duration-300">' +
-          '<span class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">TK Juni (Cut Off Juni)</span>' +
-          '<div class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">' + tkJuni.toLocaleString('id-ID') + ' <span class="text-xs font-bold text-slate-500">Orang</span></div>' +
+          '<span class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">TK ' + cutOffMonth + ' (Cut Off ' + cutOffMonth + ')</span>' +
+          '<div class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">' + tkCutOff.toLocaleString('id-ID') + ' <span class="text-xs font-bold text-slate-500">Orang</span></div>' +
           '</div>' +
           '<div class="bg-slate-900 text-white dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all duration-300">' +
           '<span class="text-[11px] font-black text-slate-300 dark:text-slate-400 uppercase tracking-wider">Kekurangan Tenaga Panen</span>' +
@@ -2259,47 +2262,10 @@
       document.getElementById("editTargetJuliVal").value = targetJuli;
       document.getElementById("editTargetAgsVal").value = targetAgs;
 
-      calculateThreeColSum();
-
       var sheet = document.getElementById("editKebunSheet");
       var backdrop = document.getElementById("editKebunBackdrop");
       if (sheet) sheet.classList.remove("hidden");
       if (backdrop) backdrop.classList.remove("hidden");
-    }
-
-    function calculateThreeColSum() {
-      if (!activeEditingKebunData) return;
-
-      var reqTk = parseInt(activeEditingKebunData.req_tk, 10) || 0;
-
-      var vJuni = parseFloat(document.getElementById("editTKJuniVal").value) || 0;
-      var vJuli = document.getElementById("editTKJuliVal") ? (parseFloat(document.getElementById("editTKJuliVal").value) || 0) : 0;
-      var vTarJuli = parseFloat(document.getElementById("editTargetJuliVal").value) || 0;
-      var vTarAgs = parseFloat(document.getElementById("editTargetAgsVal").value) || 0;
-
-      var sumTotal = vJuni + vJuli + vTarJuli + vTarAgs;
-
-      var msgEl = document.getElementById("threeColValidationMsg");
-      var msgText = document.getElementById("threeColValidationText");
-
-      if (sumTotal === reqTk) {
-        if (msgEl) {
-          msgEl.className = "text-[11px] font-bold mt-2 text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-300 dark:border-emerald-900 shadow-xs";
-        }
-        if (msgText) {
-          msgText.innerHTML = "✅ <b>PAS / TERCUKUPI (Warna Baris Hijau)!</b><br/>Jumlah Total = <b>" + sumTotal + " / " + reqTk + " Orang</b> (Sama dengan Kebutuhan).";
-        }
-      } else {
-        if (msgEl) {
-          msgEl.className = "text-[11px] font-bold mt-2 text-red-800 dark:text-red-300 bg-red-50 dark:bg-red-950/40 p-3 rounded-xl border border-red-300 dark:border-red-900 shadow-xs";
-        }
-        var diffText = sumTotal > reqTk
-          ? "(Lebih " + (sumTotal - reqTk) + " Orang)"
-          : "(Kurang " + (reqTk - sumTotal) + " Orang)";
-        if (msgText) {
-          msgText.innerHTML = "⚠️ <b>TIDAK SAMA DENGAN KEBUTUHAN (Warna Baris Merah)!</b><br/>Jumlah Total = <b>" + sumTotal + " / " + reqTk + " Orang</b> " + diffText + ".";
-        }
-      }
     }
 
     function closeEditKebunModal() {
@@ -6792,7 +6758,7 @@
           <!-- Ketersediaan TK Panen Juni -->
           <div>
             <label class="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">Ketersediaan TK Panen Juni</label>
-            <input type="number" min="0" id="editTKJuniVal" oninput="calculateThreeColSum()"
+            <input type="number" min="0" id="editTKJuniVal"
               class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
               placeholder="Masukkan ketersediaan Juni..." />
           </div>
@@ -6800,7 +6766,7 @@
           <!-- Ketersediaan TK Panen Juli -->
           <div>
             <label class="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">Ketersediaan TK Panen Juli</label>
-            <input type="number" min="0" id="editTKJuliVal" oninput="calculateThreeColSum()"
+            <input type="number" min="0" id="editTKJuliVal"
               class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
               placeholder="Masukkan ketersediaan Juli..." />
           </div>
@@ -6808,7 +6774,7 @@
           <!-- Rencana Pemenuhan TK Panen Juli -->
           <div>
             <label class="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">Rencana Pemenuhan TK Panen Juli</label>
-            <input type="number" min="0" id="editTargetJuliVal" oninput="calculateThreeColSum()"
+            <input type="number" min="0" id="editTargetJuliVal"
               class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 shadow-xs"
               placeholder="Masukkan rencana Juli..." />
           </div>
@@ -6816,15 +6782,9 @@
           <!-- Rencana Pemenuhan TK Panen Agustus -->
           <div>
             <label class="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">Rencana Pemenuhan TK Panen Agustus</label>
-            <input type="number" min="0" id="editTargetAgsVal" oninput="calculateThreeColSum()"
+            <input type="number" min="0" id="editTargetAgsVal"
               class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 shadow-xs"
               placeholder="Masukkan rencana Agustus..." />
-          </div>
-
-          <!-- Status Card Indicator -->
-          <div id="threeColValidationMsg"
-            class="text-[11px] font-bold mt-2 p-3 rounded-xl border flex flex-col gap-1 transition-all">
-            <span id="threeColValidationText">Perhitungan akumulasi 3 kolom...</span>
           </div>
         </div>
       </form>
