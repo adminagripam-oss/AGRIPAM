@@ -1976,28 +1976,7 @@
     }
 
 
-    function openEditKebunModal(id) {
-      var item = (globalTKData || []).find(function (k) { return k.id === id; });
-      if (!item) return;
 
-      var edit = globalTKEdits[id] || {};
-      var valJuli = edit.tk_juli !== undefined ? edit.tk_juli : (item.tk_juli || 0);
-      var valAgs = edit.tk_agustus !== undefined ? edit.tk_agustus : (item.tk_agustus || 0);
-
-      document.getElementById("editKebunId").value = item.id;
-      document.getElementById("editNamaKebun").value = item.nama_kebun || '-';
-      document.getElementById("editLuasanLahan").value = (item.luasan || 0).toLocaleString('id-ID') + ' Ha';
-      document.getElementById("editTKPanenJuli").value = valJuli;
-      document.getElementById("editTKPanenAgustus").value = valAgs;
-
-      document.getElementById("editKebunBackdrop").classList.remove("hidden");
-      document.getElementById("editKebunSheet").classList.remove("hidden");
-    }
-
-    function closeEditKebunModal() {
-      document.getElementById("editKebunBackdrop").classList.add("hidden");
-      document.getElementById("editKebunSheet").classList.add("hidden");
-    }
 
     function saveEditKebunForm(e) {
       if (e && e.preventDefault) e.preventDefault();
@@ -2028,7 +2007,7 @@
     }
 
     var tkCurrentPage = 1;
-    var tkPageSize = 50;
+    var tkPageSize = 30;
 
     function changeTKPage(page) {
       tkCurrentPage = page;
@@ -2042,13 +2021,30 @@
       }
     }
 
+    function formatTrendBadge(current, previous) {
+      var diff = current - previous;
+      if (diff > 0) {
+        return '<div class="inline-flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs">' +
+          '<svg class="w-3 h-3 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z"/></svg>' +
+          '<span>+' + diff.toLocaleString('id-ID') + '</span></div>';
+      } else if (diff < 0) {
+        return '<div class="inline-flex items-center justify-center gap-1 text-red-600 dark:text-red-400 font-extrabold text-xs">' +
+          '<svg class="w-3 h-3 fill-current text-red-600 dark:text-red-400" viewBox="0 0 24 24"><path d="M12 20l8-16H4z"/></svg>' +
+          '<span>' + diff.toLocaleString('id-ID') + '</span></div>';
+      } else {
+        return '<div class="inline-flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs">' +
+          '<svg class="w-3 h-3 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z"/></svg>' +
+          '<span>0</span></div>';
+      }
+    }
+
     function renderTKPanenTable(items, summary) {
       var tbody = document.getElementById("tkPanenTableBody");
       var pagEl = document.getElementById("tkPaginationControls");
       if (!tbody) return;
 
       if (!items || items.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="14" class="py-12 text-center text-slate-500 font-medium">Tidak ada data kebun.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="17" class="py-12 text-center text-slate-500 font-medium">Tidak ada data kebun.</td></tr>';
         if (pagEl) pagEl.style.display = "none";
         return;
       }
@@ -2075,48 +2071,52 @@
 
         var reqTk = parseInt(item.req_tk, 10) || 0;
 
-        // Formula Rule: Hijau jika (Realisasi Juni [H] + Rencana Juli [I] + Rencana Ags [J] == Kebutuhan TK Panen), Merah jika > atau <
         var sumThreeCols = valJuni + targetJuli + targetAgs;
         var isTercukupi = (sumThreeCols === reqTk);
 
-        // Soft Green if sumThreeCols >= reqTk, Soft Red if sumThreeCols < reqTk
         var rowClass = isTercukupi
-          ? "bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 border-b border-emerald-200 dark:border-emerald-900/50 text-slate-900 dark:text-white transition-colors"
-          : "bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/80 border-b border-red-200 dark:border-red-900/50 text-slate-900 dark:text-white transition-colors";
+          ? "bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 border-b border-black text-slate-900 dark:text-white transition-colors"
+          : "bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/80 border-b border-black text-slate-900 dark:text-white transition-colors";
 
         var stickyCellBg = isTercukupi
           ? "bg-[#ecfdf5] dark:bg-[#064e3b]"
           : "bg-[#fef2f2] dark:bg-[#7f1d1d]";
 
-        html += '<tr class="' + rowClass + ' text-xs sm:text-sm font-medium">';
-        html += '<td class="py-3 px-2 text-center font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap sticky left-0 z-10 w-[45px] min-w-[45px] border-r border-slate-300 dark:border-slate-700 ' + stickyCellBg + '">' + (globalIdx + 1) + '</td>';
-        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-slate-100 whitespace-nowrap sticky left-[45px] z-10 w-[70px] min-w-[70px] border-r border-slate-300 dark:border-slate-700 ' + stickyCellBg + '">' + (item.cro || '-') + '</td>';
-        html += '<td class="py-3 px-2 text-center font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap sticky left-[115px] z-10 w-[100px] min-w-[100px] border-r border-slate-300 dark:border-slate-700 ' + stickyCellBg + '">' + (item.region || '-') + '</td>';
-        html += '<td class="py-3 px-3 text-left font-black text-slate-900 dark:text-white whitespace-nowrap sticky left-[215px] z-10 w-[190px] min-w-[190px] border-r-2 border-slate-300 dark:border-slate-700 shadow-[4px_0_8px_-2px_rgba(0,0,0,0.12)] ' + stickyCellBg + '">' + (item.nama_kebun || '-') + '</td>';
-        html += '<td class="py-3 px-2 text-center font-mono text-xs text-slate-600 dark:text-slate-300 font-semibold whitespace-nowrap border-r border-slate-300 dark:border-slate-700">' + (item.name_tag || '-') + '</td>';
-        html += '<td class="py-3 px-2 text-center font-bold text-slate-900 dark:text-white whitespace-nowrap border-r border-slate-300 dark:border-slate-700">' + (item.luasan || 0).toLocaleString('id-ID') + '</td>';
-        html += '<td class="py-3 px-2 text-center font-black text-amber-800 dark:text-amber-300 whitespace-nowrap text-sm sm:text-base border-r border-slate-300 dark:border-slate-700">' + reqTk.toLocaleString('id-ID') + '</td>';
+        html += '<tr class="' + rowClass + ' font-medium" style="font-size: 14px;">';
+        html += '<td class="py-3 px-2 text-center font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap sticky left-0 z-10 w-[45px] min-w-[45px] border-r border-black ' + stickyCellBg + '">' + (globalIdx + 1) + '</td>';
+        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-slate-100 whitespace-nowrap sticky left-[45px] z-10 w-[70px] min-w-[70px] border-r border-black ' + stickyCellBg + '">' + (item.cro || '-') + '</td>';
+        html += '<td class="py-3 px-2 text-center font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap sticky left-[115px] z-10 w-[100px] min-w-[100px] border-r border-black ' + stickyCellBg + '">' + (item.region || '-') + '</td>';
+        html += '<td class="py-3 px-3 text-left font-black text-slate-900 dark:text-white whitespace-nowrap sticky left-[215px] z-10 w-[190px] min-w-[190px] border-r-2 border-black shadow-[4px_0_8px_-2px_rgba(0,0,0,0.12)] ' + stickyCellBg + '">' + (item.nama_kebun || '-') + '</td>';
+        html += '<td class="py-3 px-2 text-center font-mono font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap border-r border-black">' + (item.name_tag || '-') + '</td>';
+        html += '<td class="py-3 px-2 text-center font-bold text-slate-900 dark:text-white whitespace-nowrap border-r border-black">' + (item.luasan || 0).toLocaleString('id-ID') + '</td>';
+        html += '<td class="py-3 px-2 text-center font-black text-amber-800 dark:text-amber-300 whitespace-nowrap border-r border-black">' + reqTk.toLocaleString('id-ID') + '</td>';
 
-        // Read-only Realisasi Mei
-        html += '<td class="py-3 px-2 text-center text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap border-r border-slate-300 dark:border-slate-700">' + valMei.toLocaleString('id-ID') + '</td>';
+        // Realisasi Mei
+        html += '<td class="py-3 px-2 text-center text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap border-r border-black">' + valMei.toLocaleString('id-ID') + '</td>';
 
-        // Editable Col H: Realisasi TK Panen Juni
-        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap text-sm sm:text-base border-r border-slate-300 dark:border-slate-700">' + valJuni.toLocaleString('id-ID') + '</td>';
+        // Realisasi Juni
+        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">' + valJuni.toLocaleString('id-ID') + '</td>';
+        // Trend Juni (Juni - Mei)
+        html += '<td class="py-3 px-2 text-center whitespace-nowrap border-r border-black bg-slate-100/40 dark:bg-slate-900/40">' + formatTrendBadge(valJuni, valMei) + '</td>';
 
-        // Editable Col I: Rencana Pemenuhan TK Panen Juli
-        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap text-sm sm:text-base border-r border-slate-300 dark:border-slate-700">' + targetJuli.toLocaleString('id-ID') + '</td>';
+        // Realisasi Juli
+        html += '<td class="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-black">' + valJuli.toLocaleString('id-ID') + '</td>';
+        // Trend Juli (Juli - Juni)
+        html += '<td class="py-3 px-2 text-center whitespace-nowrap border-r border-black bg-slate-100/40 dark:bg-slate-900/40">' + formatTrendBadge(valJuli, valJuni) + '</td>';
 
-        // Editable Col J: Rencana Pemenuhan TK Panen Agustus
-        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap text-sm sm:text-base border-r border-slate-300 dark:border-slate-700">' + targetAgs.toLocaleString('id-ID') + '</td>';
+        // Realisasi Agustus
+        html += '<td class="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-black">' + valAgs.toLocaleString('id-ID') + '</td>';
+        // Trend Agustus (Agustus - Juli)
+        html += '<td class="py-3 px-2 text-center whitespace-nowrap border-r border-black bg-slate-100/40 dark:bg-slate-900/40">' + formatTrendBadge(valAgs, valJuli) + '</td>';
 
-        // Read-only Realisasi Juli
-        html += '<td class="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-slate-300 dark:border-slate-700">' + valJuli.toLocaleString('id-ID') + '</td>';
+        // Rencana Pemenuhan Juli
+        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">' + targetJuli.toLocaleString('id-ID') + '</td>';
 
-        // Read-only Realisasi Agustus
-        html += '<td class="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-slate-300 dark:border-slate-700">' + valAgs.toLocaleString('id-ID') + '</td>';
+        // Rencana Pemenuhan Agustus
+        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">' + targetAgs.toLocaleString('id-ID') + '</td>';
 
         // Action Cell: Edit Button (Frozen on the Right side)
-        html += '<td class="py-3 px-2 text-center whitespace-nowrap sticky right-0 z-10 w-[65px] min-w-[65px] border-l-2 border-slate-300 dark:border-slate-700 shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.12)] ' + stickyCellBg + '">';
+        html += '<td class="py-3 px-2 text-center whitespace-nowrap sticky right-0 z-10 w-[65px] min-w-[65px] border-l-2 border-black shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.12)] ' + stickyCellBg + '">';
         html += '<button onclick="openEditKebunModal(' + item.id + ')" class="p-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" title="Edit ' + (item.nama_kebun || '') + '">';
         html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>';
         html += '</button>';
@@ -2320,12 +2320,24 @@
       globalTKEdits[id].target_juli = vTarJuli;
       globalTKEdits[id].target_agustus = vTarAgs;
 
+      // Update memory state so table re-renders instantly
+      activeEditingKebunData.tk_juni = vJuni;
+      activeEditingKebunData.target_juli = vTarJuli;
+      activeEditingKebunData.target_agustus = vTarAgs;
+
+      var item = (globalTKData || []).find(function (k) { return k.id === id; });
+      if (item) {
+        item.tk_juni = vJuni;
+        item.target_juli = vTarJuli;
+        item.target_agustus = vTarAgs;
+      }
+
       closeEditKebunModal();
 
       // Instant Re-render Table on Screen
       renderTKPanenTable(globalTKData, currentSummaryData);
 
-      // Save to Backend Database
+      // Save to Backend Database silently
       simpanTKPanenEdits();
     }
 
@@ -2375,6 +2387,25 @@
     .custom-scrollbar::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 10px;
+    }
+
+    .table-scrollbar::-webkit-scrollbar {
+      width: 9px;
+      height: 9px;
+    }
+
+    .table-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+
+    .table-scrollbar::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+
+    .table-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #1e293b;
     }
 
     .sidebar-active {
@@ -3084,55 +3115,58 @@
 
             <!-- Kebun Table Card Container (Sleek Black Theme & Fluid Responsiveness) -->
             <div
-              class="bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-900 dark:border-slate-700 overflow-hidden shadow-md w-full transition-all duration-300">
-              <div class="w-full overflow-x-auto relative">
+              class="bg-white dark:bg-slate-900 rounded-none border-2 border-slate-900 dark:border-slate-700 shadow-md w-full transition-all duration-300">
+              <div class="w-full overflow-auto max-h-[72vh] border-b border-slate-300 dark:border-slate-800 relative table-scrollbar shadow-inner">
                 <table class="w-full text-left text-xs sm:text-sm border-collapse" id="tkPanenTable"
-                  style="font-family: Calibri, 'Segoe UI', Arial, sans-serif;">
+                  style="font-family: Arial, sans-serif;">
                   <thead
-                    class="bg-slate-900 text-white dark:bg-slate-800 border-b-2 border-slate-900 dark:border-slate-700 sticky top-0 z-30">
-                    <tr class="text-xs sm:text-[13px] font-black uppercase tracking-wider text-white">
-                      <th
-                        class="py-3.5 px-2 text-center w-[45px] min-w-[45px] font-black whitespace-nowrap sticky top-0 left-0 z-40 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                    class="bg-[#1e3a5f] text-white dark:bg-[#15304f] border-b-2 border-[#2a4a6b] dark:border-[#2a4a6b] sticky top-0 z-30 shadow-md">
+                    <!-- Row 1: Main headers + grouped column headers -->
+                    <tr class="text-xs sm:text-[13px] font-black uppercase tracking-wider text-white border-b border-black">
+                      <th rowspan="2"
+                        class="py-3.5 px-2 text-center w-[45px] min-w-[45px] font-black whitespace-nowrap sticky left-0 z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">
                         No</th>
-                      <th
-                        class="py-3.5 px-2 text-center w-[70px] min-w-[70px] font-black whitespace-nowrap sticky top-0 left-[45px] z-40 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                      <th rowspan="2"
+                        class="py-3.5 px-2 text-center w-[70px] min-w-[70px] font-black whitespace-nowrap sticky left-[45px] z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">
                         CRO</th>
-                      <th
-                        class="py-3.5 px-2 text-center w-[100px] min-w-[100px] font-black whitespace-nowrap sticky top-0 left-[115px] z-40 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
+                      <th rowspan="2"
+                        class="py-3.5 px-2 text-center w-[100px] min-w-[100px] font-black whitespace-nowrap sticky left-[115px] z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">
                         Wilayah</th>
-                      <th
-                        class="py-3.5 px-3 text-left w-[190px] min-w-[190px] font-black whitespace-nowrap sticky top-0 left-[215px] z-40 bg-slate-900 dark:bg-slate-800 border-r-2 border-slate-700 shadow-[4px_0_8px_-2px_rgba(0,0,0,0.3)]">
+                      <th rowspan="2"
+                        class="py-3.5 px-3 text-left w-[190px] min-w-[190px] font-black whitespace-nowrap sticky left-[215px] z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r-2 border-b border-black shadow-[4px_0_8px_-2px_rgba(0,0,0,0.3)]">
                         Nama Kebun / PT HO</th>
-                      <th
-                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
-                        Tag</th>
-                      <th
-                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
-                        Luas (Ha)</th>
-                      <th
-                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
-                        Kebutuhan Tenaga Panen</th>
-                      <th
-                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-700 border-r border-slate-700">
-                        REALISASI TK PANEN MEI</th>
-                      <th
-                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
-                        REALISASI TK PANEN JUNI</th>
-                      <th
-                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
-                        RENCANA PEMENUHAN TK PANEN JULI</th>
-                      <th
-                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
-                        RENCANA PEMENUHAN TK PANEN AGUSTUS</th>
-                      <th
-                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
-                        REALISASI TK PANEN JULI</th>
-                      <th
-                        class="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">
-                        REALISASI TK PANEN AGUSTUS</th>
-                      <th
-                        class="py-3.5 px-2 text-center w-[65px] min-w-[65px] font-black whitespace-nowrap sticky top-0 right-0 z-40 bg-slate-900 dark:bg-slate-800 border-l-2 border-slate-700 shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.3)]">
+                      <th rowspan="2"
+                        class="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">
+                        Name Tag Kebun</th>
+                      <th rowspan="2"
+                        class="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">
+                        Luasan</th>
+                      <th rowspan="2"
+                        class="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">
+                        Kebutuhan<br>Tenaga Panen</th>
+                      <!-- Grouped: Ketersedian TK PANEN -->
+                      <th colspan="7"
+                        class="py-2.5 px-2 text-center font-black whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black">
+                        Ketersedian TK PANEN</th>
+                      <!-- Grouped: Rencana Pemenuhan TK Panen -->
+                      <th colspan="2"
+                        class="py-2.5 px-2 text-center font-black whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black">
+                        Rencana Pemenuhan TK Panen</th>
+                      <th rowspan="2"
+                        class="py-3.5 px-2 text-center w-[65px] min-w-[65px] font-black whitespace-nowrap sticky right-0 z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-l-2 border-b border-black shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.3)]">
                         AKSI</th>
+                    </tr>
+                    <!-- Row 2: Sub-column headers under grouped columns -->
+                    <tr class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-blue-100">
+                      <th class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">MEI</th>
+                      <th class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">JUNI</th>
+                      <th class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black text-emerald-300 font-extrabold">TREND</th>
+                      <th class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">JULI</th>
+                      <th class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black text-emerald-300 font-extrabold">TREND</th>
+                      <th class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">AGUSTUS</th>
+                      <th class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black text-emerald-300 font-extrabold">TREND</th>
+                      <th class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">JULI</th>
+                      <th class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">AGUSTUS</th>
                     </tr>
                   </thead>
                   <tbody id="tkPanenTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
@@ -6739,39 +6773,34 @@
           </div>
         </div>
 
-        <!-- Form Edit 3 Kolom Utama (Col H, Col I, Col J) -->
+        <!-- Form Edit 3 Kolom Utama -->
         <div
           class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3.5 shadow-xs">
           <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700">
-            <label class="block text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">📌 PENGISIAN
-              KOLOM H, I, J</label>
+            <label class="block text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">✏️ Edit Data Kebun</label>
             <span
-              class="text-[10px] font-bold px-2.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-md">Col
-              H, I, J</span>
+              class="text-[10px] font-bold px-2.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-md">Edit Kebun</span>
           </div>
 
-          <!-- Col H: Realisasi TK Panen Juni -->
+          <!-- Realisasi TK Panen Juni -->
           <div>
-            <label class="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">Col H: Realisasi TK
-              Panen Juni (Orang)</label>
+            <label class="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">Realisasi TK Panen Juni</label>
             <input type="number" min="0" id="editTKJuniVal" oninput="calculateThreeColSum()"
               class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
               placeholder="Masukkan realisasi Juni..." />
           </div>
 
-          <!-- Col I: Rencana Pemenuhan TK Panen Juli -->
+          <!-- Rencana Pemenuhan TK Panen Juli -->
           <div>
-            <label class="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">Col I: Rencana
-              Pemenuhan TK Panen Juli (Orang)</label>
+            <label class="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">Rencana Pemenuhan TK Panen Juli</label>
             <input type="number" min="0" id="editTargetJuliVal" oninput="calculateThreeColSum()"
               class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 shadow-xs"
               placeholder="Masukkan rencana Juli..." />
           </div>
 
-          <!-- Col J: Rencana Pemenuhan TK Panen Agustus -->
+          <!-- Rencana Pemenuhan TK Panen Agustus -->
           <div>
-            <label class="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">Col J: Rencana
-              Pemenuhan TK Panen Agustus (Orang)</label>
+            <label class="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">Rencana Pemenuhan TK Panen Agustus</label>
             <input type="number" min="0" id="editTargetAgsVal" oninput="calculateThreeColSum()"
               class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 shadow-xs"
               placeholder="Masukkan rencana Agustus..." />

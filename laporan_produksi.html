@@ -412,6 +412,25 @@
     [data-theme="dark"] .border {
       border-color: #334155 !important;
     }
+
+    .table-scrollbar::-webkit-scrollbar {
+      width: 9px;
+      height: 9px;
+    }
+
+    .table-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+
+    .table-scrollbar::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+
+    .table-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #1e293b;
+    }
   </style>
 </head>
 
@@ -4048,44 +4067,88 @@
         fetchKebunData(selectedRegion);
       }, [selectedRegion]);
 
-      const handleSaveEdits = async (editPayload) => {
-        setSaving(true);
-        try {
-          const res = await fetch('/api/kebunTK', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'updateTK',
-              region: userRegion,
-              token: userSession ? userSession.token : '',
-              edits: editPayload
-            })
+        const handleSaveEdits = async (editPayload) => {
+          setSaving(true);
+          
+          // Optimistic UI Update: Langsung ubah state tabel
+          setKebunData(prevData => {
+            return prevData.map(item => {
+              const edited = editPayload.find(e => e.id === item.id);
+              if (edited) {
+                return {
+                  ...item,
+                  tk_juni: edited.tk_juni,
+                  target_juli: edited.target_juli,
+                  target_agustus: edited.target_agustus
+                };
+              }
+              return item;
+            });
           });
+          
+          try {
+            const res = await fetch('/api/kebunTK', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'updateTK',
+                region: userRegion,
+                token: userSession ? userSession.token : '',
+                edits: editPayload
+              })
+            });
 
-          const json = await res.json();
-          if (json.success) {
-            setToastMsg({ type: 'success', text: json.message || 'Data TK Panen berhasil disimpan!' });
-            setEdits({});
-            setActiveEditKebun(null);
-            fetchKebunData(selectedRegion);
-          } else {
-            setToastMsg({ type: 'error', text: json.message || 'Gagal menyimpan data TK Panen.' });
+            const json = await res.json();
+            if (json.success) {
+              setToastMsg({ type: 'success', text: json.message || 'Data TK Panen berhasil disimpan!' });
+              setEdits({});
+              setActiveEditKebun(null);
+              // Fetch data di background untuk memastikan sinkronisasi
+              fetchKebunData(selectedRegion);
+            } else {
+              setToastMsg({ type: 'error', text: json.message || 'Gagal menyimpan data TK Panen.' });
+            }
+          } catch (err) {
+            console.error("Error saving TK data:", err);
+            setToastMsg({ type: 'error', text: 'Terjadi kesalahan saat menyimpan data.' });
+          } finally {
+            setSaving(false);
+            setTimeout(() => setToastMsg(null), 4000);
           }
-        } catch (err) {
-          console.error("Error saving TK data:", err);
-          setToastMsg({ type: 'error', text: 'Terjadi kesalahan saat menyimpan data.' });
-        } finally {
-          setSaving(false);
-          setTimeout(() => setToastMsg(null), 4000);
-        }
-      };
+        };
 
       const [currentPage, setCurrentPage] = useState(1);
-      const pageSize = 50;
+      const pageSize = 30;
 
       useEffect(() => {
         setCurrentPage(1);
       }, [selectedRegion, searchQuery]);
+
+      const formatTrendBadge = (current, previous) => {
+        const diff = current - previous;
+        if (diff > 0) {
+          return (
+            <div className="inline-flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs">
+              <svg className="w-3 h-3 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z"/></svg>
+              <span>+{formatRibuan(diff)}</span>
+            </div>
+          );
+        } else if (diff < 0) {
+          return (
+            <div className="inline-flex items-center justify-center gap-1 text-red-600 dark:text-red-400 font-extrabold text-xs">
+              <svg className="w-3 h-3 fill-current text-red-600 dark:text-red-400" viewBox="0 0 24 24"><path d="M12 20l8-16H4z"/></svg>
+              <span>{formatRibuan(diff)}</span>
+            </div>
+          );
+        } else {
+          return (
+            <div className="inline-flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs">
+              <svg className="w-3 h-3 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z"/></svg>
+              <span>0</span>
+            </div>
+          );
+        }
+      };
 
       const filteredKebun = kebunData.filter(item => {
         if (!searchQuery) return true;
@@ -4264,25 +4327,36 @@
           </div>
 
           {/* Kebun Table Container */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-900 dark:border-slate-700 overflow-hidden shadow-md w-full transition-all duration-300">
-            <div className="w-full overflow-x-auto relative">
-              <table className="w-full text-left text-xs sm:text-sm border-collapse" style={{ fontFamily: "Calibri, 'Segoe UI', Arial, sans-serif" }}>
-                <thead className="bg-slate-900 text-white dark:bg-slate-800 border-b-2 border-slate-900 dark:border-slate-700 sticky top-0 z-30">
-                  <tr className="text-xs sm:text-[13px] font-black uppercase tracking-wider text-white">
-                    <th className="py-3.5 px-2 text-center w-[45px] min-w-[45px] font-black whitespace-nowrap sticky top-0 left-0 z-40 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">No</th>
-                    <th className="py-3.5 px-2 text-center w-[70px] min-w-[70px] font-black whitespace-nowrap sticky top-0 left-[45px] z-40 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">CRO</th>
-                    <th className="py-3.5 px-2 text-center w-[100px] min-w-[100px] font-black whitespace-nowrap sticky top-0 left-[115px] z-40 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">Wilayah</th>
-                    <th className="py-3.5 px-3 text-left w-[190px] min-w-[190px] font-black whitespace-nowrap sticky top-0 left-[215px] z-40 bg-slate-900 dark:bg-slate-800 border-r-2 border-slate-700 shadow-[4px_0_8px_-2px_rgba(0,0,0,0.3)]">Nama Kebun / PT HO</th>
-                    <th className="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">Tag</th>
-                    <th className="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">Luas (Ha)</th>
-                    <th className="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">Kebutuhan Tenaga Panen</th>
-                    <th className="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">REALISASI TK PANEN MEI</th>
-                    <th className="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">REALISASI TK PANEN JUNI</th>
-                    <th className="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">RENCANA PEMENUHAN TK PANEN JULI</th>
-                    <th className="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">RENCANA PEMENUHAN TK PANEN AGUSTUS</th>
-                    <th className="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">REALISASI TK PANEN JULI</th>
-                    <th className="py-3.5 px-2 text-center font-black whitespace-nowrap sticky top-0 z-30 bg-slate-900 dark:bg-slate-800 border-r border-slate-700">REALISASI TK PANEN AGUSTUS</th>
-                    <th className="py-3.5 px-2 text-center w-[65px] min-w-[65px] font-black whitespace-nowrap sticky top-0 right-0 z-40 bg-slate-900 dark:bg-slate-800 border-l-2 border-slate-700 shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.3)]">AKSI</th>
+          <div className="bg-white dark:bg-slate-900 rounded-none border-2 border-slate-900 dark:border-slate-700 shadow-md w-full transition-all duration-300">
+            <div className="w-full overflow-auto max-h-[72vh] border-b border-slate-300 dark:border-slate-800 relative table-scrollbar shadow-inner">
+              <table className="w-full text-left text-xs sm:text-sm border-collapse" style={{ fontFamily: "Arial, sans-serif" }}>
+                <thead className="bg-[#1e3a5f] text-white dark:bg-[#15304f] border-b-2 border-[#2a4a6b] dark:border-[#2a4a6b] sticky top-0 z-30 shadow-md">
+                  {/* Row 1: Main headers + grouped column headers */}
+                  <tr className="text-xs sm:text-[13px] font-black uppercase tracking-wider text-white border-b border-black">
+                    <th rowSpan="2" className="py-3.5 px-2 text-center w-[45px] min-w-[45px] font-black whitespace-nowrap sticky left-0 z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">No</th>
+                    <th rowSpan="2" className="py-3.5 px-2 text-center w-[70px] min-w-[70px] font-black whitespace-nowrap sticky left-[45px] z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">CRO</th>
+                    <th rowSpan="2" className="py-3.5 px-2 text-center w-[100px] min-w-[100px] font-black whitespace-nowrap sticky left-[115px] z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">Wilayah</th>
+                    <th rowSpan="2" className="py-3.5 px-3 text-left w-[190px] min-w-[190px] font-black whitespace-nowrap sticky left-[215px] z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r-2 border-b border-black shadow-[4px_0_8px_-2px_rgba(0,0,0,0.3)]">Nama Kebun / PT HO</th>
+                    <th rowSpan="2" className="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">Name Tag Kebun</th>
+                    <th rowSpan="2" className="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">Luasan</th>
+                    <th rowSpan="2" className="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">Kebutuhan<br/>Tenaga Panen</th>
+                    {/* Grouped: Ketersedian TK PANEN */}
+                    <th colSpan="7" className="py-2.5 px-2 text-center font-black whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black">Ketersedian TK PANEN</th>
+                    {/* Grouped: Rencana Pemenuhan TK Panen */}
+                    <th colSpan="2" className="py-2.5 px-2 text-center font-black whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black">Rencana Pemenuhan TK Panen</th>
+                    <th rowSpan="2" className="py-3.5 px-2 text-center w-[65px] min-w-[65px] font-black whitespace-nowrap sticky right-0 z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-l-2 border-b border-black shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.3)]">AKSI</th>
+                  </tr>
+                  {/* Row 2: Sub-column headers under grouped columns */}
+                  <tr className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-blue-100">
+                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">MEI</th>
+                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">JUNI</th>
+                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black text-emerald-300 font-extrabold">TREND</th>
+                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">JULI</th>
+                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black text-emerald-300 font-extrabold">TREND</th>
+                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">AGUSTUS</th>
+                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black text-emerald-300 font-extrabold">TREND</th>
+                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">JULI</th>
+                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">AGUSTUS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -4322,47 +4396,62 @@
                         : "bg-[#fef2f2] dark:bg-[#7f1d1d]";
 
                       return (
-                        <tr key={item.id} className={`${rowClass} text-xs sm:text-sm font-medium`}>
-                          <td className={`py-3 px-2 text-center font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap sticky left-0 z-10 w-[45px] min-w-[45px] border-r border-slate-300 dark:border-slate-700 ${stickyCellBg}`}>
+                        <tr key={item.id} className={`${rowClass} font-medium`} style={{ fontSize: '14px' }}>
+                          <td className={`py-3 px-2 text-center font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap sticky left-0 z-10 w-[45px] min-w-[45px] border-r border-black ${stickyCellBg}`}>
                             {globalIdx + 1}
                           </td>
-                          <td className={`py-3 px-2 text-center font-black text-slate-900 dark:text-slate-100 whitespace-nowrap sticky left-[45px] z-10 w-[70px] min-w-[70px] border-r border-slate-300 dark:border-slate-700 ${stickyCellBg}`}>
+                          <td className={`py-3 px-2 text-center font-black text-slate-900 dark:text-slate-100 whitespace-nowrap sticky left-[45px] z-10 w-[70px] min-w-[70px] border-r border-black ${stickyCellBg}`}>
                             {item.cro || '-'}
                           </td>
-                          <td className={`py-3 px-2 text-center font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap sticky left-[115px] z-10 w-[100px] min-w-[100px] border-r border-slate-300 dark:border-slate-700 ${stickyCellBg}`}>
+                          <td className={`py-3 px-2 text-center font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap sticky left-[115px] z-10 w-[100px] min-w-[100px] border-r border-black ${stickyCellBg}`}>
                             {item.region || '-'}
                           </td>
-                          <td className={`py-3 px-3 text-left font-black text-slate-900 dark:text-white whitespace-nowrap sticky left-[215px] z-10 w-[190px] min-w-[190px] border-r-2 border-slate-300 dark:border-slate-700 shadow-[4px_0_8px_-2px_rgba(0,0,0,0.12)] ${stickyCellBg}`}>
+                          <td className={`py-3 px-3 text-left font-black text-slate-900 dark:text-white whitespace-nowrap sticky left-[215px] z-10 w-[190px] min-w-[190px] border-r-2 border-black shadow-[4px_0_8px_-2px_rgba(0,0,0,0.12)] ${stickyCellBg}`}>
                             {item.nama_kebun || '-'}
                           </td>
-                          <td className="py-3 px-2 text-center font-mono text-xs text-slate-600 dark:text-slate-300 font-semibold whitespace-nowrap border-r border-slate-300 dark:border-slate-700">
+                          <td className="py-3 px-2 text-center font-mono font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap border-r border-black">
                             {item.name_tag || '-'}
                           </td>
-                          <td className="py-3 px-2 text-center font-bold text-slate-900 dark:text-white whitespace-nowrap border-r border-slate-300 dark:border-slate-700">
+                          <td className="py-3 px-2 text-center font-bold text-slate-900 dark:text-white whitespace-nowrap border-r border-black">
                             {formatRibuan(item.luasan || 0)}
                           </td>
-                          <td className="py-3 px-2 text-center font-black text-amber-800 dark:text-amber-300 whitespace-nowrap text-sm sm:text-base border-r border-slate-300 dark:border-slate-700">
+                          <td className="py-3 px-2 text-center font-black text-amber-800 dark:text-amber-300 whitespace-nowrap border-r border-black">
                             {formatRibuan(reqTk)}
                           </td>
-                          <td className="py-3 px-2 text-center text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap border-r border-slate-300 dark:border-slate-700">
+                          <td className="py-3 px-2 text-center text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap border-r border-black">
                             {formatRibuan(valMei)}
                           </td>
-                          <td className="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap text-sm sm:text-base border-r border-slate-300 dark:border-slate-700">
+                          <td className="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">
                             {formatRibuan(valJuni)}
                           </td>
-                          <td className="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap text-sm sm:text-base border-r border-slate-300 dark:border-slate-700">
-                            {formatRibuan(targetJuli)}
+                          {/* Trend Juni */}
+                          <td className="py-3 px-2 text-center whitespace-nowrap border-r border-black bg-slate-100/40 dark:bg-slate-900/40">
+                            {formatTrendBadge(valJuni, valMei)}
                           </td>
-                          <td className="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap text-sm sm:text-base border-r border-slate-300 dark:border-slate-700">
-                            {formatRibuan(targetAgs)}
-                          </td>
-                          <td className="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-slate-300 dark:border-slate-700">
+                          {/* Realisasi Juli */}
+                          <td className="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-black">
                             {formatRibuan(valJuli)}
                           </td>
-                          <td className="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-slate-300 dark:border-slate-700">
+                          {/* Trend Juli */}
+                          <td className="py-3 px-2 text-center whitespace-nowrap border-r border-black bg-slate-100/40 dark:bg-slate-900/40">
+                            {formatTrendBadge(valJuli, valJuni)}
+                          </td>
+                          {/* Realisasi Agustus */}
+                          <td className="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-black">
                             {formatRibuan(valAgs)}
                           </td>
-                          <td className={`py-3 px-2 text-center whitespace-nowrap sticky right-0 z-10 w-[65px] min-w-[65px] border-l-2 border-slate-300 dark:border-slate-700 shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.12)] ${stickyCellBg}`}>
+                          {/* Trend Agustus */}
+                          <td className="py-3 px-2 text-center whitespace-nowrap border-r border-black bg-slate-100/40 dark:bg-slate-900/40">
+                            {formatTrendBadge(valAgs, valJuli)}
+                          </td>
+                          {/* Rencana Pemenuhan TK Panen: Juli & Agustus */}
+                          <td className="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">
+                            {formatRibuan(targetJuli)}
+                          </td>
+                          <td className="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">
+                            {formatRibuan(targetAgs)}
+                          </td>
+                          <td className={`py-3 px-2 text-center whitespace-nowrap sticky right-0 z-10 w-[65px] min-w-[65px] border-l-2 border-black shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.12)] ${stickyCellBg}`}>
                             <button
                               onClick={() => setActiveEditKebun(item)}
                               className="p-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
@@ -4527,16 +4616,16 @@
                     <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3.5 shadow-xs">
                       <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700">
                         <label className="block text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                          📌 PENGISIAN KOLOM H, I, J
+                          ✏️ Edit Data Kebun
                         </label>
                         <span className="text-[10px] font-bold px-2.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-md">
-                          Col H, I, J
+                          Edit Kebun
                         </span>
                       </div>
 
                       <div>
                         <label className="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">
-                          Col H: Realisasi TK Panen Juni (Orang)
+                          Realisasi TK Panen Juni
                         </label>
                         <input
                           type="number"
@@ -4550,7 +4639,7 @@
 
                       <div>
                         <label className="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">
-                          Col I: Rencana Pemenuhan TK Panen Juli (Orang)
+                          Rencana Pemenuhan TK Panen Juli
                         </label>
                         <input
                           type="number"
@@ -4564,7 +4653,7 @@
 
                       <div>
                         <label className="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">
-                          Col J: Rencana Pemenuhan TK Panen Agustus (Orang)
+                          Rencana Pemenuhan TK Panen Agustus
                         </label>
                         <input
                           type="number"
