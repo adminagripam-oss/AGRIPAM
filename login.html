@@ -2915,8 +2915,8 @@
               </div>
 
               <!-- Input Laporan Button (Regional Only) -->
-              <div class="flex flex-col justify-end hidden" id="inputLaporanBtnContainer">
-                <button type="button" onclick="toggleInputSheet()" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-slate-900 text-slate-50 hover:bg-slate-900/90 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-50/90 h-8 px-4 py-1 w-max self-start">
+              <div class="absolute bottom-4 right-4 hidden" id="inputLaporanBtnContainer">
+                <button type="button" onclick="toggleInputSheet()" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-slate-900 text-slate-50 hover:bg-slate-900/90 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-50/90 h-8 px-4 py-1">
                   Input Laporan Panen
                 </button>
               </div>
@@ -6924,11 +6924,11 @@
 
   <!-- Offcanvas Sheet -->
   <div id="inputPanenSheet" class="fixed inset-y-0 right-0 max-w-sm w-full bg-white dark:bg-slate-900 shadow-2xl transform translate-x-full transition-transform duration-300 z-[70] flex flex-col">
-    <div class="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-800">
-      <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-800 relative">
+      <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 pr-8">
         Input Laporan Panen
       </h2>
-      <button onclick="toggleInputSheet()" class="text-red-500 hover:text-red-600 border border-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded p-1 transition-colors flex items-center justify-center">
+      <button onclick="toggleInputSheet()" class="absolute top-6 right-6 text-red-500 hover:text-red-600 border border-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded p-1 transition-colors flex items-center justify-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
