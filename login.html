@@ -2954,7 +2954,7 @@
               <h2 class="text-base font-bold text-slate-800 mb-2 uppercase tracking-wide">Pencapaian Hari Ini</h2>
               <p class="text-xs text-slate-400 mb-6" id="donutSubtitle">Realisasi vs Estimasi</p>
               
-              <div class="relative w-full max-w-[200px] aspect-square flex items-center justify-center mb-6">
+              <div class="relative w-full max-w-[280px] aspect-square flex items-center justify-center mb-6">
                 <canvas id="pencapaianDonutChart"></canvas>
               </div>
 
@@ -5438,7 +5438,7 @@
         ctx.fillStyle = document.documentElement.getAttribute("data-theme") === "dark" ? "#ffffff" : "#000000";
         ctx.fillText(Math.round(pct) + "%", centerX, centerY);
 
-        ctx.font = "bold 11px Arial";
+        ctx.font = "bold 13px Arial";
         var meta = chart.getDatasetMeta(0);
         meta.data.forEach(function(arc, index) {
           if (dataset.data[index] === 0) return;
