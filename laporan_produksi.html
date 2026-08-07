@@ -990,13 +990,13 @@
               if (val === 0 || val == null) return;
 
               ctx.save();
-              ctx.font = "bold 11px Arial";
+              ctx.font = "bold 14px Arial";
               ctx.textAlign = 'center';
               ctx.textBaseline = 'bottom';
 
               const valText = val.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
               ctx.fillStyle = theme === 'dark' ? '#ffffff' : '#1e293b';
-              ctx.fillText(valText, bar.x, bar.y - 3);
+              ctx.fillText(valText, bar.x, bar.y - 8);
               ctx.restore();
             });
 
