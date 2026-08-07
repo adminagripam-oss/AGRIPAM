@@ -4021,10 +4021,7 @@
     var myChart = null; // instance Chart.js grafik realisasi â€” dideklarasikan di sini (bukan dekat updateChart())
     // karena init() yang memanggil updateChart() lebih dulu jalan di posisi source ini
 
-    var statusText = document.getElementById("status");
-    var submitBtn = document.getElementById("submitBtn");
-    var deleteBtn = document.getElementById("deleteBtn");
-    var akumulasiEl = document.getElementById("akumulasi");
+    // variables are fetched locally when needed
     var currentEstimasiExists = false;
     var isInternalNavigation = false;
 
@@ -5199,12 +5196,12 @@
             setLoading(false);
           }
           if (hasError && totalRealisasi === 0) {
-            akumulasiEl.value = "0";
+            document.getElementById("akumulasi").value = "0";
             currentJamData = {};
             setStatus(errorMsg, "#dc3545");
             currentEstimasiPanen = 0;
           } else {
-            akumulasiEl.value = totalRealisasi.toFixed(2);
+            document.getElementById("akumulasi").value = totalRealisasi.toFixed(2);
             currentJamData = combinedJamData;
             currentEstimasiPanen = totalEstimasi;
             setStatus("", "");
@@ -5224,7 +5221,7 @@
       var tanggal_akhir = filterDates.end;
       var s = loadSession();
       if (!tanggal || !s) {
-        akumulasiEl.value = "0";
+        document.getElementById("akumulasi").value = "0";
         currentJamData = {};
         updateJamHint();
         if (!isSilent) {
@@ -5251,7 +5248,7 @@
         } else if (adminSelect && adminSelect.value) {
           region = adminSelect.value;
         } else {
-          akumulasiEl.value = "0";
+          document.getElementById("akumulasi").value = "0";
           currentJamData = {};
           updateJamHint();
           if (!isSilent) {
@@ -5269,7 +5266,7 @@
       }
 
       if (!isSilent) {
-        akumulasiEl.value = "";
+        document.getElementById("akumulasi").value = "";
         setLoading(true, "Mengambil data realisasi...");
       }
 
@@ -5277,11 +5274,11 @@
         { action: "getData", tanggal: tanggal, tanggal_akhir: tanggal_akhir, region: region },
         function (res) {
           if (res.success) {
-            akumulasiEl.value = res.total.toFixed(2);
+            document.getElementById("akumulasi").value = res.total.toFixed(2);
             currentJamData = res.jamData || {};
             setStatus("", "");
           } else {
-            akumulasiEl.value = "0";
+            document.getElementById("akumulasi").value = "0";
             currentJamData = {};
             setStatus(res.message || "Gagal mengambil data.", "#dc3545");
           }
@@ -5325,7 +5322,7 @@
           if (!isSilent) {
             setLoading(false);
           }
-          akumulasiEl.value = "0";
+          document.getElementById("akumulasi").value = "0";
           setStatus(errMsg, "#dc3545");
           currentEstimasiPanen = 0;
           updateEstimasiComparison();
@@ -5554,13 +5551,13 @@
           if (res.success) {
             setStatus(res.message, "green");
             document.getElementById("tonase").value = "";
-            if (res.total !== undefined) akumulasiEl.value = res.total.toFixed(2);
+            if (res.total !== undefined) document.getElementById("akumulasi").value = res.total.toFixed(2);
             if (res.jamData !== undefined) currentJamData = res.jamData;
             updateRunningText();
           } else {
             if (isSessionError(res.message)) { alert(res.message); prosesLogout(); return; }
             setStatus(res.message || "Gagal mengirim data.", "#dc3545");
-            if (res.total !== undefined) akumulasiEl.value = res.total.toFixed(2);
+            if (res.total !== undefined) document.getElementById("akumulasi").value = res.total.toFixed(2);
             if (res.jamData !== undefined) currentJamData = res.jamData;
           }
           updateJamHint();
@@ -5631,7 +5628,7 @@
             if (isSessionError(res.message)) { alert(res.message); prosesLogout(); return; }
             setStatus(res.message || "Gagal menghapus data.", "#dc3545");
           }
-          if (res.total !== undefined) akumulasiEl.value = res.total.toFixed(2);
+          if (res.total !== undefined) document.getElementById("akumulasi").value = res.total.toFixed(2);
           if (res.jamData !== undefined) currentJamData = res.jamData;
           updateJamHint();
           updateEstimasiComparison();
@@ -5658,6 +5655,8 @@
     }
 
     function setLoading(on, text) {
+      var submitBtn = document.getElementById("submitBtn");
+      var deleteBtn = document.getElementById("deleteBtn");
       if (submitBtn) submitBtn.disabled = on;
       if (deleteBtn) deleteBtn.disabled = on;
 
@@ -5713,6 +5712,8 @@
     }
 
     function setStatus(text, color) {
+      var statusText = document.getElementById("status");
+      if (!statusText) return;
       if (window.renderInlineAlert) {
         var inlineAlert = window.renderInlineAlert(text);
         if (inlineAlert) {
