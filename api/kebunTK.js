@@ -96,6 +96,22 @@ module.exports = async (req, res) => {
       });
     }
 
+    result.sort((a, b) => {
+      const croA = (a.cro || '').toString().toUpperCase();
+      const croB = (b.cro || '').toString().toUpperCase();
+      if (croA < croB) return -1;
+      if (croA > croB) return 1;
+      const regA = (a.region || '').toString().toUpperCase();
+      const regB = (b.region || '').toString().toUpperCase();
+      if (regA < regB) return -1;
+      if (regA > regB) return 1;
+      const namaA = (a.nama_kebun || '').toString().toUpperCase();
+      const namaB = (b.nama_kebun || '').toString().toUpperCase();
+      if (namaA < namaB) return -1;
+      if (namaA > namaB) return 1;
+      return 0;
+    });
+
     // Calculate dynamic month (H-1)
     const monthNames = ['januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember'];
     const today = new Date();
