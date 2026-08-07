@@ -976,6 +976,9 @@
             .reduce((sum, r) => sum + (parseFloat(r.tonase) || 0), 0);
         });
 
+        const themeStr = document.documentElement.getAttribute("data-theme") || "light";
+        const textColor = themeStr === "dark" ? "#ffffff" : "#000000";
+
         const lineData = trimToReportedRange(hourlyData);
 
         const chartDataLabelsPlugin = {
@@ -1073,7 +1076,7 @@
                 grace: '15%',
                 grid: { display: false },
                 ticks: {
-                  color: '#94a3b8',
+                  color: textColor,
                   font: { family: 'Inter', size: 11, weight: 'bold' },
                   callback: v => v.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Ton'
                 }
@@ -1081,7 +1084,7 @@
               x: {
                 grid: { display: false },
                 ticks: {
-                  color: '#94a3b8',
+                  color: textColor,
                   font: { family: 'Inter', size: 11, weight: 'bold' }
                 }
               }

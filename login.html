@@ -6429,7 +6429,7 @@
         var ctx = canvas.getContext("2d");
         var theme = document.documentElement.getAttribute("data-theme") || "light";
         var gridColor = theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)";
-        var textColor = theme === "dark" ? "#cbd5e1" : "#444444";
+        var textColor = theme === "dark" ? "#ffffff" : "#000000";
 
         var chartDataLabelsPlugin = {
           id: 'chartDataLabels',
@@ -6437,7 +6437,6 @@
             var ctx = chart.ctx;
             var theme = document.documentElement.getAttribute("data-theme") || "light";
 
-            // Dataset 0 (bar): nilai per jam + persentase kenaikan dibanding jam sebelumnya
             var barDataset = chart.data.datasets[0];
             var barMeta = chart.getDatasetMeta(0);
             barMeta.data.forEach(function (bar, index) {
@@ -6449,38 +6448,31 @@
               ctx.textAlign = 'center';
               ctx.textBaseline = 'bottom';
 
-              var valText = val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              var valText = val.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+              
+              var pctText = "";
+              var pctColor = "";
+              if (index > 0) {
+                var prev = barDataset.data[index - 1];
+                if (prev > 0) {
+                  var change = ((val - prev) / prev) * 100;
+                  var isUp = change > 0;
+                  var isFlat = change === 0;
+                  pctColor = isFlat ? "#475569" : (isUp ? "#002671" : "#cc0000");
+                  if (theme === 'dark') pctColor = '#ffffff';
+                  var arrow = isFlat ? "▬" : (isUp ? "▲" : "▼");
+                  pctText = arrow + " " + (change >= 0 ? "+" : "") + change.toFixed(1) + "%";
+                }
+              }
+
               ctx.fillStyle = theme === "dark" ? "#ffffff" : "#111111";
               ctx.fillText(valText, bar.x, bar.y - 8);
-              ctx.restore();
-            });
-
-            var lineDataset = chart.data.datasets[1];
-            var lineMeta = chart.getDatasetMeta(1);
-            lineMeta.data.forEach(function (point, index) {
-              if (index === 0) return;
-              var prev = lineDataset.data[index - 1];
-              var curr = lineDataset.data[index];
-              if (prev == null || curr == null || prev === 0) return;
-
-              var change = ((curr - prev) / prev) * 100;
-              var isUp = change > 0;
-              var isFlat = change === 0;
-              var color = isFlat ? "#475569" : (isUp ? "#002671" : "#cc0000");
-              if (theme === 'dark') color = "#ffffff";
-              var arrow = isFlat ? "▬" : (isUp ? "▲" : "▼");
-              var text = arrow + " " + (change >= 0 ? "+" : "") + change.toFixed(1) + "%";
-
-              var prevPoint = lineMeta.data[index - 1];
-              var midX = (prevPoint.x + point.x) / 2;
-              var midY = (prevPoint.y + point.y) / 2;
-
-              ctx.save();
-              ctx.font = "bold 10px Arial";
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'bottom';
-              ctx.fillStyle = color;
-              ctx.fillText(text, midX, midY - 5);
+              
+              if (pctText) {
+                ctx.font = "bold 11px Arial";
+                ctx.fillStyle = pctColor;
+                ctx.fillText(pctText, bar.x, bar.y - 24);
+              }
               ctx.restore();
             });
           }
