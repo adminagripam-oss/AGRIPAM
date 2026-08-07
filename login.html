@@ -5413,6 +5413,8 @@
       return num.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
+    var pencapaianDonutChartInstance = null;
+
     var centerDonutTextPlugin = {
       id: 'centerDonutTextPlugin',
       afterDraw: function(chart) {
@@ -6925,8 +6927,8 @@
       <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">
         Input Laporan Panen
       </h2>
-      <button onclick="toggleInputSheet()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-        <span class="material-symbols-outlined">close</span>
+      <button onclick="toggleInputSheet()" class="text-slate-900 hover:text-black dark:text-slate-100 dark:hover:text-white">
+        <span class="material-symbols-outlined font-bold">close</span>
       </button>
     </div>
     <div class="p-6 flex-1 overflow-y-auto">
