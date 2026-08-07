@@ -673,7 +673,7 @@
                             <option value="Sumatera Barat">Sumatera Barat</option>
                             <option value="Sumatera Selatan">Sumatera Selatan</option>
                             <option value="Kalimantan Barat 1A">Kalimantan Barat 1A</option>
-<option value="Kalimantan Barat 1B">Kalimantan Barat 1B</option>
+                            <option value="Kalimantan Barat 1B">Kalimantan Barat 1B</option>
                             <option value="Kalimantan Barat 2">Kalimantan Barat 2</option>
                             <option value="Kalimantan Selatan 1">Kalimantan Selatan 1</option>
                             <option value="Kalimantan Selatan 2">Kalimantan Selatan 2</option>
@@ -1451,13 +1451,13 @@
                 alert("Tabel rekap tidak ditemukan.");
                 return;
             }
-            
+
             const datePicker = document.getElementById("rekapCRODatePicker");
             const dateStr = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
-            
+
             const wb = XLSX.utils.table_to_book(table, { raw: true });
             const ws = wb.Sheets[wb.SheetNames[0]];
-            
+
             // Adjust column widths automatically
             const range = XLSX.utils.decode_range(ws['!ref']);
             const colWidths = [];
@@ -1475,7 +1475,7 @@
                 colWidths.push({ wch: max + 3 });
             }
             ws['!cols'] = colWidths;
-            
+
             XLSX.writeFile(wb, `Rekap_Rencana_vs_Realisasi_CRO_${dateStr}.xlsx`);
         }
 
@@ -1834,65 +1834,65 @@
 
             const urlDelete = `/api/deleteRequest?action=getDeleteRequests&region=${s.region}&token=${s.token}`;
             const urlUnlock = `/api/unlockRequest?action=getUnlockRequests&region=${s.region}&token=${s.token}`;
-            
+
             Promise.all([
-                fetch(urlDelete).then(res => res.json()).catch(() => ({success: false, data: []})),
-                fetch(urlUnlock).then(res => res.json()).catch(() => ({success: false, data: []}))
+                fetch(urlDelete).then(res => res.json()).catch(() => ({ success: false, data: [] })),
+                fetch(urlUnlock).then(res => res.json()).catch(() => ({ success: false, data: [] }))
             ])
-            .then(([resDelete, resUnlock]) => {
-                document.getElementById("adminApprovalLoading").classList.add("hidden");
-                let allRequests = [];
-                if (resDelete.success && resDelete.data) {
-                    resDelete.data.forEach(d => { 
-                        d._api = 'delete'; 
-                        if (d.type === 'UNLOCK_REALISASI' || d.type === 'REVISI_REALISASI') {
-                            d.displayType = 'Buka Real. Produksi';
-                        } else {
-                            d.displayType = 'Hapus ' + (d.type || 'Data');
-                        }
-                        allRequests.push(d); 
-                    });
-                }
-                if (resUnlock.success && resUnlock.data) {
-                    resUnlock.data.forEach(d => { 
-                        d._api = 'unlock'; 
-                        if (d.type === 'REVISI_REALISASI' || d.type === 'UNLOCK_REALISASI') {
-                            d.displayType = 'Buka Real. Produksi';
-                        } else {
-                            d.displayType = 'Buka Est. Panen';
-                        }
-                        allRequests.push(d); 
-                    });
-                }
-                
-                if (allRequests.length > 0) {
-                    // Deduplicate requests by region + tanggal + jam
-                    let seenKeys = new Set();
-                    let uniqueRequests = [];
-                    // Prioritize 'delete' api (UNLOCK_REALISASI / Buka Real. Produksi) first
-                    allRequests.sort((a,b) => (a._api === 'delete' ? -1 : 1));
-                    allRequests.forEach(req => {
-                        let key = req.region + '_' + req.tanggal + '_' + (req.jam || '');
-                        if (!seenKeys.has(key)) {
-                            seenKeys.add(key);
-                            uniqueRequests.push(req);
-                        }
-                    });
-                    allRequests = uniqueRequests;
-                    allRequests.sort((a,b) => new Date(b.requested_at) - new Date(a.requested_at));
-                    document.getElementById("adminApprovalTable").classList.remove("hidden");
-                    const tbody = document.getElementById("adminApprovalBody");
-                    tbody.innerHTML = "";
-                    allRequests.forEach(req => {
-                        const tr = document.createElement("tr");
-                        tr.className = req._api === 'unlock' 
-                            ? "border-b border-outline-variant dark:border-slate-800 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
-                            : "border-b border-outline-variant dark:border-slate-800 hover:bg-surface-container dark:hover:bg-slate-800/50 transition-colors";
-                        
-                        const actionName = req._api === 'delete' ? 'resolveDeleteRequest' : 'resolveUnlockRequestAdmin';
-                        const typeColor = req._api === 'unlock' ? 'text-amber-600 dark:text-amber-400' : 'text-primary dark:text-emerald-400';
-                        
-                        tr.innerHTML = `
+                .then(([resDelete, resUnlock]) => {
+                    document.getElementById("adminApprovalLoading").classList.add("hidden");
+                    let allRequests = [];
+                    if (resDelete.success && resDelete.data) {
+                        resDelete.data.forEach(d => {
+                            d._api = 'delete';
+                            if (d.type === 'UNLOCK_REALISASI' || d.type === 'REVISI_REALISASI') {
+                                d.displayType = 'Buka Real. Produksi';
+                            } else {
+                                d.displayType = 'Hapus ' + (d.type || 'Data');
+                            }
+                            allRequests.push(d);
+                        });
+                    }
+                    if (resUnlock.success && resUnlock.data) {
+                        resUnlock.data.forEach(d => {
+                            d._api = 'unlock';
+                            if (d.type === 'REVISI_REALISASI' || d.type === 'UNLOCK_REALISASI') {
+                                d.displayType = 'Buka Real. Produksi';
+                            } else {
+                                d.displayType = 'Buka Est. Panen';
+                            }
+                            allRequests.push(d);
+                        });
+                    }
+
+                    if (allRequests.length > 0) {
+                        // Deduplicate requests by region + tanggal + jam
+                        let seenKeys = new Set();
+                        let uniqueRequests = [];
+                        // Prioritize 'delete' api (UNLOCK_REALISASI / Buka Real. Produksi) first
+                        allRequests.sort((a, b) => (a._api === 'delete' ? -1 : 1));
+                        allRequests.forEach(req => {
+                            let key = req.region + '_' + req.tanggal + '_' + (req.jam || '');
+                            if (!seenKeys.has(key)) {
+                                seenKeys.add(key);
+                                uniqueRequests.push(req);
+                            }
+                        });
+                        allRequests = uniqueRequests;
+                        allRequests.sort((a, b) => new Date(b.requested_at) - new Date(a.requested_at));
+                        document.getElementById("adminApprovalTable").classList.remove("hidden");
+                        const tbody = document.getElementById("adminApprovalBody");
+                        tbody.innerHTML = "";
+                        allRequests.forEach(req => {
+                            const tr = document.createElement("tr");
+                            tr.className = req._api === 'unlock'
+                                ? "border-b border-outline-variant dark:border-slate-800 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+                                : "border-b border-outline-variant dark:border-slate-800 hover:bg-surface-container dark:hover:bg-slate-800/50 transition-colors";
+
+                            const actionName = req._api === 'delete' ? 'resolveDeleteRequest' : 'resolveUnlockRequestAdmin';
+                            const typeColor = req._api === 'unlock' ? 'text-amber-600 dark:text-amber-400' : 'text-primary dark:text-emerald-400';
+
+                            tr.innerHTML = `
                             <td class="p-3 text-sm font-bold ${typeColor}">${req.displayType || req.type}</td>
                             <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.region}</td>
                             <td class="p-3 text-sm text-on-surface dark:text-slate-300">${req.tanggal}</td>
@@ -1903,16 +1903,16 @@
                                 <button onclick="${actionName}(${req.id}, 'REJECT')" class="bg-error hover:bg-error/90 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">Tolak</button>
                             </td>
                         `;
-                        tbody.appendChild(tr);
-                    });
-                } else {
-                    document.getElementById("adminApprovalEmpty").classList.remove("hidden");
-                }
-            })
-            .catch(err => {
-                document.getElementById("adminApprovalLoading").classList.add("hidden");
-                alert("Gagal memuat data: " + err);
-            });
+                            tbody.appendChild(tr);
+                        });
+                    } else {
+                        document.getElementById("adminApprovalEmpty").classList.remove("hidden");
+                    }
+                })
+                .catch(err => {
+                    document.getElementById("adminApprovalLoading").classList.add("hidden");
+                    alert("Gagal memuat data: " + err);
+                });
         }
 
         function resolveDeleteRequest(id, actionStr) {
@@ -1922,7 +1922,7 @@
 
             let confirmMsg = actionStr === 'APPROVE' ? "Apakah Anda yakin ingin MENERIMA permintaan ini?" : "Apakah Anda yakin ingin MENOLAK permintaan ini?";
             let dialogType = actionStr === 'APPROVE' ? 'success' : 'destructive';
-            
+
             // If showConfirm is available, use it, otherwise fallback to native confirm
             if (window.showConfirm) {
                 window.showConfirm(actionStr === 'APPROVE' ? "Konfirmasi Persetujuan" : "Konfirmasi Penolakan", confirmMsg, dialogType).then(confirmed => {
@@ -1968,7 +1968,7 @@
 
             let confirmMsg = actionStr === 'APPROVE' ? "Apakah Anda yakin ingin MENERIMA permintaan buka akses ini?" : "Apakah Anda yakin ingin MENOLAK permintaan buka akses ini?";
             let dialogType = actionStr === 'APPROVE' ? 'success' : 'destructive';
-            
+
             if (window.showConfirm) {
                 window.showConfirm(actionStr === 'APPROVE' ? "Konfirmasi Persetujuan" : "Konfirmasi Penolakan", confirmMsg, dialogType).then(confirmed => {
                     if (confirmed) executeResolveUnlock(id, actionStr, s);
@@ -2014,29 +2014,29 @@
 
             const urlDelete = `/api/deleteRequest?action=getDeleteRequests&region=${s.region}&token=${s.token}`;
             const urlUnlock = `/api/unlockRequest?action=getUnlockRequests&region=${s.region}&token=${s.token}`;
-            
-            Promise.all([
-                fetch(urlDelete).then(res => res.json()).catch(() => ({success: false, data: []})),
-                fetch(urlUnlock).then(res => res.json()).catch(() => ({success: false, data: []}))
-            ])
-            .then(([resDelete, resUnlock]) => {
-                const badge = document.getElementById("deleteRequestBadge");
-                const count = document.getElementById("deleteRequestBadgeCount");
-                
-                let pendingCount = 0;
-                if (resDelete.success && resDelete.data) pendingCount += resDelete.data.length;
-                if (resUnlock.success && resUnlock.data) pendingCount += resUnlock.data.length;
 
-                if (badge) {
-                    if (pendingCount > 0) {
-                        if (count) count.textContent = pendingCount > 99 ? "99+" : String(pendingCount);
-                        badge.classList.remove("hidden");
-                    } else {
-                        badge.classList.add("hidden");
+            Promise.all([
+                fetch(urlDelete).then(res => res.json()).catch(() => ({ success: false, data: [] })),
+                fetch(urlUnlock).then(res => res.json()).catch(() => ({ success: false, data: [] }))
+            ])
+                .then(([resDelete, resUnlock]) => {
+                    const badge = document.getElementById("deleteRequestBadge");
+                    const count = document.getElementById("deleteRequestBadgeCount");
+
+                    let pendingCount = 0;
+                    if (resDelete.success && resDelete.data) pendingCount += resDelete.data.length;
+                    if (resUnlock.success && resUnlock.data) pendingCount += resUnlock.data.length;
+
+                    if (badge) {
+                        if (pendingCount > 0) {
+                            if (count) count.textContent = pendingCount > 99 ? "99+" : String(pendingCount);
+                            badge.classList.remove("hidden");
+                        } else {
+                            badge.classList.add("hidden");
+                        }
                     }
-                }
-            })
-            .catch(e => console.error("Error checking requests:", e));
+                })
+                .catch(e => console.error("Error checking requests:", e));
         }
         // Fullscreen toggle for Rekap CRO Modal
         function toggleRekapCROFullscreen() {

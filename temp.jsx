@@ -1,443 +1,4 @@
-<!DOCTYPE html>
-<html lang="id" class="h-full">
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Laporan Produksi On-Farm | AGRI-PAM Admin</title>
-  <script>
-    (function checkAuth() {
-      // Apply theme immediately
-      var savedTheme = localStorage.getItem("agripam_theme") || "light";
-      document.documentElement.setAttribute("data-theme", savedTheme);
-
-      var sessionKey = "agripam_session";
-      try {
-        var raw = sessionStorage.getItem(sessionKey);
-        if (!raw) {
-          window.location.href = "login.html?msg=" + encodeURIComponent("Harap login terlebih dahulu.");
-          return;
-        }
-        var s = JSON.parse(raw);
-        if (Date.now() > s.expiry) {
-          sessionStorage.removeItem(sessionKey);
-          window.location.href = "login.html?msg=" + encodeURIComponent("Sesi Anda telah berakhir. Silakan login kembali.");
-          return;
-        }
-        if (s.region !== "ADMIN") {
-          window.location.href = "login.html?msg=" + encodeURIComponent("Akses ditolak. Halaman ini hanya untuk ADMIN.");
-          return;
-        }
-      } catch (e) {
-        sessionStorage.removeItem(sessionKey);
-        window.location.href = "login.html?msg=" + encodeURIComponent("Terjadi kesalahan sesi.");
-      }
-    })();
-
-    // Pageshow guard — cegah akses halaman dari bfcache setelah logout
-    window.addEventListener("pageshow", function (event) {
-      if (event.persisted) {
-        var raw = sessionStorage.getItem("agripam_session");
-        if (!raw) {
-          window.location.replace("login.html?msg=" + encodeURIComponent("Sesi telah berakhir. Silakan login kembali."));
-          return;
-        }
-        try {
-          var s = JSON.parse(raw);
-          if (Date.now() > s.expiry || s.region !== "ADMIN") {
-            sessionStorage.removeItem("agripam_session");
-            window.location.replace("login.html?msg=" + encodeURIComponent("Sesi telah berakhir. Silakan login kembali."));
-          }
-        } catch (e) {
-          sessionStorage.removeItem("agripam_session");
-          window.location.replace("login.html?msg=" + encodeURIComponent("Terjadi kesalahan sesi."));
-        }
-      }
-    });
-  </script>
-  <link rel="icon" type="image/jpeg" href="/LOGO AGRIPAM.jpeg" />
-  <meta name="description"
-    content="Dashboard administratif Laporan Produksi On-Farm AGRI-PAM — monitoring realisasi dan estimasi panen harian per regional." />
-
-  <!-- TailwindCSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Flatpickr (Shadcn Date Picker) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-  <!-- Shadcn Overrides (Alerts, Date, Select) -->
-  <link rel="stylesheet" href="shadcn_overrides.css">
-  <script src="shadcn_overrides.js?v=4"></script>
-
-  <script>
-    tailwind.config = {
-      darkMode: ['class', '[data-theme="dark"]'],
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              50: '#f0fdf4',
-              100: '#dcfce7',
-              200: '#bbf7d0',
-              400: '#4ade80',
-              500: '#22c55e',
-              600: '#16a34a',
-              700: '#15803d',
-              800: '#166534',
-              900: '#14532d',
-            },
-          },
-          keyframes: {
-            ticker: {
-              '0%': { transform: 'translateX(100%)' },
-              '100%': { transform: 'translateX(-100%)' },
-            },
-            fadeIn: {
-              '0%': { opacity: '0', transform: 'translateY(8px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' },
-            },
-            pulse2: {
-              '0%, 100%': { opacity: '1' },
-              '50%': { opacity: '0.5' },
-            }
-          },
-          animation: {
-            ticker: 'ticker 38s linear infinite',
-            fadeIn: 'fadeIn 0.4s ease-out forwards',
-            pulse2: 'pulse2 2s ease-in-out infinite',
-          },
-        },
-      },
-    };
-  </script>
-
-  <!-- Google Font: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet" />
-
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-
-  <!-- React 18 CDN -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-
-  <!-- Babel Standalone for JSX -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <!-- Lucide Icons (via unpkg) -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <!-- SheetJS for client-side Excel Parsing -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <!-- html2pdf.js for client-side PDF Export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-  <style>
-    html,
-    body,
-    #root {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: #f8fafc;
-    }
-
-    /* Custom scrollbar for sidebar and main content */
-    ::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 2px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-
-    /* Ticker animation override via class */
-    .ticker-track {
-      display: flex;
-      white-space: nowrap;
-      animation: ticker-anim 38s linear infinite;
-    }
-
-    @keyframes ticker-anim {
-      0% {
-        transform: translateX(100%);
-      }
-
-      100% {
-        transform: translateX(-100%);
-      }
-    }
-
-    .ticker-track:hover {
-      animation-play-state: paused;
-    }
-
-    /* Smooth tooltip for charts */
-    .chartjs-tooltip {
-      pointer-events: none;
-    }
-
-    /* Nav active indicator */
-    .nav-item-active {
-      background: linear-gradient(135deg, #16a34a10 0%, #22c55e15 100%);
-      border-right: 3px solid #16a34a;
-      color: #15803d;
-    }
-
-    .nav-item-active .nav-icon {
-      color: #16a34a;
-    }
-
-    /* Card hover */
-    .dashboard-card {
-      transition: box-shadow 0.2s ease, transform 0.2s ease;
-    }
-
-    .dashboard-card:hover {
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.09);
-    }
-
-    /* Leaderboard rank badge */
-    .rank-1 {
-      background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    }
-
-    .rank-2 {
-      background: linear-gradient(135deg, #94a3b8, #64748b);
-    }
-
-    .rank-3 {
-      background: linear-gradient(135deg, #92400e, #b45309);
-    }
-
-    .rank-other {
-      background: #e2e8f0;
-      color: #475569;
-    }
-
-    /* Theme Toggle Overrides for Dark Mode */
-    [data-theme="dark"] body {
-      background-color: #0f172a !important;
-      color: #f8fafc !important;
-    }
-
-    [data-theme="dark"] aside {
-      background-color: #1e293b !important;
-      border-color: #334155 !important;
-    }
-
-    [data-theme="dark"] header {
-      background-color: #1e293b !important;
-      border-color: #334155 !important;
-    }
-
-    [data-theme="dark"] section.dashboard-card {
-      background-color: #1e293b !important;
-      border-color: #334155 !important;
-    }
-
-    [data-theme="dark"] select,
-    [data-theme="dark"] input {
-      background-color: #334155 !important;
-      color: #f8fafc !important;
-      border-color: #475569 !important;
-    }
-
-    [data-theme="dark"] select option {
-      background-color: #1e293b !important;
-      color: #f8fafc !important;
-    }
-
-    [data-theme="dark"] .text-slate-800,
-    [data-theme="dark"] h2 {
-      color: #f8fafc !important;
-    }
-
-    [data-theme="dark"] .text-slate-700 {
-      color: #cbd5e1 !important;
-    }
-
-    [data-theme="dark"] .text-slate-600 {
-      color: #94a3b8 !important;
-    }
-
-    [data-theme="dark"] .text-slate-400 {
-      color: #64748b !important;
-    }
-
-    [data-theme="dark"] .bg-slate-50 {
-      background-color: #0f172a !important;
-    }
-
-    [data-theme="dark"] .border-slate-200 {
-      border-color: #334155 !important;
-    }
-
-    [data-theme="dark"] .border-slate-100 {
-      border-color: #334155 !important;
-    }
-
-    [data-theme="dark"] .bg-white {
-      background-color: #1e293b !important;
-    }
-
-    [data-theme="dark"] .hover\:bg-slate-50:hover {
-      background-color: #334155 !important;
-    }
-
-    [data-theme="dark"] .text-slate-500 {
-      color: #cbd5e1 !important;
-    }
-
-    [data-theme="dark"] .bg-red-50 {
-      background-color: rgba(239, 68, 68, 0.1) !important;
-    }
-
-    [data-theme="dark"] .text-red-800 {
-      color: #f87171 !important;
-    }
-
-    [data-theme="dark"] .bg-green-50 {
-      background-color: rgba(74, 222, 128, 0.1) !important;
-      border-color: rgba(74, 222, 128, 0.3) !important;
-      color: #4ade80 !important;
-    }
-
-    /* Log-out button entirely red */
-    #root>div>aside>div.flex-shrink-0.border-t.border-slate-100>div.flex.items-center.gap-3.px-4.py-3.border-t.border-slate-100.bg-slate-50>button,
-    #root>div>aside>div.flex-shrink-0.border-t.border-slate-100>div.flex.items-center.gap-3.px-4.py-3.bg-slate-50>button,
-    #root>div>aside>div.flex-shrink-0.border-t.border-slate-100>div>button,
-    .logout-btn {
-      color: #dc2626 !important;
-    }
-
-    #root>div>aside>div.flex-shrink-0.border-t.border-slate-100>div.flex.items-center.gap-3.px-4.py-3.bg-slate-50>button:hover,
-    #root>div>aside>div.flex-shrink-0.border-t.border-slate-100>div>button:hover,
-    .logout-btn:hover {
-      color: #991b1b !important;
-    }
-
-    /* Running Ticker custom colors */
-    .ticker-region {
-      color: #000000 !important;
-      font-weight: 600;
-    }
-
-    [data-theme="dark"] .ticker-region {
-      color: #f8fafc !important;
-    }
-
-    .ticker-time {
-      color: #16a34a !important;
-      font-weight: 600;
-    }
-
-    [data-theme="dark"] .ticker-time {
-      color: #4ade80 !important;
-    }
-
-    /* Transition Tab classes */
-    .bg-background {
-      background-color: #f8fafc;
-    }
-
-    .text-muted-foreground {
-      color: #64748b;
-    }
-
-    .hover\:text-foreground:hover {
-      color: #1e293b;
-    }
-
-    .hover\:bg-muted:hover {
-      background-color: #f1f5f9;
-    }
-
-    .bg-primary {
-      background-color: #16a34a;
-    }
-
-    .text-primary-foreground {
-      color: #ffffff;
-    }
-
-    [data-theme="dark"] .bg-background {
-      background-color: #0f172a;
-    }
-
-    [data-theme="dark"] .text-muted-foreground {
-      color: #94a3b8;
-    }
-
-    [data-theme="dark"] .hover\:text-foreground:hover {
-      color: #f8fafc;
-    }
-
-    [data-theme="dark"] .hover\:bg-muted:hover {
-      background-color: #334155;
-    }
-
-    [data-theme="dark"] .bg-primary {
-      background-color: #22c55e;
-    }
-
-    [data-theme="dark"] .text-primary-foreground {
-      color: #ffffff;
-    }
-
-    [data-theme="dark"] .border {
-      border-color: #334155 !important;
-    }
-
-    .table-scrollbar::-webkit-scrollbar {
-      width: 9px;
-      height: 9px;
-    }
-
-    .table-scrollbar::-webkit-scrollbar-track {
-      background: #f1f5f9;
-      border-radius: 4px;
-    }
-
-    .table-scrollbar::-webkit-scrollbar-thumb {
-      background: #475569;
-      border-radius: 4px;
-    }
-
-    .table-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #1e293b;
-    }
-  </style>
-</head>
-
-<body class="h-full">
-  <div id="root" class="h-full"></div>
-
-  <script type="text/babel">
     const { useState, useEffect, useRef, useCallback } = React;
 
     const getTodayWIB = () => {
@@ -605,43 +166,32 @@
     }
 
     // ============================================================
-    // ============================================================
     // SIDEBAR COMPONENTS
     // ============================================================
-    function SidebarBrand({ collapsed, onToggle, isMobile, onCloseMobile }) {
+    function SidebarBrand({ collapsed, onToggle }) {
       return (
-        <div className={`px-4 py-5 border-b border-slate-100 flex items-center ${collapsed && !isMobile ? 'justify-center' : 'justify-between'}`}>
+        <div className={`px-4 py-5 border-b border-slate-100 flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
           <div className="flex items-center gap-3">
             <img src="/LOGO AGRIPAM.jpeg" alt="Logo AGRIPAM" className="w-9 h-9 rounded-lg object-contain shadow-sm flex-shrink-0" />
-            {(!collapsed || isMobile) && (
+            {!collapsed && (
               <div className="transition-opacity duration-300">
                 <div className="text-[13px] font-extrabold text-slate-800 leading-tight font-extrabold tracking-tight">AGRI-PAM</div>
                 <div className="text-[10px] text-slate-400 leading-tight">Agrinas Panen Monitoring</div>
               </div>
             )}
           </div>
-          {isMobile ? (
-            <button
-              onClick={onCloseMobile}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
-              title="Close Menu"
-            >
-              <Icon name="x" size={18} />
-            </button>
-          ) : (
-            <button
-              onClick={onToggle}
-              className={`p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`}
-              title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-            >
-              <Icon name="chevron-left" size={16} />
-            </button>
-          )}
+          <button
+            onClick={onToggle}
+            className={`p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`}
+            title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            <Icon name="chevron-left" size={16} />
+          </button>
         </div>
       );
     }
 
-    function NavItem({ icon, label, active, badge, onClick, collapsed, isMobile }) {
+    function NavItem({ icon, label, active, badge, onClick, collapsed }) {
       return (
         <button
           onClick={onClick}
@@ -649,20 +199,20 @@
         ${active
               ? 'bg-brand-50 text-brand-700 font-semibold border-r-0'
               : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-            } ${collapsed && !isMobile ? 'justify-center w-12 px-0 mx-2' : 'w-full'}`}
-          style={active && (!collapsed || isMobile) ? { borderRight: '3px solid #15803d', borderRadius: '8px 0 0 8px', marginRight: 0 } : {}}
-          title={collapsed && !isMobile ? label : undefined}
+            } ${collapsed ? 'justify-center w-12 px-0 mx-2' : 'w-full'}`}
+          style={active && !collapsed ? { borderRight: '3px solid #15803d', borderRadius: '8px 0 0 8px', marginRight: 0 } : {}}
+          title={collapsed ? label : undefined}
         >
           <span className={`flex-shrink-0 ${active ? 'text-brand-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
             <Icon name={icon} size={16} />
           </span>
-          {(!collapsed || isMobile) && (
+          {!collapsed && (
             <span className="text-[13px] leading-tight flex-1 truncate transition-all duration-300">{label}</span>
           )}
-          {(!collapsed || isMobile) && badge && (
+          {!collapsed && badge && (
             <span className="text-[10px] bg-brand-100 text-brand-700 font-bold px-1.5 py-0.5 rounded-full">{badge}</span>
           )}
-          {(!collapsed || isMobile) && active && <Icon name="chevron-right" size={12} className="text-brand-400" />}
+          {!collapsed && active && <Icon name="chevron-right" size={12} className="text-brand-400" />}
         </button>
       );
     }
@@ -724,105 +274,73 @@
       );
     }
 
-    function Sidebar({ activeNav, setActiveNav, collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
-      const handleNavClick = (navKey) => {
-        setActiveNav(navKey);
-        if (mobileOpen) setMobileOpen(false);
-      };
-
+    function Sidebar({ activeNav, setActiveNav, collapsed, setCollapsed }) {
       return (
-        <>
-          {/* Mobile Backdrop */}
-          {mobileOpen && (
-            <div
-              className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
-              onClick={() => setMobileOpen(false)}
-            />
-          )}
+        <aside className={`flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen transition-all duration-300 ease-in-out ${collapsed ? 'w-16' : 'w-64'}`}>
+          <SidebarBrand collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-          {/* Sidebar Drawer */}
-          <aside className={`flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen transition-all duration-300 ease-in-out z-50
-            fixed inset-y-0 left-0 lg:static
-            ${mobileOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'}
-            ${collapsed ? 'lg:w-16' : 'lg:w-64'}
-          `}>
-            <SidebarBrand
-              collapsed={collapsed}
-              onToggle={() => setCollapsed(!collapsed)}
-              isMobile={mobileOpen}
-              onCloseMobile={() => setMobileOpen(false)}
-            />
+          {/* Main Nav — scrollable */}
+          <nav className="flex-1 overflow-y-auto py-3">
+            {!collapsed && (
+              <div className="px-5 mb-2 mt-1">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Menu Utama</span>
+              </div>
+            )}
+            <div className="space-y-0.5 px-1">
+              <NavItem icon="layout-dashboard" label="PANEN MONITORING" active={activeNav === 'dashboard' || activeNav === 'laporan-jam'} onClick={() => setActiveNav('dashboard')} collapsed={collapsed} />
+              <NavItem icon="check-square" label="VALIDASI DATA" active={activeNav === 'validasi'} onClick={() => setActiveNav('validasi')} collapsed={collapsed} />
+              <NavItem icon="calendar" label="RENCANA & REALISASI" active={activeNav === 'rencana-realisasi'} onClick={() => setActiveNav('rencana-realisasi')} collapsed={collapsed} />
+              <NavItem icon="trending-up" label="Estimasi Panen" active={activeNav === 'estimasi'} onClick={() => window.location.href = 'login.html?show=infografis'} collapsed={collapsed} />
+              <NavItem icon="archive" label="SAP Persuratan (Arsip)" active={activeNav === 'sap'} onClick={() => window.location.href = 'sap_admin.html'} collapsed={collapsed} />
+            </div>
+          </nav>
 
-            {/* Main Nav — scrollable */}
-            <nav className="flex-1 overflow-y-auto py-3">
-              {(!collapsed || mobileOpen) && (
-                <div className="px-5 mb-2 mt-1">
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Menu Utama</span>
+          {/* Bottom: Admin Profile — pinned */}
+          <div className="flex-shrink-0 border-t border-slate-100">
+            <div className={`flex items-center gap-3 px-4 py-3 bg-slate-50 ${collapsed ? 'justify-center' : ''}`}>
+              <div className="w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0 shadow-sm">
+                AD
+              </div>
+              {!collapsed && (
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-semibold text-slate-700 truncate">TANAMAN</div>
+
                 </div>
               )}
-              <div className="space-y-0.5 px-1">
-                <NavItem icon="layout-dashboard" label="PANEN MONITORING" active={activeNav === 'dashboard' || activeNav === 'laporan-jam'} onClick={() => handleNavClick('dashboard')} collapsed={collapsed} isMobile={mobileOpen} />
-                <NavItem icon="check-square" label="VALIDASI DATA" active={activeNav === 'validasi'} onClick={() => handleNavClick('validasi')} collapsed={collapsed} isMobile={mobileOpen} />
-                <NavItem icon="calendar" label="RENCANA & REALISASI" active={activeNav === 'rencana-realisasi'} onClick={() => handleNavClick('rencana-realisasi')} collapsed={collapsed} isMobile={mobileOpen} />
-                <NavItem icon="users" label="TK PANEN" active={activeNav === 'tk-panen'} onClick={() => handleNavClick('tk-panen')} collapsed={collapsed} isMobile={mobileOpen} />
-                <NavItem icon="trending-up" label="Estimasi Panen" active={activeNav === 'estimasi'} onClick={() => { if (mobileOpen) setMobileOpen(false); window.location.href = 'login.html?show=infografis'; }} collapsed={collapsed} isMobile={mobileOpen} />
-                <NavItem icon="archive" label="SAP Persuratan (Arsip)" active={activeNav === 'sap'} onClick={() => { if (mobileOpen) setMobileOpen(false); window.location.href = 'sap_admin.html'; }} collapsed={collapsed} isMobile={mobileOpen} />
-              </div>
-            </nav>
-
-            {/* Bottom: Admin Profile — pinned */}
-            <div className="flex-shrink-0 border-t border-slate-100">
-              <div className={`flex items-center gap-3 px-4 py-3 bg-slate-50 ${collapsed && !mobileOpen ? 'justify-center' : ''}`}>
-                <div className="w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0 shadow-sm">
-                  AD
-                </div>
-                {(!collapsed || mobileOpen) && (
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-semibold text-slate-700 truncate">TANAMAN</div>
-                  </div>
-                )}
-                {(!collapsed || mobileOpen) && (
-                  <button onClick={() => {
-                    sessionStorage.removeItem("agripam_session");
-                    window.location.replace("login.html");
-                  }} className="text-slate-400 hover:text-slate-600 transition-colors logout-btn">
-                    <Icon name="log-out" size={15} />
-                  </button>
-                )}
-              </div>
+              {!collapsed && (
+                <button onClick={() => {
+                  sessionStorage.removeItem("agripam_session");
+                  window.location.replace("login.html");
+                }} className="text-slate-400 hover:text-slate-600 transition-colors logout-btn">
+                  <Icon name="log-out" size={15} />
+                </button>
+              )}
             </div>
-          </aside>
-        </>
+          </div>
+        </aside>
       );
     }
 
     // ============================================================
     // TOP HEADER
     // ============================================================
-    function TopHeader({ theme, toggleTheme, onToggleMobile }) {
+    function TopHeader({ theme, toggleTheme }) {
       const now = useNow();
       const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
       return (
-        <header className="flex-shrink-0 bg-white border-b border-slate-200 px-4 sm:px-6 py-2.5 flex items-center justify-between transition-colors duration-300">
+        <header className="flex-shrink-0 bg-white border-b border-slate-200 px-6 py-2.5 flex items-center justify-between transition-colors duration-300">
           <div className="flex items-center gap-3">
-            <button
-              onClick={onToggleMobile}
-              className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 lg:hidden focus:outline-none"
-              title="Toggle Menu"
-            >
-              <Icon name="menu" size={20} />
-            </button>
-            <img src="/AGRINAS DANANTARA.png" alt="Agrinas Danantara" className="h-8 sm:h-10 w-auto object-contain" />
-            <p className="text-[11px] sm:text-[12px] text-slate-400 leading-tight hidden xs:block">{dateStr}</p>
+            <img src="/AGRINAS DANANTARA.png" alt="Agrinas Danantara" className="h-10 w-auto object-contain" />
+            <p className="text-[12px] text-slate-400 leading-tight">{dateStr}</p>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-4">
             {/* Live indicator */}
-            <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-2.5 py-1">
+            <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3 py-1">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span className="text-[10px] sm:text-[11px] font-semibold text-green-700">LIVE</span>
+              <span className="text-[11px] font-semibold text-green-700">LIVE</span>
             </div>
 
             {/* Clock */}
@@ -3048,8 +2566,8 @@
             let dateColStart = 1;
 
             // Jika header mengandung "CRO" di kolom 0 atau "Regional" di kolom 1, gunakan format baru
-            const isNewFormat = (header[0] && header[0].toLowerCase().includes('cro')) ||
-              (header[1] && header[1].toLowerCase() === 'regional');
+            const isNewFormat = (header[0] && header[0].toLowerCase().includes('cro')) || 
+                                (header[1] && header[1].toLowerCase() === 'regional');
 
             if (isNewFormat) {
               regionColIdx = 1; // Kolom Regional (nama wilayah)
@@ -3066,12 +2584,12 @@
               const regionName = String(rawRegion).trim();
 
               // Abaikan header, baris kosong, subtotal, dan total
-              if (!regionName ||
-                regionName.toLowerCase().startsWith('subtotal') ||
-                regionName.toLowerCase().includes('total target') ||
-                regionName.toLowerCase() === 'regional' ||
-                regionName.toLowerCase() === 'wilayah' ||
-                regionName.toLowerCase().includes('cro / wilayah')) {
+              if (!regionName || 
+                  regionName.toLowerCase().startsWith('subtotal') || 
+                  regionName.toLowerCase().includes('total target') || 
+                  regionName.toLowerCase() === 'regional' ||
+                  regionName.toLowerCase() === 'wilayah' ||
+                  regionName.toLowerCase().includes('cro / wilayah')) {
                 continue;
               }
 
@@ -4023,985 +3541,6 @@
     }
 
     // ============================================================
-
-    // ============================================================
-    // TK PANEN VIEW (Realisasi Tenaga Kerja Panen Kebun)
-    // ============================================================
-
-    function ExecutiveIntelligenceHighlight({ kebunData, summary }) {
-      if (!kebunData || kebunData.length === 0) return null;
-
-      // Group by region
-      const regionStats = {};
-      kebunData.forEach(k => {
-        const reg = k.region || 'Unknown';
-        if (!regionStats[reg]) {
-          regionStats[reg] = { req: 0, avail: 0 };
-        }
-        regionStats[reg].req += parseFloat(k.req_tk) || 0;
-        const cutOffField = summary?.cutOffField || 'tk_juli';
-        regionStats[reg].avail += parseFloat(k[cutOffField]) || 0;
-      });
-
-      const regions = Object.keys(regionStats).map(reg => {
-        const req = regionStats[reg].req;
-        const avail = regionStats[reg].avail;
-        const deficit = req - avail;
-        return { name: reg, req, avail, deficit };
-      });
-
-      const cutOffMonth = summary?.cutOffMonth || 'Juli';
-      const totalReqTk = summary?.totalReqTk || 0;
-      const kekurangTK = summary?.kekurangTK || 0;
-
-      const regionDetailsElements = regions
-        .filter(r => r.name !== 'Unknown')
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((r, i, arr) => (
-          <span key={r.name}>
-            <strong className="text-[#facc15] font-bold drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{r.name}</strong> Kekurangan <strong className="text-[#facc15] font-bold drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{Number(Math.max(0, r.deficit)).toLocaleString('id-ID')}</strong> Orang{i < arr.length - 1 ? ', ' : '.'}
-          </span>
-        ));
-
-      return (
-        <div className="relative rounded-2xl mb-6 overflow-hidden border border-[#b8860b] shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-          {/* Inner dark gradient with tech-like radial overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#23252b] via-[#1a1c21] to-[#111215] z-0"></div>
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-400 via-transparent to-transparent z-0"></div>
-          
-          <div className="relative z-10 p-5 md:p-6 flex flex-col md:flex-row gap-6 font-['Arial']">
-            {/* Left Column */}
-            <div className="md:w-1/3 flex flex-col justify-center border-b md:border-b-0 md:border-r border-[#b8860b]/40 pb-6 md:pb-0 md:pr-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-[#d4af37] via-[#aa8022] to-[#8b6508] shadow-[0_0_15px_rgba(212,175,55,0.4)] border border-[#fadd82]/50">
-                  <Icon name="zap" size={28} className="text-[#2a2c32] fill-current" />
-                </div>
-                <h2 className="text-xl md:text-2xl font-bold text-white leading-tight tracking-wide drop-shadow-md">
-                  Executive Intelligence Highlight
-                </h2>
-              </div>
-              <p className="text-sm text-slate-300 leading-relaxed pr-2">
-                Berdasarkan data ketersediaan TK Panen cut-off <strong className="text-[#facc15] font-bold drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{cutOffMonth}</strong>, dengan Kekurangan tenaga Panen <strong className="text-[#facc15] font-bold drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{Number(Math.max(0, kekurangTK)).toLocaleString('id-ID')}</strong> Orang.
-              </p>
-            </div>
-
-            {/* Right Column */}
-            <div className="md:w-2/3 flex items-center">
-              <p className="text-xs md:text-[13px] leading-[1.8] text-slate-300 text-justify">
-                {regionDetailsElements}
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    function MonitorTKModal({ isOpen, onClose, kebunData }) {
-      if (!isOpen) return null;
-
-      let sumLuasan = 0;
-      let sumKebutuhan = 0;
-      let sumMei = 0, sumJuni = 0, sumJuli = 0, sumAgs = 0;
-      let sumRencanaJuli = 0, sumRencanaAgs = 0;
-
-      // Grouping data
-      const grouped = {};
-      (kebunData || []).forEach(item => {
-          const region = item.region || '-';
-          if (region.toLowerCase() === 'papua selatan') return;
-          const cro = item.cro || '-';
-          const key = `${cro}_${region}`;
-          if (!grouped[key]) {
-              let officialLuas = 0;
-              if (region.toLowerCase() === 'kalbar 1') {
-                  const row1A = RENCANA_REALISASI_ROWS.find(r => r.type === 'detail' && r.excelKey === 'Kalbar 1A');
-                  const row1B = RENCANA_REALISASI_ROWS.find(r => r.type === 'detail' && r.excelKey === 'Kalbar 1B');
-                  officialLuas = (row1A ? (row1A.luas || 0) : 0) + (row1B ? (row1B.luas || 0) : 0);
-              } else {
-                  const officialRow = RENCANA_REALISASI_ROWS.find(r => r.type === 'detail' && r.excelKey === region);
-                  officialLuas = officialRow ? (officialRow.luas || 0) : 0;
-              }
-              grouped[key] = {
-                  cro: cro,
-                  region: region,
-                  luasan: officialLuas,
-                  req_tk: 0,
-                  tk_mei: 0,
-                  tk_juni: 0,
-                  tk_juli: 0,
-                  tk_agustus: 0,
-                  target_juli: 0,
-                  target_agustus: 0
-              };
-          }
-          grouped[key].req_tk += parseInt(item.req_tk, 10) || 0;
-          grouped[key].tk_mei += parseInt(item.tk_mei, 10) || 0;
-          grouped[key].tk_juni += parseInt(item.tk_juni, 10) || 0;
-          grouped[key].tk_juli += parseInt(item.tk_juli, 10) || 0;
-          grouped[key].tk_agustus += parseInt(item.tk_agustus, 10) || 0;
-          grouped[key].target_juli += parseInt(item.target_juli, 10) || 0;
-          grouped[key].target_agustus += parseInt(item.target_agustus, 10) || 0;
-      });
-
-      const romanToInt = (str) => {
-          const romanMap = { I: 1, V: 5, X: 10, L: 50, C: 100 };
-          let num = 0;
-          for (let i = 0; i < str.length; i++) {
-              if (i > 0 && romanMap[str[i]] > romanMap[str[i - 1]]) {
-                  num += romanMap[str[i]] - 2 * romanMap[str[i - 1]];
-              } else {
-                  num += romanMap[str[i]];
-              }
-          }
-          return num;
-      };
-
-      const intToRoman = (num) => {
-          const romanMap = { M: 1000, CM: 900, D: 500, CD: 400, C: 100, XC: 90, L: 50, XL: 40, X: 10, IX: 9, V: 5, IV: 4, I: 1 };
-          let str = '';
-          for (let i of Object.keys(romanMap)) {
-              let q = Math.floor(num / romanMap[i]);
-              num -= q * romanMap[i];
-              str += i.repeat(q);
-          }
-          return str;
-      };
-
-      const parseCro = (croStr) => {
-          const parts = croStr.trim().split(' ');
-          if (parts.length > 1) {
-              const lastPart = parts[parts.length - 1].toUpperCase();
-              if (/^[IVXLC]+$/.test(lastPart)) {
-                  return romanToInt(lastPart);
-              }
-              const num = parseInt(lastPart, 10);
-              if (!isNaN(num)) return num;
-          }
-          return 999;
-      };
-
-      const formatCroToRoman = (croStr) => {
-          const parts = croStr.trim().split(' ');
-          if (parts.length > 1) {
-              const lastPart = parts[parts.length - 1];
-              const num = parseInt(lastPart, 10);
-              if (!isNaN(num)) {
-                  parts[parts.length - 1] = intToRoman(num);
-                  return parts.join(' ');
-              }
-          }
-          return croStr;
-      };
-
-      const aggregatedData = Object.values(grouped).sort((a, b) => {
-          if (a.cro !== b.cro) {
-              const aVal = parseCro(a.cro);
-              const bVal = parseCro(b.cro);
-              if (aVal !== 999 && bVal !== 999 && aVal !== bVal) {
-                  return aVal - bVal;
-              }
-              return a.cro.localeCompare(b.cro, undefined, { numeric: true, sensitivity: 'base' });
-          }
-          return a.region.localeCompare(b.region, undefined, { numeric: true, sensitivity: 'base' });
-      });
-
-      const croCounts = {};
-      aggregatedData.forEach(item => {
-          const romanCro = formatCroToRoman(item.cro);
-          croCounts[romanCro] = (croCounts[romanCro] || 0) + 1;
-      });
-      const formatTrendBadge = (current, previous) => {
-        const diff = current - previous;
-        if (diff > 0) {
-          return (
-            <div className="inline-flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400 font-extrabold text-[10px]">
-              <svg className="w-2.5 h-2.5 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z" /></svg>
-              <span>{diff.toLocaleString('id-ID')}</span>
-            </div>
-          );
-        } else if (diff < 0) {
-          return (
-            <div className="inline-flex items-center justify-center gap-1 text-red-600 dark:text-red-400 font-extrabold text-[10px]">
-              <svg className="w-2.5 h-2.5 fill-current text-red-600 dark:text-red-400" viewBox="0 0 24 24"><path d="M12 20l8-16H4z" /></svg>
-              <span>{Math.abs(diff).toLocaleString('id-ID')}</span>
-            </div>
-          );
-        } else {
-          return (
-            <div className="inline-flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400 font-extrabold text-[10px]">
-              <svg className="w-2.5 h-2.5 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z" /></svg>
-              <span>0</span>
-            </div>
-          );
-        }
-      };
-
-      return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 w-full max-w-7xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-900 dark:bg-slate-800 text-white z-30 relative">
-                <h3 className="font-bold text-lg">Monitoring & Rekapitulasi Tenaga Kerja Panen</h3>
-                <button onClick={onClose} className="text-white/80 hover:text-white transition-colors">
-                    <Icon name="x" size={24} />
-                </button>
-            </div>
-            <div className="px-4 pb-4 pt-0 overflow-auto flex-1 relative bg-white dark:bg-slate-900 rounded-b-xl">
-                <table className="w-full text-left border-separate border-spacing-0 border-t-2 border-l-2 border-black dark:border-slate-700 mt-0">
-                    <thead className="sticky top-0 z-30 bg-[#46bdc6] text-white">
-                        <tr>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">No</th>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">CRO</th>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">Wilayah</th>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">LUASAN</th>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">Kebutuhan Tenaga Panen</th>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" colSpan="7">Ketersedian TK PANEN</th>
-                            <th className="border-b border-r-2 border-black dark:border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" colSpan="2">RENCANA PEMENUHAN TK PANEN</th>
-                        </tr>
-                        <tr>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">MEI</th>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">JUNI</th>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6] text-emerald-100">TREND</th>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">JULI</th>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6] text-emerald-100">TREND</th>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">AGUSTUS</th>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6] text-emerald-100">TREND</th>
-                            <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">JULI</th>
-                            <th className="border-b border-r-2 border-black dark:border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">AGUSTUS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {aggregatedData.map((item, idx) => {
-                            const valMei = item.tk_mei;
-                            const valJuni = item.tk_juni;
-                            const valJuli = item.tk_juli;
-                            const valAgs = item.tk_agustus;
-                            const targetJuli = item.target_juli;
-                            const targetAgs = item.target_agustus;
-                            const reqTk = item.req_tk;
-                            const luasan = item.luasan;
-
-                            sumLuasan += luasan;
-                            sumKebutuhan += reqTk;
-                            sumMei += valMei;
-                            sumJuni += valJuni;
-                            sumJuli += valJuli;
-                            sumAgs += valAgs;
-                            sumRencanaJuli += targetJuli;
-                            sumRencanaAgs += targetAgs;
-                            
-                            const romanCro = formatCroToRoman(item.cro);
-                            let isNewCro = false;
-                            if (idx === 0 || formatCroToRoman(aggregatedData[idx - 1].cro) !== romanCro) {
-                                isNewCro = true;
-                            }
-
-                            return (
-                                <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-800 dark:text-slate-200">
-                                    <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center">{idx + 1}</td>
-                                    {isNewCro && (
-                                        <td rowSpan={croCounts[romanCro]} className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center font-bold bg-white dark:bg-slate-900 align-middle">
-                                            {romanCro}
-                                        </td>
-                                    )}
-                                    <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center">{item.region}</td>
-                                    <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center">{luasan.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                    <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-emerald-600 dark:text-emerald-400 font-bold">{reqTk.toLocaleString('id-ID')}</td>
-                                    <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-black dark:text-white font-medium">{valMei.toLocaleString('id-ID')}</td>
-                                    <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-black dark:text-white font-medium">{valJuni.toLocaleString('id-ID')}</td>
-                                    <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center bg-slate-50/50 dark:bg-slate-800/50">{formatTrendBadge(valJuni, valMei)}</td>
-                                    <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-black dark:text-white font-medium">{valJuli.toLocaleString('id-ID')}</td>
-                                    <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center bg-slate-50/50 dark:bg-slate-800/50">{formatTrendBadge(valJuli, valJuni)}</td>
-                                    <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-black dark:text-white font-medium">{valAgs.toLocaleString('id-ID')}</td>
-                                    <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center bg-slate-50/50 dark:bg-slate-800/50">{formatTrendBadge(valAgs, valJuli)}</td>
-                                    <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-purple-600 dark:text-purple-400 font-bold">{targetJuli.toLocaleString('id-ID')}</td>
-                                    <td className="border-b border-r-2 border-black dark:border-slate-700 px-3 py-2 text-center font-bold">{targetAgs.toLocaleString('id-ID')}</td>
-                                </tr>
-                            );
-                        })}
-                        <tr className="bg-amber-100 dark:bg-amber-900/40 font-bold text-xs text-slate-900 dark:text-slate-100">
-                            <td className="border-b-2 border-r border-black dark:border-slate-700 px-3 py-2 text-center" colSpan="3">TOTAL KESELURUHAN</td>
-                            <td className="border-b-2 border-r border-black dark:border-slate-700 px-3 py-2 text-center">{sumLuasan.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                            <td className="border-b-2 border-r border-black dark:border-slate-700 px-3 py-2 text-center text-emerald-600 dark:text-emerald-400">{sumKebutuhan.toLocaleString('id-ID')}</td>
-                            <td className="border-b-2 border-r border-black dark:border-slate-700 px-3 py-2 text-center text-black dark:text-white font-medium">{sumMei.toLocaleString('id-ID')}</td>
-                            <td className="border-b-2 border-r border-black dark:border-slate-700 px-3 py-2 text-center text-black dark:text-white font-medium">{sumJuni.toLocaleString('id-ID')}</td>
-                            <td className="border-b-2 border-r border-black dark:border-slate-700 px-3 py-2 text-center bg-slate-50/50 dark:bg-slate-800/50">{formatTrendBadge(sumJuni, sumMei)}</td>
-                            <td className="border-b-2 border-r border-black dark:border-slate-700 px-3 py-2 text-center text-black dark:text-white font-medium">{sumJuli.toLocaleString('id-ID')}</td>
-                            <td className="border-b-2 border-r border-black dark:border-slate-700 px-3 py-2 text-center bg-slate-50/50 dark:bg-slate-800/50">{formatTrendBadge(sumJuli, sumJuni)}</td>
-                            <td className="border-b-2 border-r border-black dark:border-slate-700 px-3 py-2 text-center text-black dark:text-white font-medium">{sumAgs.toLocaleString('id-ID')}</td>
-                            <td className="border-b-2 border-r border-black dark:border-slate-700 px-3 py-2 text-center bg-slate-50/50 dark:bg-slate-800/50">{formatTrendBadge(sumAgs, sumJuli)}</td>
-                            <td className="border-b-2 border-r border-black dark:border-slate-700 px-3 py-2 text-center text-purple-600 dark:text-purple-400">{sumRencanaJuli.toLocaleString('id-ID')}</td>
-                            <td className="border-b-2 border-r-2 border-black dark:border-slate-700 px-3 py-2 text-center">{sumRencanaAgs.toLocaleString('id-ID')}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    function TKPanenView({ userSession }) {
-      const [kebunData, setKebunData] = useState([]);
-      const [isMonitorModalOpen, setIsMonitorModalOpen] = useState(false);
-      const [summary, setSummary] = useState({});
-      const [loading, setLoading] = useState(true);
-      const sessionRaw = sessionStorage.getItem("agripam_session");
-      const session = sessionRaw ? JSON.parse(sessionRaw) : null;
-      const userRegion = (session && session.region) ? session.region : 'ALL';
-      const isAdmin = userRegion.toUpperCase() === 'ADMIN';
-
-      const [selectedRegion, setSelectedRegion] = useState(isAdmin ? 'ALL' : userRegion);
-      const [searchQuery, setSearchQuery] = useState('');
-      const [edits, setEdits] = useState({});
-      const [saving, setSaving] = useState(false);
-      const [toastMsg, setToastMsg] = useState(null);
-      const [activeEditKebun, setActiveEditKebun] = useState(null);
-
-      const fetchKebunData = async (reg) => {
-        setLoading(true);
-        try {
-          const reqReg = isAdmin ? (reg || 'ALL') : userRegion;
-          const res = await fetch(`/api/kebunTK?action=getKebun&region=${encodeURIComponent(reqReg)}&_t=${Date.now()}`);
-          const json = await res.json();
-          if (json.success) {
-            setKebunData(json.data || []);
-            setSummary(json.summary || {});
-          } else {
-            setKebunData([]);
-          }
-        } catch (err) {
-          console.error("Error fetching kebun TK data:", err);
-          setKebunData([]);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      useEffect(() => {
-        fetchKebunData(selectedRegion);
-      }, [selectedRegion]);
-
-      const handleSaveEdits = async (editPayload) => {
-        setSaving(true);
-
-        // Optimistic UI Update: Langsung ubah state tabel
-        setKebunData(prevData => {
-          return prevData.map(item => {
-            const edited = editPayload.find(e => e.id === item.id);
-            if (edited) {
-              return {
-                ...item,
-                tk_juni: edited.tk_juni,
-                tk_juli: edited.tk_juli,
-                target_juli: edited.target_juli,
-                target_agustus: edited.target_agustus
-              };
-            }
-            return item;
-          });
-        });
-
-        try {
-          const res = await fetch('/api/kebunTK', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'updateTK',
-              region: userRegion,
-              token: userSession ? userSession.token : '',
-              edits: editPayload
-            })
-          });
-
-          const json = await res.json();
-          if (json.success) {
-            setToastMsg({ type: 'success', text: json.message || 'Data TK Panen berhasil disimpan!' });
-            setEdits({});
-            setActiveEditKebun(null);
-            // Fetch data di background untuk memastikan sinkronisasi
-            fetchKebunData(selectedRegion);
-          } else {
-            setToastMsg({ type: 'error', text: json.message || 'Gagal menyimpan data TK Panen.' });
-          }
-        } catch (err) {
-          console.error("Error saving TK data:", err);
-          setToastMsg({ type: 'error', text: 'Terjadi kesalahan saat menyimpan data.' });
-        } finally {
-          setSaving(false);
-          setTimeout(() => setToastMsg(null), 4000);
-        }
-      };
-
-      const [currentPage, setCurrentPage] = useState(1);
-      const pageSize = 30;
-
-      useEffect(() => {
-        setCurrentPage(1);
-      }, [selectedRegion, searchQuery]);
-
-      const formatTrendBadge = (current, previous) => {
-        const diff = current - previous;
-        if (diff > 0) {
-          return (
-            <div className="inline-flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs">
-              <svg className="w-3 h-3 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z" /></svg>
-              <span>+{formatRibuan(diff)}</span>
-            </div>
-          );
-        } else if (diff < 0) {
-          return (
-            <div className="inline-flex items-center justify-center gap-1 text-red-600 dark:text-red-400 font-extrabold text-xs">
-              <svg className="w-3 h-3 fill-current text-red-600 dark:text-red-400" viewBox="0 0 24 24"><path d="M12 20l8-16H4z" /></svg>
-              <span>{formatRibuan(diff)}</span>
-            </div>
-          );
-        } else {
-          return (
-            <div className="inline-flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs">
-              <svg className="w-3 h-3 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z" /></svg>
-              <span>0</span>
-            </div>
-          );
-        }
-      };
-
-      const filteredKebun = kebunData.filter(item => {
-        if (!searchQuery) return true;
-        const q = searchQuery.toLowerCase();
-        return (
-          (item.nama_kebun && item.nama_kebun.toLowerCase().includes(q)) ||
-          (item.name_tag && item.name_tag.toLowerCase().includes(q)) ||
-          (item.region && item.region.toLowerCase().includes(q)) ||
-          (item.cro && item.cro.toLowerCase().includes(q))
-        );
-      });
-
-      const totalPages = Math.max(1, Math.ceil(filteredKebun.length / pageSize));
-      const startIdx = (currentPage - 1) * pageSize;
-      const endIdx = startIdx + pageSize;
-      const paginatedKebun = filteredKebun.slice(startIdx, endIdx);
-
-      const cutOffField = summary.cutOffField || 'tk_juli';
-      const cutOffMonth = summary.cutOffMonth || 'Juli';
-
-      const totalReqTk = summary.totalReqTk !== undefined ? summary.totalReqTk : filteredKebun.reduce((s, x) => s + (parseInt(x.req_tk) || 0), 0);
-      const totalCutOff = summary.totalCutOff !== undefined ? summary.totalCutOff : filteredKebun.reduce((s, x) => s + (parseInt(x[cutOffField]) || 0), 0);
-      const kekurangTK = totalReqTk - totalCutOff;
-
-      return (
-        <div className="flex flex-col gap-6 w-full">
-          {toastMsg && (
-            <div className={`fixed top-5 right-5 z-50 px-4 py-3 rounded-xl shadow-xl border text-sm font-semibold flex items-center gap-2 animate-bounce ${toastMsg.type === 'success' ? 'bg-emerald-500 text-white border-emerald-600' :
-                toastMsg.type === 'warning' ? 'bg-amber-500 text-white border-amber-600' :
-                  'bg-rose-500 text-white border-rose-600'
-              }`}>
-              <Icon name={toastMsg.type === 'success' ? 'check-circle' : 'alert-circle'} size={18} />
-              <span>{toastMsg.text}</span>
-            </div>
-          )}
-
-          {/* Top Header Card */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-emerald-500/10 text-emerald-600 rounded-xl">
-                  <Icon name="users" size={24} />
-                </div>
-                <div>
-                  <h1 className="text-xl font-extrabold text-slate-800 dark:text-slate-100">
-                    Pengisian TK Panen
-                  </h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Monitoring & Realisasi Tenaga Kerja Panen Kebun (Kolom I Juli & Kolom J Agustus)
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={() => setIsMonitorModalOpen(true)}
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
-              >
-                <Icon name="grid" size={16} />
-                <span>Monitoring TK Panen</span>
-              </button>
-            </div>
-          </div>
-          
-          <ExecutiveIntelligenceHighlight kebunData={filteredKebun} summary={summary} />
-
-          {/* Large Fluid 5 KPI Badges */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 w-full transition-all duration-300">
-            <div className="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-              <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Kebun</span>
-              <div className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {filteredKebun.length} <span className="text-xs font-bold text-slate-500">Kebun</span>
-              </div>
-            </div>
-            <div className="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-              <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Luas</span>
-              <div className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {formatRibuan(summary.totalLuas || 0)} <span className="text-xs font-bold text-slate-500">Ha</span>
-              </div>
-            </div>
-            <div className="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-              <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kebutuhan Tenaga Panen</span>
-              <div className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {Number(totalReqTk).toLocaleString('id-ID')} <span className="text-xs font-bold text-slate-500">Orang</span>
-              </div>
-            </div>
-            <div className="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-              <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">TK {cutOffMonth} (Cut Off {cutOffMonth})</span>
-              <div className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {Number(totalCutOff).toLocaleString('id-ID')} <span className="text-xs font-bold text-slate-500">Orang</span>
-              </div>
-            </div>
-            <div className="bg-slate-900 text-white dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-              <span className="text-[11px] font-black text-slate-300 dark:text-slate-400 uppercase tracking-wider">Kekurangan Tenaga Panen</span>
-              <div className="text-xl md:text-2xl font-black text-white mt-1">
-                {Number(kekurangTK).toLocaleString('id-ID')} <span className="text-xs font-bold text-slate-300">Orang</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Search & Regional Filter Row */}
-          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-sm">
-            {isAdmin ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-500">Filter Regional:</span>
-                <select
-                  value={selectedRegion}
-                  onChange={(e) => setSelectedRegion(e.target.value)}
-                  className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="ALL">Semua Regional (23 Region)</option>
-                  <option value="Aceh">Aceh</option>
-                  <option value="Sumut 1">Sumut 1</option>
-                  <option value="Sumut 2">Sumut 2</option>
-                  <option value="Riau 1">Riau 1</option>
-                  <option value="Riau 2">Riau 2</option>
-                  <option value="Riau 3">Riau 3</option>
-                  <option value="Riau 4">Riau 4</option>
-                  <option value="Babel">Bangka Belitung</option>
-                  <option value="Jambi">Jambi</option>
-                  <option value="Sumbar">Sumatera Barat</option>
-                  <option value="Sumsel">Sumatera Selatan</option>
-                  <option value="Kalbar 1">Kalbar 1</option>
-                  <option value="Kalbar 2">Kalbar 2</option>
-                  <option value="Kalsel 1">Kalsel 1</option>
-                  <option value="Kalsel 2">Kalsel 2</option>
-                  <option value="Kaltara">Kaltara</option>
-                  <option value="Kaltim">Kaltim</option>
-                  <option value="Kalteng 1">Kalteng 1</option>
-                  <option value="Kalteng 2">Kalteng 2</option>
-                  <option value="Kalteng 3">Kalteng 3</option>
-                  <option value="Sulteng">Sulteng</option>
-                  <option value="Sultra">Sultra</option>
-                  <option value="Papua Selatan">Papua Selatan</option>
-                </select>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 px-3.5 py-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-xs">
-                <Icon name="map-pin" size={16} />
-                <span>Regional Terkunci: {userRegion}</span>
-              </div>
-            )}
-
-            <div className="flex-1 max-w-md relative">
-              <input
-                type="text"
-                placeholder="Cari kebun, tag kebun, atau regional..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-              <span className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2">
-                <Icon name="search" size={16} />
-              </span>
-            </div>
-          </div>
-
-          {/* Kebun Table Container */}
-          <div className="bg-white dark:bg-slate-900 rounded-none border-2 border-slate-900 dark:border-slate-700 shadow-md w-full transition-all duration-300">
-            <div className="w-full overflow-auto max-h-[72vh] border-b border-slate-300 dark:border-slate-800 relative table-scrollbar shadow-inner">
-              <table className="w-full text-left text-xs sm:text-sm border-collapse" style={{ fontFamily: "Arial, sans-serif" }}>
-                <thead className="bg-[#1e3a5f] text-white dark:bg-[#15304f] border-b-2 border-[#2a4a6b] dark:border-[#2a4a6b] sticky top-0 z-30 shadow-md">
-                  {/* Row 1: Main headers + grouped column headers */}
-                  <tr className="text-xs sm:text-[13px] font-black uppercase tracking-wider text-white border-b border-black">
-                    <th rowSpan="2" className="py-3.5 px-2 text-center w-[45px] min-w-[45px] font-black whitespace-nowrap sticky left-0 z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">No</th>
-                    <th rowSpan="2" className="py-3.5 px-2 text-center w-[70px] min-w-[70px] font-black whitespace-nowrap sticky left-[45px] z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">CRO</th>
-                    <th rowSpan="2" className="py-3.5 px-2 text-center w-[100px] min-w-[100px] font-black whitespace-nowrap sticky left-[115px] z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">Wilayah</th>
-                    <th rowSpan="2" className="py-3.5 px-3 text-left w-[190px] min-w-[190px] font-black whitespace-nowrap sticky left-[215px] z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-r-2 border-b border-black shadow-[4px_0_8px_-2px_rgba(0,0,0,0.3)]">Nama Kebun / PT HO</th>
-                    <th rowSpan="2" className="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">Name Tag Kebun</th>
-                    <th rowSpan="2" className="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">Luasan</th>
-                    <th rowSpan="2" className="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">Kebutuhan<br />Tenaga Panen</th>
-                    {/* Grouped: Ketersedian TK PANEN */}
-                    <th colSpan="7" className="py-2.5 px-2 text-center font-black whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black">Ketersedian TK PANEN</th>
-                    {/* Grouped: Rencana Pemenuhan TK Panen */}
-                    <th colSpan="2" className="py-2.5 px-2 text-center font-black whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black">Rencana Pemenuhan TK Panen</th>
-                    <th rowSpan="2" className="py-3.5 px-2 text-center w-[65px] min-w-[65px] font-black whitespace-nowrap sticky right-0 z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-l-2 border-b border-black shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.3)]">AKSI</th>
-                  </tr>
-                  {/* Row 2: Sub-column headers under grouped columns */}
-                  <tr className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-blue-100">
-                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">MEI</th>
-                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">JUNI</th>
-                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black text-emerald-300 font-extrabold">TREND</th>
-                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">JULI</th>
-                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black text-emerald-300 font-extrabold">TREND</th>
-                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">AGUSTUS</th>
-                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black text-emerald-300 font-extrabold">TREND</th>
-                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">JULI</th>
-                    <th className="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">AGUSTUS</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                  {loading ? (
-                    <tr>
-                      <td colSpan="14" className="py-12 text-center text-slate-500 font-semibold animate-pulse">
-                        Memuat data kebun...
-                      </td>
-                    </tr>
-                  ) : filteredKebun.length === 0 ? (
-                    <tr>
-                      <td colSpan="14" className="py-12 text-center text-slate-500 font-medium">
-                        Tidak ada data kebun yang sesuai.
-                      </td>
-                    </tr>
-                  ) : (
-                    paginatedKebun.map((item, idx) => {
-                      const globalIdx = startIdx + idx;
-                      const editObj = edits[item.id] || {};
-                      const valMei = item.tk_mei || 0;
-                      const valJuni = editObj.tk_juni !== undefined ? editObj.tk_juni : (item.tk_juni || 0);
-                      const targetJuli = editObj.target_juli !== undefined ? editObj.target_juli : (item.target_juli || 0);
-                      const targetAgs = editObj.target_agustus !== undefined ? editObj.target_agustus : (item.target_agustus || 0);
-                      const valJuli = editObj.tk_juli !== undefined ? editObj.tk_juli : (item.tk_juli || 0);
-                      const valAgs = editObj.tk_agustus !== undefined ? editObj.tk_agustus : (item.tk_agustus || 0);
-                      const reqTk = parseInt(item.req_tk, 10) || 0;
-
-                      const sumThreeCols = valJuni + targetJuli + targetAgs;
-                      const isTercukupi = (sumThreeCols === reqTk);
-
-                      const rowClass = isTercukupi
-                        ? "bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 border-b border-emerald-200 dark:border-emerald-900/50 text-slate-900 dark:text-white transition-colors"
-                        : "bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/80 border-b border-red-200 dark:border-red-900/50 text-slate-900 dark:text-white transition-colors";
-
-                      const stickyCellBg = isTercukupi
-                        ? "bg-[#ecfdf5] dark:bg-[#064e3b]"
-                        : "bg-[#fef2f2] dark:bg-[#7f1d1d]";
-
-                      return (
-                        <tr key={item.id} className={`${rowClass} font-medium`} style={{ fontSize: '14px' }}>
-                          <td className={`py-3 px-2 text-center font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap sticky left-0 z-10 w-[45px] min-w-[45px] border-r border-black ${stickyCellBg}`}>
-                            {globalIdx + 1}
-                          </td>
-                          <td className={`py-3 px-2 text-center font-black text-slate-900 dark:text-slate-100 whitespace-nowrap sticky left-[45px] z-10 w-[70px] min-w-[70px] border-r border-black ${stickyCellBg}`}>
-                            {item.cro || '-'}
-                          </td>
-                          <td className={`py-3 px-2 text-center font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap sticky left-[115px] z-10 w-[100px] min-w-[100px] border-r border-black ${stickyCellBg}`}>
-                            {item.region || '-'}
-                          </td>
-                          <td className={`py-3 px-3 text-left font-black text-slate-900 dark:text-white whitespace-nowrap sticky left-[215px] z-10 w-[190px] min-w-[190px] border-r-2 border-black shadow-[4px_0_8px_-2px_rgba(0,0,0,0.12)] ${stickyCellBg}`}>
-                            {item.nama_kebun || '-'}
-                          </td>
-                          <td className="py-3 px-2 text-center font-mono font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap border-r border-black">
-                            {item.name_tag || '-'}
-                          </td>
-                          <td className="py-3 px-2 text-center font-bold text-slate-900 dark:text-white whitespace-nowrap border-r border-black">
-                            {formatRibuan(item.luasan || 0)}
-                          </td>
-                          <td className="py-3 px-2 text-center font-black text-amber-800 dark:text-amber-300 whitespace-nowrap border-r border-black">
-                            {formatRibuan(reqTk)}
-                          </td>
-                          <td className="py-3 px-2 text-center text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap border-r border-black">
-                            {formatRibuan(valMei)}
-                          </td>
-                          <td className="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">
-                            {formatRibuan(valJuni)}
-                          </td>
-                          {/* Trend Juni */}
-                          <td className="py-3 px-2 text-center whitespace-nowrap border-r border-black bg-slate-100/40 dark:bg-slate-900/40">
-                            {formatTrendBadge(valJuni, valMei)}
-                          </td>
-                          {/* Realisasi Juli */}
-                          <td className="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-black">
-                            {formatRibuan(valJuli)}
-                          </td>
-                          {/* Trend Juli */}
-                          <td className="py-3 px-2 text-center whitespace-nowrap border-r border-black bg-slate-100/40 dark:bg-slate-900/40">
-                            {formatTrendBadge(valJuli, valJuni)}
-                          </td>
-                          {/* Realisasi Agustus */}
-                          <td className="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-black">
-                            {formatRibuan(valAgs)}
-                          </td>
-                          {/* Trend Agustus */}
-                          <td className="py-3 px-2 text-center whitespace-nowrap border-r border-black bg-slate-100/40 dark:bg-slate-900/40">
-                            {formatTrendBadge(valAgs, valJuli)}
-                          </td>
-                          {/* Rencana Pemenuhan TK Panen: Juli & Agustus */}
-                          <td className="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">
-                            {formatRibuan(targetJuli)}
-                          </td>
-                          <td className="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">
-                            {formatRibuan(targetAgs)}
-                          </td>
-                          <td className={`py-3 px-2 text-center whitespace-nowrap sticky right-0 z-10 w-[65px] min-w-[65px] border-l-2 border-black shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.12)] ${stickyCellBg}`}>
-                            <button
-                              onClick={() => setActiveEditKebun(item)}
-                              className="p-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-                              title={`Edit ${item.nama_kebun || ''}`}
-                            >
-                              <Icon name="edit" size={16} />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* 50 Rows Pagination Component */}
-          {filteredKebun.length > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-xs">
-              <div className="text-slate-500 font-semibold">
-                Menampilkan <span className="font-extrabold text-slate-800 dark:text-slate-200">{Math.min(startIdx + 1, filteredKebun.length)}</span> - <span className="font-extrabold text-slate-800 dark:text-slate-200">{Math.min(endIdx, filteredKebun.length)}</span> dari <span className="font-extrabold text-slate-800 dark:text-slate-200">{filteredKebun.length}</span> Kebun
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                  className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition-all ${currentPage === 1
-                      ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed'
-                      : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95'
-                    }`}
-                >
-                  <Icon name="chevron-left" size={16} />
-                  <span>Sebelumnya</span>
-                </button>
-
-                <div className="flex items-center gap-1 px-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 2)
-                    .map((page, idx, arr) => {
-                      const prevPage = arr[idx - 1];
-                      const showEllipsis = prevPage && page - prevPage > 1;
-                      return (
-                        <React.Fragment key={page}>
-                          {showEllipsis && <span className="px-1 text-slate-400 font-bold">...</span>}
-                          <button
-                            onClick={() => setCurrentPage(page)}
-                            className={`w-8 h-8 rounded-xl font-extrabold text-xs transition-all ${currentPage === page
-                                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
-                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                              }`}
-                          >
-                            {page}
-                          </button>
-                        </React.Fragment>
-                      );
-                    })}
-                </div>
-
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                  className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 transition-all ${currentPage === totalPages
-                      ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed'
-                      : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95'
-                    }`}
-                >
-                  <span>Selanjutnya</span>
-                  <Icon name="chevron-right" size={16} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Slide-over Edit Kebun Modal */}
-          {activeEditKebun && (
-            <React.Fragment>
-              <div
-                onClick={() => setActiveEditKebun(null)}
-                className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 transition-opacity"
-              />
-              <div className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 z-50 shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
-                <div>
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
-                    <div>
-                      <h3 className="text-lg font-black text-slate-900 dark:text-white">Edit Data Kebun</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Lakukan perubahan data kebun di sini. Klik simpan jika sudah selesai.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setActiveEditKebun(null)}
-                      className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-                    >
-                      <Icon name="x" size={20} />
-                    </button>
-                  </div>
-
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const item = activeEditKebun;
-                      const vJuni = Math.max(0, parseFloat(document.getElementById("editTKJuniVal")?.value) || 0);
-                      const vTKJuli = Math.max(0, parseFloat(document.getElementById("editTKJuliVal")?.value) || 0);
-                      const vTarJuli = Math.max(0, parseFloat(document.getElementById("editTargetJuliVal")?.value) || 0);
-                      const vTarAgs = Math.max(0, parseFloat(document.getElementById("editTargetAgsVal")?.value) || 0);
-
-                      const newEdits = {
-                        ...edits,
-                        [item.id]: {
-                          ...edits[item.id],
-                          tk_juni: vJuni,
-                          tk_juli: vTKJuli,
-                          target_juli: vTarJuli,
-                          target_agustus: vTarAgs
-                        }
-                      };
-                      setEdits(newEdits);
-
-                      const editPayload = Object.keys(newEdits).map(id => ({
-                        id: parseInt(id, 10),
-                        ...newEdits[id]
-                      }));
-
-                      handleSaveEdits(editPayload);
-                    }}
-                    className="py-6 space-y-4"
-                  >
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Kebun / PT HO</label>
-                      <input
-                        type="text"
-                        value={activeEditKebun.nama_kebun || '-'}
-                        readOnly
-                        className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-extrabold text-slate-900 dark:text-white"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Luasan Lahan (Ha)</label>
-                        <input
-                          type="text"
-                          value={`${formatRibuan(activeEditKebun.luasan || 0)} Ha`}
-                          readOnly
-                          className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Kebutuhan TK Panen</label>
-                        <input
-                          type="text"
-                          value={`${formatRibuan(activeEditKebun.req_tk || 0)} Orang`}
-                          readOnly
-                          className="w-full px-3.5 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 rounded-xl text-xs font-black text-amber-900 dark:text-amber-200"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3.5 shadow-xs">
-                      <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700">
-                        <label className="block text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                          ✏️ Edit Data Kebun
-                        </label>
-                        <span className="text-[10px] font-bold px-2.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-md">
-                          Edit Kebun
-                        </span>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">
-                          Ketersediaan TK Panen Juni
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          id="editTKJuniVal"
-                          defaultValue={(edits[activeEditKebun.id]?.tk_juni !== undefined ? edits[activeEditKebun.id].tk_juni : activeEditKebun.tk_juni) || 0}
-                          className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
-                          placeholder="Masukkan ketersediaan Juni..."
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">
-                          Ketersediaan TK Panen Juli
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          id="editTKJuliVal"
-                          defaultValue={(edits[activeEditKebun.id]?.tk_juli !== undefined ? edits[activeEditKebun.id].tk_juli : activeEditKebun.tk_juli) || 0}
-                          className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
-                          placeholder="Masukkan ketersediaan Juli..."
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">
-                          Rencana Pemenuhan TK Panen Juli
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          id="editTargetJuliVal"
-                          defaultValue={(edits[activeEditKebun.id]?.target_juli !== undefined ? edits[activeEditKebun.id].target_juli : activeEditKebun.target_juli) || 0}
-                          className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 shadow-xs"
-                          placeholder="Masukkan rencana Juli..."
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">
-                          Rencana Pemenuhan TK Panen Agustus
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          id="editTargetAgsVal"
-                          defaultValue={(edits[activeEditKebun.id]?.target_agustus !== undefined ? edits[activeEditKebun.id].target_agustus : activeEditKebun.target_agustus) || 0}
-                          className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 shadow-xs"
-                          placeholder="Masukkan rencana Agustus..."
-                        />
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setActiveEditKebun(null)}
-                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors"
-                      >
-                        Batal
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={saving}
-                        className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
-                      >
-                        {saving ? 'Menyimpan...' : 'Simpan Data Kebun'}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </React.Fragment>
-          )}
-
-          <MonitorTKModal isOpen={isMonitorModalOpen} onClose={() => setIsMonitorModalOpen(false)} kebunData={filteredKebun} />
-        </div>
-      );
-    }
-
     // ROOT APP
     // ============================================================
     function App() {
@@ -5015,7 +3554,6 @@
         _referenceDate: getTodayWIB()
       });
       const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-      const [mobileOpen, setMobileOpen] = useState(false);
       const [realisasiRecords, setRealisasiRecords] = useState([]);
       const [estimasiData, setEstimasiData] = useState({});
       const [kemarinRecords, setKemarinRecords] = useState([]);
@@ -5147,25 +3685,16 @@
       return (
         <div className="flex h-screen overflow-hidden bg-slate-50">
           {/* Sidebar */}
-          <Sidebar
-            activeNav={activeNav}
-            setActiveNav={setActiveNav}
-            collapsed={sidebarCollapsed}
-            setCollapsed={setSidebarCollapsed}
-            mobileOpen={mobileOpen}
-            setMobileOpen={setMobileOpen}
-          />
+          <Sidebar activeNav={activeNav} setActiveNav={setActiveNav} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
 
           {/* Main */}
           <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-            <TopHeader theme={theme} toggleTheme={toggleTheme} onToggleMobile={() => setMobileOpen(prev => !prev)} />
+            <TopHeader theme={theme} toggleTheme={toggleTheme} />
 
             {/* Scrollable body */}
             <div className="flex-1 overflow-y-auto">
-              <div className="flex flex-col gap-5 p-4 sm:p-6 max-w-screen-2xl mx-auto w-full">
-                {activeNav === 'tk-panen' ? (
-                  <TKPanenView />
-                ) : activeNav === 'validasi' ? (
+              <div className="flex flex-col gap-5 p-6 max-w-screen-2xl mx-auto w-full">
+                {activeNav === 'validasi' ? (
                   <ValidationPanel
                     realisasiRecords={realisasiRecords}
                     regionalDetails={regionalDetails}
@@ -5198,7 +3727,4 @@
     // Mount
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
-  </script>
-</body>
-
-</html>
+  

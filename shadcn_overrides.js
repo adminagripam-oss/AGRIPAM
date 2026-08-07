@@ -720,7 +720,7 @@ window.showAgripamUpdateAnnouncement = function (force) {
           
           <!-- AlertDescription -->
           <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
-            Fitur Revisi Realisasi Tanggal Lampau: Akun Regional kini dapat mengajukan permohonan revisi laporan panen tanggal sebelumnya untuk disetujui/ditolak oleh Admin.
+            Pada tiap tiap Regional bisa mengisi TK Panen pada bulan masing masing.
           </div>
         </div>
       </div>

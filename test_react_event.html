@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    function App() {
+      const [val, setVal] = React.useState("initial");
+      return (
+        <div>
+          <input id="myInput" type="text" value={val} onChange={e => setVal(e.target.value)} />
+          <div id="display">Value is: {val}</div>
+        </div>
+      );
+    }
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+
+    setTimeout(() => {
+      const input = document.getElementById('myInput');
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+      setter.call(input, "new_value");
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      console.log("Fired event!");
+    }, 1000);
+  </script>
+</body>
+</html>
