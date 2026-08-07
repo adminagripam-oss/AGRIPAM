@@ -1016,12 +1016,16 @@
               const arrow = isFlat ? "▬" : (isUp ? "▲" : "▼");
               const text = arrow + " " + (change >= 0 ? "+" : "") + change.toFixed(1) + "%";
 
+              const prevPoint = lineMeta.data[index - 1];
+              const midX = (prevPoint.x + point.x) / 2;
+              const midY = (prevPoint.y + point.y) / 2;
+
               ctx.save();
               ctx.font = "bold 10px Arial";
-              ctx.textAlign = 'left';
-              ctx.textBaseline = 'middle';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
               ctx.fillStyle = color;
-              ctx.fillText(text, point.x + 10, point.y);
+              ctx.fillText(text, midX, midY - 5);
               ctx.restore();
             });
           }
@@ -1036,11 +1040,11 @@
                 type: 'bar',
                 label: 'Realisasi Panen (Ton)',
                 data: hourlyData,
-                backgroundColor: '#00c150',
-                borderColor: '#00c150',
+                backgroundColor: '#3BA272',
+                borderColor: '#3BA272',
                 borderWidth: 1.5,
                 borderRadius: 4,
-                hoverBackgroundColor: '#00c150',
+                hoverBackgroundColor: '#3BA272',
                 order: 1
               },
               {

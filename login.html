@@ -6449,31 +6449,38 @@
               ctx.textAlign = 'center';
               ctx.textBaseline = 'bottom';
 
-              var pctText = "";
-              var pctColor = "";
-              if (index > 0) {
-                var prev = barDataset.data[index - 1];
-                if (prev > 0) {
-                  var change = ((val - prev) / prev) * 100;
-                  var isUp = change > 0;
-                  var isFlat = change === 0;
-                  pctColor = isFlat ? "#475569" : (isUp ? "#002671" : "#cc0000");
-                  if (theme === 'dark') pctColor = '#ffffff';
-                  var arrow = isFlat ? "▬" : (isUp ? "▲" : "▼");
-                  pctText = arrow + " " + (change >= 0 ? "+" : "") + change.toFixed(1) + "%";
-                }
-              }
-
               var valText = val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
               ctx.fillStyle = theme === "dark" ? "#ffffff" : "#111111";
+              ctx.fillText(valText, bar.x, bar.y - 3);
+              ctx.restore();
+            });
 
-              if (pctText) {
-                ctx.fillText(valText, bar.x, bar.y - 15);
-                ctx.fillStyle = pctColor;
-                ctx.fillText(pctText, bar.x, bar.y - 3);
-              } else {
-                ctx.fillText(valText, bar.x, bar.y - 3);
-              }
+            var lineDataset = chart.data.datasets[1];
+            var lineMeta = chart.getDatasetMeta(1);
+            lineMeta.data.forEach(function (point, index) {
+              if (index === 0) return;
+              var prev = lineDataset.data[index - 1];
+              var curr = lineDataset.data[index];
+              if (prev == null || curr == null || prev === 0) return;
+
+              var change = ((curr - prev) / prev) * 100;
+              var isUp = change > 0;
+              var isFlat = change === 0;
+              var color = isFlat ? "#475569" : (isUp ? "#002671" : "#cc0000");
+              if (theme === 'dark') color = "#ffffff";
+              var arrow = isFlat ? "▬" : (isUp ? "▲" : "▼");
+              var text = arrow + " " + (change >= 0 ? "+" : "") + change.toFixed(1) + "%";
+
+              var prevPoint = lineMeta.data[index - 1];
+              var midX = (prevPoint.x + point.x) / 2;
+              var midY = (prevPoint.y + point.y) / 2;
+
+              ctx.save();
+              ctx.font = "bold 10px Arial";
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+              ctx.fillStyle = color;
+              ctx.fillText(text, midX, midY - 5);
               ctx.restore();
             });
           }
@@ -6488,11 +6495,11 @@
                 type: 'bar',
                 label: 'Realisasi Panen (Ton)',
                 data: dataValues,
-                backgroundColor: '#00c150',
-                borderColor: '#00c150',
+                backgroundColor: '#3BA272',
+                borderColor: '#3BA272',
                 borderWidth: 1.5,
                 borderRadius: 4,
-                hoverBackgroundColor: '#00c150',
+                hoverBackgroundColor: '#3BA272',
                 order: 1
               },
               {
