@@ -982,6 +982,7 @@
           id: 'chartDataLabels',
           afterDatasetsDraw: (chart) => {
             const ctx = chart.ctx;
+            const theme = document.documentElement.getAttribute("data-theme") || "light";
             const barDataset = chart.data.datasets[0];
             const barMeta = chart.getDatasetMeta(0);
             barMeta.data.forEach((bar, index) => {
@@ -994,7 +995,7 @@
               ctx.textBaseline = 'bottom';
 
               const valText = val.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-              ctx.fillStyle = "#1e293b";
+              ctx.fillStyle = theme === 'dark' ? '#ffffff' : '#1e293b';
               ctx.fillText(valText, bar.x, bar.y - 3);
               ctx.restore();
             });
@@ -1010,7 +1011,8 @@
               const change = ((curr - prev) / prev) * 100;
               const isUp = change > 0;
               const isFlat = change === 0;
-              const color = isFlat ? "#475569" : (isUp ? "#002671" : "#cc0000");
+              let color = isFlat ? "#475569" : (isUp ? "#002671" : "#cc0000");
+              if (theme === 'dark') color = "#ffffff";
               const arrow = isFlat ? "▬" : (isUp ? "▲" : "▼");
               const text = arrow + " " + (change >= 0 ? "+" : "") + change.toFixed(1) + "%";
 
