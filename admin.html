@@ -1081,15 +1081,27 @@
         }
 
         function applyChartTheme() {
-            if (!myChart) return;
+            if (typeof myChart === 'undefined' || !myChart) return;
             var theme = document.documentElement.getAttribute("data-theme") || "light";
             var gridColor = theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)";
-            var textColor = theme === "dark" ? "#cbd5e1" : "#444444";
+            var textColor = theme === "dark" ? "#ffffff" : "#000000";
 
-            myChart.options.scales.y.grid.color = gridColor;
-            myChart.options.scales.x.grid.color = gridColor;
-            myChart.options.scales.x.ticks.color = textColor;
-            myChart.options.scales.y.ticks.color = textColor;
+            if (typeof myChart !== 'undefined' && myChart) {
+                if (myChart.config && myChart.config.options && myChart.config.options.scales) {
+                    if (myChart.config.options.scales.y && myChart.config.options.scales.y.ticks) {
+                        myChart.config.options.scales.y.ticks.color = textColor;
+                    }
+                    if (myChart.config.options.scales.y && myChart.config.options.scales.y.grid) {
+                        myChart.config.options.scales.y.grid.color = gridColor;
+                    }
+                    if (myChart.config.options.scales.x && myChart.config.options.scales.x.ticks) {
+                        myChart.config.options.scales.x.ticks.color = textColor;
+                    }
+                    if (myChart.config.options.scales.x && myChart.config.options.scales.x.grid) {
+                        myChart.config.options.scales.x.grid.color = gridColor;
+                    }
+                }
+            }
             myChart.update();
         }
 
@@ -2973,7 +2985,7 @@
                 var ctx = canvas.getContext("2d");
                 var theme = document.documentElement.getAttribute("data-theme") || "light";
                 var gridColor = theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)";
-                var textColor = theme === "dark" ? "#cbd5e1" : "#444444";
+                var textColor = theme === "dark" ? "#ffffff" : "#000000";
 
                 // Create a beautiful linear gradient for normal background
                 var gradient = ctx.createLinearGradient(0, 0, 0, canvas.clientHeight || 300);

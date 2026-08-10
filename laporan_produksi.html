@@ -976,7 +976,7 @@
             .reduce((sum, r) => sum + (parseFloat(r.tonase) || 0), 0);
         });
 
-        const themeStr = document.documentElement.getAttribute("data-theme") || "light";
+        const themeStr = theme || "light";
         const textColor = themeStr === "dark" ? "#ffffff" : "#000000";
 
         const lineData = trimToReportedRange(hourlyData);
@@ -985,7 +985,6 @@
           id: 'chartDataLabels',
           afterDatasetsDraw: (chart) => {
             const ctx = chart.ctx;
-            const theme = document.documentElement.getAttribute("data-theme") || "light";
             const barDataset = chart.data.datasets[0];
             const barMeta = chart.getDatasetMeta(0);
             barMeta.data.forEach((bar, index) => {
@@ -1525,7 +1524,7 @@
         if (!canvasRef.current) return;
         if (chartRef.current) { chartRef.current.destroy(); }
 
-        const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+        const isDark = theme === "dark";
 
         if (activeTab === 'harian') {
           // Render Area Line Graph
