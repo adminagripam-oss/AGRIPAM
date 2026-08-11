@@ -233,7 +233,7 @@
             {/* Mini Ring */}
             <div className="relative flex-shrink-0">
               <svg width="52" height="52" viewBox="0 0 52 52">
-                <circle cx="26" cy="26" r="22" fill="none" stroke="#334155" strokeWidth="5" />
+                <circle cx="26" cy="26" r="22" fill="none" stroke="#333333" strokeWidth="5" />
                 <circle
                   cx="26" cy="26" r="22"
                   fill="none"
@@ -534,7 +534,7 @@
               }
 
               const valText = val.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-              ctx.fillStyle = "#1e293b";
+              ctx.fillStyle = "#1E1E1E";
 
               if (pctText) {
                 ctx.fillText(valText, bar.x, bar.y - 15);
@@ -723,7 +723,7 @@
             plugins: {
               legend: { display: false },
               tooltip: {
-                backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#f1f5f9',
+                backgroundColor: '#1E1E1E', titleColor: '#94a3b8', bodyColor: '#f1f5f9',
                 padding: 12, cornerRadius: 8,
                 callbacks: { label: ctx => ` ${formatRibuan(ctx.parsed)} ton` }
               }
@@ -1146,7 +1146,7 @@
               plugins: {
                 legend: { display: false },
                 tooltip: {
-                  backgroundColor: '#1e293b',
+                  backgroundColor: '#1E1E1E',
                   titleColor: '#94a3b8',
                   bodyColor: '#f1f5f9',
                   padding: 10,
@@ -1245,7 +1245,7 @@
               plugins: {
                 legend: { display: false },
                 tooltip: {
-                  backgroundColor: '#1e293b',
+                  backgroundColor: '#1E1E1E',
                   titleColor: '#94a3b8',
                   bodyColor: '#f1f5f9',
                   padding: 12,
