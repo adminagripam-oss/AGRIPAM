@@ -399,7 +399,7 @@ window.renderInlineAlert = function (msg) {
   if (lower.includes('disetujui') || lower.includes('dihapus') || lower.includes('berhasil') || lower.includes('sukses') || lower.includes('notification')) {
     const cleanMsg = msg.replace('✅ ', '').replace('❌ ', '');
     return `
-      <div class="relative w-full rounded-xl border border-slate-800 bg-slate-900 text-slate-50 p-4 text-left mt-2 shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50">
+      <div class="relative w-full rounded-xl border border-slate-800 bg-slate-900 text-slate-50 p-4 text-left mt-2 shadow-lg dark:border-slate-800 dark:bg-[#1E1E1E] dark:text-slate-50">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-4 top-4 h-5 w-5 text-emerald-500"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
         <h5 class="mb-1 ml-8 font-semibold leading-none tracking-tight text-white">Notification!</h5>
         <div class="text-sm ml-8 text-slate-300 opacity-90 leading-relaxed">${cleanMsg}</div>
@@ -615,7 +615,7 @@ window.renderInlineAlert = function (msg) {
   if (lower.includes('disetujui') || lower.includes('dihapus') || lower.includes('berhasil') || lower.includes('sukses') || lower.includes('notification')) {
     const cleanMsg = msg.replace('✅ ', '').replace('❌ ', '');
     return `
-      <div class="relative w-full rounded-xl border border-slate-800 bg-slate-900 text-slate-50 p-4 text-left mt-2 shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50">
+      <div class="relative w-full rounded-xl border border-slate-800 bg-slate-900 text-slate-50 p-4 text-left mt-2 shadow-lg dark:border-slate-800 dark:bg-[#1E1E1E] dark:text-slate-50">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-4 top-4 h-5 w-5 text-emerald-500"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
         <h5 class="mb-1 ml-8 font-semibold leading-none tracking-tight text-white">Notification!</h5>
         <div class="text-sm ml-8 text-slate-300 opacity-90 leading-relaxed">${cleanMsg}</div>

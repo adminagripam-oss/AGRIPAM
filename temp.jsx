@@ -1362,7 +1362,7 @@
 
           <div style={{ height: '260px' }} className="relative w-full">
             {loading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-slate-900 bg-opacity-70 z-10 rounded-xl">
+              <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-[#1E1E1E] bg-opacity-70 z-10 rounded-xl">
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
                   <span className="text-[11px] text-slate-400 font-medium">Memuat grafik...</span>
@@ -2129,7 +2129,7 @@
       return (
         <div className="space-y-5 animate-fadeIn">
           {/* Header Card */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white dark:bg-[#1E1E1E] p-4 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
             <div>
               <h2 className="text-lg font-bold text-slate-800 dark:text-white">Validasi Data Produksi Harian</h2>
               <p className="text-xs text-slate-450 dark:text-slate-400">Membandingkan realisasi database AGRI-PAM vs Excel LHP PalmOps</p>
@@ -2220,12 +2220,12 @@
 
           {/* Upload / Source Status Area */}
           {dbLoading ? (
-            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-8 bg-white dark:bg-slate-800 text-center shadow-sm">
+            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-8 bg-white dark:bg-[#1E1E1E] text-center shadow-sm">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mx-auto"></div>
               <p className="text-[12px] text-slate-500 mt-2">Memeriksa database...</p>
             </div>
           ) : (filters.tanggal !== filters.tanggal_akhir) ? (
-            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-6 bg-white dark:bg-slate-800 shadow-sm text-center">
+            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-6 bg-white dark:bg-[#1E1E1E] shadow-sm text-center">
               <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center text-brand-600 dark:text-brand-400 shadow-sm border border-brand-100 dark:border-brand-900 mx-auto mb-3">
                 <Icon name="info" size={22} />
               </div>
@@ -2235,7 +2235,7 @@
               </p>
             </div>
           ) : isFromDb ? (
-            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-6 bg-white dark:bg-slate-800 shadow-sm">
+            <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-6 bg-white dark:bg-[#1E1E1E] shadow-sm">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-green-50 dark:bg-green-950/50 flex items-center justify-center text-green-600 dark:text-green-400 border border-green-200 dark:border-green-900">
@@ -2278,7 +2278,7 @@
               onDragOver={handleDrag}
               onDragLeave={handleDrag}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-xl p-8 text-center bg-white dark:bg-slate-800 transition-all shadow-sm relative ${dragActive ? 'border-brand-500 bg-brand-50/20' : 'border-slate-300 dark:border-slate-700 hover:border-brand-400'
+              className={`border-2 border-dashed rounded-xl p-8 text-center bg-white dark:bg-[#1E1E1E] transition-all shadow-sm relative ${dragActive ? 'border-brand-500 bg-brand-50/20' : 'border-slate-300 dark:border-slate-700 hover:border-brand-400'
                 }`}
             >
               <input
@@ -2348,7 +2348,7 @@
 
           {activePalmopsSource && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
+              <div className="bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
                 <div className="w-10 h-10 rounded-lg bg-green-50 dark:bg-green-950/30 flex items-center justify-center text-green-600 dark:text-green-400">
                   <Icon name="database" size={20} />
                 </div>
@@ -2358,7 +2358,7 @@
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
+              <div className="bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
                 <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
                   <Icon name="file-spreadsheet" size={20} />
                 </div>
@@ -2368,7 +2368,7 @@
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
+              <div className="bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${Math.abs(totalSelisih) < 0.1 ? 'bg-green-55 bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400' : 'bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400'}`}>
                   <Icon name="percent" size={20} />
                 </div>
@@ -2380,7 +2380,7 @@
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
+              <div className="bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm flex items-center gap-3.5">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${overallStatus === 'ALL_MATCH' ? 'bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400'}`}>
                   <Icon name={overallStatus === 'ALL_MATCH' ? "check-circle-2" : "alert-triangle"} size={20} />
                 </div>
@@ -2394,8 +2394,8 @@
             </div>
           )}
 
-          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-800/50">
+          <div className="bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50 dark:bg-[#1E1E1E]/50">
               <div className="flex items-center gap-2">
                 <Icon name="list" size={14} className="text-slate-500" />
                 <span className="text-[13px] font-bold text-slate-700 dark:text-white">Rincian Perbandingan Regional</span>
@@ -2419,7 +2419,7 @@
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-[12px] whitespace-nowrap">
                 <thead>
-                  <tr className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 text-slate-500 font-semibold text-center uppercase tracking-wider">
+                  <tr className="bg-slate-100 dark:bg-[#1E1E1E] border-b border-slate-200 dark:border-slate-700 text-slate-500 font-semibold text-center uppercase tracking-wider">
                     <th className="px-4 py-3 w-12 text-center">No</th>
                     <th className="px-4 py-3 text-left">Nama Regional</th>
                     <th className="px-4 py-3 text-right">Realisasi AGRI-PAM (Ton)</th>
@@ -2472,7 +2472,7 @@
                     );
                   })}
 
-                  <tr className="bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 font-bold">
+                  <tr className="bg-slate-100 dark:bg-[#1E1E1E] border-t border-slate-200 dark:border-slate-700 font-bold">
                     <td colSpan={2} className="px-4 py-3 text-center text-[13px] text-slate-700 dark:text-white uppercase tracking-wider">Total Nasional</td>
                     <td className="px-4 py-3 text-right text-[13px] tabular-nums text-slate-800 dark:text-white">{formatRibuan(totalAgripam)}</td>
                     <td className="px-4 py-3 text-right text-[13px] tabular-nums text-slate-850 dark:text-slate-100">{activePalmopsSource ? formatRibuan(totalPalmops) : "-"}</td>
@@ -2497,7 +2497,7 @@
             </div>
 
             {filteredList.length === 0 && (
-              <div className="text-center py-10 bg-slate-50/20 dark:bg-slate-800/10">
+              <div className="text-center py-10 bg-slate-50/20 dark:bg-[#1E1E1E]/10">
                 <Icon name="info" size={24} className="text-slate-400 mx-auto mb-2" />
                 <p className="text-[13px] text-slate-500 font-medium">Tidak ada perbedaan data regional. Semua data cocok!</p>
               </div>
@@ -2691,9 +2691,9 @@
 
       return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn">
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn">
             {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#1E1E1E]/50">
               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <Icon name="target" size={20} className="text-brand-600" />
                 Kelola Target Challenge Bulanan
@@ -2709,7 +2709,7 @@
               <div className="flex items-center gap-4">
                 <div className="flex flex-col">
                   <label className="text-xs font-bold text-slate-500 uppercase mb-1">Bulan & Tahun</label>
-                  <input type="month" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} className="border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none dark:bg-slate-800 dark:text-white" />
+                  <input type="month" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} className="border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none dark:bg-[#1E1E1E] dark:text-white" />
                 </div>
 
                 {targetData && (
@@ -2744,7 +2744,7 @@
                 <div className="flex flex-col gap-4">
                   <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
                     <table className="w-full text-xs text-left">
-                      <thead className="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase">
+                      <thead className="bg-slate-50 dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-300 uppercase">
                         <tr>
                           <th className="px-3 py-2 border-b dark:border-slate-700 whitespace-nowrap min-w-[120px]">Wilayah</th>
                           {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
@@ -2762,7 +2762,7 @@
                           </tr>
                         ))}
                       </tbody>
-                      <tr className="bg-slate-100 dark:bg-slate-900 font-bold">
+                      <tr className="bg-slate-100 dark:bg-[#1E1E1E] font-bold">
                         <td className="px-3 py-2">TOTAL</td>
                         {Array.from({ length: 31 }, (_, i) => i + 1).map(d => {
                           const sum = Object.values(targetData).reduce((acc, curr) => acc + (curr[d] || 0), 0);
@@ -3301,7 +3301,7 @@
       };
 
       return (
-        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col gap-6 animate-fadeIn">
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col gap-6 animate-fadeIn">
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
             <div>
@@ -3325,7 +3325,7 @@
                   onChange={(e) => {
                     setSelectedDate(e.target.value);
                   }}
-                  className="border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs font-medium text-slate-700 dark:text-slate-300 dark:bg-slate-800 focus:outline-none focus:border-brand-500"
+                  className="border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs font-medium text-slate-700 dark:text-slate-300 dark:bg-[#1E1E1E] focus:outline-none focus:border-brand-500"
                 />
               </div>
 
@@ -3528,7 +3528,7 @@
               </div>
             </div>
           ) : (
-            <div className="text-center py-10 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800/80">
+            <div className="text-center py-10 bg-slate-50/50 dark:bg-[#1E1E1E]/50 rounded-xl border border-slate-100 dark:border-slate-800/80">
               <Icon name="file-text" size={32} className="text-slate-300 mx-auto mb-2" />
               <p className="text-xs text-slate-500 font-medium">Unggah berkas Excel LHP Anda untuk memuat preview rencana & realisasi.</p>
               <p className="text-[10px] text-slate-400 mt-0.5">Data rencana otomatis dihubungkan dari database estimasi harian.</p>
