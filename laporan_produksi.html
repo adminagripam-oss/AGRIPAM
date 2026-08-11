@@ -4038,35 +4038,35 @@
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((r, i, arr) => (
           <span key={r.name}>
-            <strong className="text-[#facc15] font-bold drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{r.name}</strong> Kekurangan <strong className="text-[#facc15] font-bold drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{Number(Math.max(0, r.deficit)).toLocaleString('id-ID')}</strong> Orang{i < arr.length - 1 ? ', ' : '.'}
+            <strong className="text-[#B8860B] font-bold drop-shadow-[0_0_5px_rgba(184,134,11,0.5)]">{r.name}</strong> Kekurangan <strong className="text-[#B8860B] font-bold drop-shadow-[0_0_5px_rgba(184,134,11,0.5)]">{Number(Math.max(0, r.deficit)).toLocaleString('id-ID')}</strong> Orang{i < arr.length - 1 ? ', ' : '.'}
           </span>
         ));
 
       return (
-        <div className="relative rounded-2xl mb-6 overflow-hidden border border-[#b8860b] shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+        <div className="relative rounded-2xl mb-6 overflow-hidden border border-slate-300 dark:border-slate-700 shadow-md">
           {/* Inner dark gradient with tech-like radial overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#23252b] via-[#1a1c21] to-[#111215] z-0"></div>
+          <div className="absolute inset-0 bg-[#d9d9d9] dark:bg-slate-800 z-0"></div>
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-400 via-transparent to-transparent z-0"></div>
 
           <div className="relative z-10 p-5 md:p-6 flex flex-col md:flex-row gap-6 font-['Arial']">
             {/* Left Column */}
-            <div className="md:w-1/3 flex flex-col justify-center border-b md:border-b-0 md:border-r border-[#b8860b]/40 pb-6 md:pb-0 md:pr-6">
+            <div className="md:w-1/3 flex flex-col justify-center border-b md:border-b-0 md:border-r border-slate-300 dark:border-slate-700 pb-6 md:pb-0 md:pr-6">
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-[#d4af37] via-[#aa8022] to-[#8b6508] shadow-[0_0_15px_rgba(212,175,55,0.4)] border border-[#fadd82]/50">
-                  <Icon name="zap" size={28} className="text-[#2a2c32] fill-current" />
+                  <img src="Light-Bulb--Streamline-Ultimate.png" alt="Idea" width="28" height="28" className="object-contain" />
                 </div>
-                <h2 className="text-xl md:text-2xl font-bold text-white leading-tight tracking-wide drop-shadow-md">
+                <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-tight tracking-wide drop-shadow-sm">
                   Executive Intelligence Highlight
                 </h2>
               </div>
-              <p className="text-sm text-slate-300 leading-relaxed pr-2">
-                Berdasarkan data ketersediaan TK Panen cut-off <strong className="text-[#facc15] font-bold drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{cutOffMonth}</strong>, dengan Kekurangan tenaga Panen <strong className="text-[#facc15] font-bold drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{Number(Math.max(0, kekurangTK)).toLocaleString('id-ID')}</strong> Orang.
+              <p className="text-sm font-bold text-slate-800 dark:text-slate-200 leading-relaxed pr-2">
+                Berdasarkan data ketersediaan TK Panen cut-off <strong className="text-[#B8860B] font-bold drop-shadow-[0_0_5px_rgba(184,134,11,0.5)]">{cutOffMonth}</strong>, dengan Kekurangan tenaga Panen <strong className="text-[#B8860B] font-bold drop-shadow-[0_0_5px_rgba(184,134,11,0.5)]">{Number(Math.max(0, kekurangTK)).toLocaleString('id-ID')}</strong> Orang.
               </p>
             </div>
 
             {/* Right Column */}
             <div className="md:w-2/3 flex items-center">
-              <p className="text-xs md:text-[13px] leading-[1.8] text-slate-300 text-justify">
+              <p className="text-xs md:text-[13px] font-bold leading-[1.8] text-slate-800 dark:text-slate-200 text-justify">
                 {regionDetailsElements}
               </p>
             </div>
@@ -4215,17 +4215,96 @@
         }
       };
 
+      const handleExportExcel = () => {
+        const table = document.getElementById("monitoring-tk-table");
+        if (!table) return;
+
+        const tableClone = table.cloneNode(true);
+
+        const trs = tableClone.querySelectorAll("tr");
+        trs.forEach((tr, rowIndex) => {
+          const cells = tr.querySelectorAll("th, td");
+          cells.forEach((cell) => {
+            cell.style.border = "0.5pt solid black";
+            cell.style.textAlign = "center";
+            cell.style.color = "black";
+            cell.style.fontFamily = "Arial";
+            cell.style.fontWeight = "bold";
+            cell.style.verticalAlign = "middle";
+
+            if (rowIndex === 0 || rowIndex === 1) {
+              cell.style.backgroundColor = "#4BACC6";
+            }
+
+            const svg = cell.querySelector("svg");
+            if (svg) {
+              const path = svg.querySelector("path");
+              let arrow = "";
+              if (path && path.getAttribute("d") === "M12 4l-8 16h16z") {
+                arrow = "▲ ";
+                cell.style.color = "#059669";
+              } else if (path && path.getAttribute("d") === "M12 20l8-16H4z") {
+                arrow = "▼ ";
+                cell.style.color = "#dc2626";
+              }
+              const textNode = document.createTextNode(arrow);
+              svg.parentNode.replaceChild(textNode, svg);
+            }
+          });
+        });
+
+        const html = `
+          <html xmlns:x="urn:schemas-microsoft-com:office:excel">
+            <head>
+              <meta charset="utf-8" />
+              <!--[if gte mso 9]>
+              <xml>
+                <x:ExcelWorkbook>
+                  <x:ExcelWorksheets>
+                    <x:ExcelWorksheet>
+                      <x:Name>Monitoring TK</x:Name>
+                      <x:WorksheetOptions>
+                        <x:DisplayGridlines/>
+                      </x:WorksheetOptions>
+                    </x:ExcelWorksheet>
+                  </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+              </xml>
+              <![endif]-->
+            </head>
+            <body>
+              ${tableClone.outerHTML}
+            </body>
+          </html>
+        `;
+
+        const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "Monitoring_Rekapitulasi_TK_Panen.xls";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+
       return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 w-full max-w-7xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-900 dark:bg-slate-800 text-white z-30 relative">
               <h3 className="font-bold text-lg">Monitoring & Rekapitulasi Tenaga Kerja Panen</h3>
-              <button onClick={onClose} className="text-white/80 hover:text-white transition-colors">
-                <Icon name="x" size={24} />
-              </button>
+              <div className="flex items-center gap-3">
+                <button onClick={handleExportExcel} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors">
+                  <Icon name="download" size={16} /> Export Excel
+                </button>
+                <button onClick={onClose} className="text-white/80 hover:text-white transition-colors">
+                  <Icon name="x" size={24} />
+                </button>
+              </div>
             </div>
             <div className="px-4 pb-4 pt-0 overflow-auto flex-1 relative bg-white dark:bg-slate-900 rounded-b-xl">
-              <table className="w-full text-left border-separate border-spacing-0 border-t-2 border-l-2 border-black dark:border-slate-700 mt-0">
+              <table id="monitoring-tk-table" className="w-full text-left border-separate border-spacing-0 border-t-2 border-l-2 border-black dark:border-slate-700 mt-0">
                 <thead className="sticky top-0 z-30 bg-[#46bdc6] text-white">
                   <tr>
                     <th className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">No</th>
