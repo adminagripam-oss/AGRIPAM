@@ -3569,13 +3569,13 @@
 
             for (let r = 6; r < rows.length; r++) {
               const row = rows[r];
-              if (!row || !Array.isArray(row) || row.length < 12) continue;
+              if (!row || !Array.isArray(row) || row.length < 13) continue;
               const rawReg = row[1]; // Column B (Wilayah)
               if (!rawReg) continue;
               const matchedReg = findRegionMatch(rawReg);
               if (matchedReg) {
-                let valPanen = row[11]; // Column L
-                let valKirim = row[6]; // Column G
+                let valPanen = row[12]; // Column M
+                let valKirim = row[7]; // Column H
 
                 if (typeof valPanen === 'string') valPanen = valPanen.replace(/[^\d.,]/g, '').replace(/,/g, '');
                 if (typeof valKirim === 'string') valKirim = valKirim.replace(/[^\d.,]/g, '').replace(/,/g, '');
