@@ -12,7 +12,7 @@ function normalizeRegion(rStr) {
   let s = String(rStr).trim().toUpperCase();
   s = s.replace(/^REGIONAL\s+/, '');
   s = s.replace(/^RO\s+/, '');
-  
+
   if (s.includes('SUMUT 1') || s.includes('SUMATERA UTARA 1')) return 'SUMUT 1';
   if (s.includes('SUMUT 2') || s.includes('SUMATERA UTARA 2') || s.includes('TORGANDA')) return 'SUMUT 2';
   if (s.includes('KALBAR 1') || s.includes('KALIMANTAN BARAT 1')) return 'KALBAR 1';
@@ -78,7 +78,7 @@ module.exports = async (req, res) => {
     if (!error && supaData && supaData.length > 0) {
       kebunList = supaData;
     }
-  } catch (_) {}
+  } catch (_) { }
 
   // -------------------------------------------------------------------------
   // GET KEBUN DATA
@@ -200,7 +200,7 @@ module.exports = async (req, res) => {
               updated_by: regionParam,
               updated_at: nowIso
             }).eq('id', targetId);
-          } catch (_) {}
+          } catch (_) { }
         }
       }
     }
