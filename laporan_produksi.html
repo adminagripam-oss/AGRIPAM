@@ -4550,6 +4550,216 @@
       const totalCutOff = summary.totalCutOff !== undefined ? summary.totalCutOff : filteredKebun.reduce((s, x) => s + (parseInt(x[cutOffField]) || 0), 0);
       const kekurangTK = totalReqTk - totalCutOff;
 
+      const handleExportTKPanenExcel = () => {
+        if (!filteredKebun || filteredKebun.length === 0) {
+          alert("Tidak ada data kebun untuk diexport.");
+          return;
+        }
+
+        let totLuas = 0;
+        let totReq = 0;
+        let totMei = 0;
+        let totJuni = 0;
+        let totJuli = 0;
+        let totAgs = 0;
+        let totTargetJuli = 0;
+        let totTargetAgs = 0;
+
+        const startRow = 3;
+        const endRow = 2 + filteredKebun.length;
+
+        const rowsHtml = filteredKebun.map((item, idx) => {
+          const editObj = edits[item.id] || {};
+          const valMei = parseInt(item.tk_mei, 10) || 0;
+          const valJuni = editObj.tk_juni !== undefined ? parseInt(editObj.tk_juni, 10) : (parseInt(item.tk_juni, 10) || 0);
+          const targetJuli = editObj.target_juli !== undefined ? parseInt(editObj.target_juli, 10) : (parseInt(item.target_juli, 10) || 0);
+          const targetAgs = editObj.target_agustus !== undefined ? parseInt(editObj.target_agustus, 10) : (parseInt(item.target_agustus, 10) || 0);
+          const valJuli = editObj.tk_juli !== undefined ? parseInt(editObj.tk_juli, 10) : (parseInt(item.tk_juli, 10) || 0);
+          const valAgs = editObj.tk_agustus !== undefined ? parseInt(editObj.tk_agustus, 10) : (parseInt(item.tk_agustus, 10) || 0);
+          const reqTk = parseInt(item.req_tk, 10) || 0;
+          const luasan = parseFloat(item.luasan) || 0;
+
+          const rowNum = startRow + idx;
+          const diffJuni = valJuni - valMei;
+          const trendJuniText = diffJuni > 0 ? `▲ +${diffJuni.toLocaleString('id-ID')}` : diffJuni < 0 ? `▼ ${diffJuni.toLocaleString('id-ID')}` : `▲ 0`;
+          const trendJuniColor = diffJuni >= 0 ? `#059669` : `#dc2626`;
+
+          const diffJuli = valJuli - valJuni;
+          const trendJuliText = diffJuli > 0 ? `▲ +${diffJuli.toLocaleString('id-ID')}` : diffJuli < 0 ? `▼ ${diffJuli.toLocaleString('id-ID')}` : `▲ 0`;
+          const trendJuliColor = diffJuli >= 0 ? `#059669` : `#dc2626`;
+
+          const diffAgs = valAgs - valJuli;
+          const trendAgsText = diffAgs > 0 ? `▲ +${diffAgs.toLocaleString('id-ID')}` : diffAgs < 0 ? `▼ ${diffAgs.toLocaleString('id-ID')}` : `▲ 0`;
+          const trendAgsColor = diffAgs >= 0 ? `#059669` : `#dc2626`;
+
+          const rowBg = '#ffffff';
+
+          totLuas += luasan;
+          totReq += reqTk;
+          totMei += valMei;
+          totJuni += valJuni;
+          totJuli += valJuli;
+          totAgs += valAgs;
+          totTargetJuli += targetJuli;
+          totTargetAgs += targetAgs;
+
+          return `
+            <tr style="background-color: ${rowBg}; font-family: Arial, sans-serif; font-size: 10pt;">
+              <td style="border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt;">${idx + 1}</td>
+              <td style="border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">${item.cro || '-'}</td>
+              <td style="border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt;">${item.region || '-'}</td>
+              <td style="border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">${item.nama_kebun || '-'}</td>
+              <td style="border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt;">${item.name_tag || '-'}</td>
+              <td x:num="${luasan}" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt;" width="100">${luasan ? luasan.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
+              <td x:num="${reqTk}" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;" width="100">${reqTk.toLocaleString('id-ID')}</td>
+              <td x:num="${valMei}" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt;" width="100">${valMei.toLocaleString('id-ID')}</td>
+              <td x:num="${valJuni}" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;" width="100">${valJuni.toLocaleString('id-ID')}</td>
+              <td style="border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold; color: ${trendJuniColor};">${trendJuniText}</td>
+              <td x:num="${valJuli}" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt;" width="100">${valJuli.toLocaleString('id-ID')}</td>
+              <td style="border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold; color: ${trendJuliColor};">${trendJuliText}</td>
+              <td x:num="${valAgs}" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt;" width="100">${valAgs.toLocaleString('id-ID')}</td>
+              <td style="border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold; color: ${trendAgsColor};">${trendAgsText}</td>
+              <td x:num="${targetJuli}" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;" width="100">${targetJuli.toLocaleString('id-ID')}</td>
+              <td x:num="${targetAgs}" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;" width="100">${targetAgs.toLocaleString('id-ID')}</td>
+            </tr>
+          `;
+        }).join('');
+
+        const diffTotJuni = totJuni - totMei;
+        const trendTotJuniText = diffTotJuni > 0 ? `▲ +${diffTotJuni.toLocaleString('id-ID')}` : diffTotJuni < 0 ? `▼ ${diffTotJuni.toLocaleString('id-ID')}` : `▲ 0`;
+        const trendTotJuniColor = diffTotJuni >= 0 ? `#6ee7b7` : `#fca5a5`;
+
+        const diffTotJuli = totJuli - totJuni;
+        const trendTotJuliText = diffTotJuli > 0 ? `▲ +${diffTotJuli.toLocaleString('id-ID')}` : diffTotJuli < 0 ? `▼ ${diffTotJuli.toLocaleString('id-ID')}` : `▲ 0`;
+        const trendTotJuliColor = diffTotJuli >= 0 ? `#6ee7b7` : `#fca5a5`;
+
+        const diffTotAgs = totAgs - totJuli;
+        const trendTotAgsText = diffTotAgs > 0 ? `▲ +${diffTotAgs.toLocaleString('id-ID')}` : diffTotAgs < 0 ? `▼ ${diffTotAgs.toLocaleString('id-ID')}` : `▲ 0`;
+        const trendTotAgsColor = diffTotAgs >= 0 ? `#6ee7b7` : `#fca5a5`;
+
+        const totalRowHtml = `
+          <tr style="font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;">
+            <td colspan="5" style="background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;">TOTAL</td>
+            <td x:fmla="=SUM(F${startRow}:F${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(F${startRow}:F${endRow})</td>
+            <td x:fmla="=SUM(G${startRow}:G${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(G${startRow}:G${endRow})</td>
+            <td x:fmla="=SUM(H${startRow}:H${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(H${startRow}:H${endRow})</td>
+            <td x:fmla="=SUM(I${startRow}:I${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(I${startRow}:I${endRow})</td>
+            <td style="background-color: #162d4a; color: ${trendTotJuniColor}; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;">${trendTotJuniText}</td>
+            <td x:fmla="=SUM(K${startRow}:K${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(K${startRow}:K${endRow})</td>
+            <td style="background-color: #162d4a; color: ${trendTotJuliColor}; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;">${trendTotJuliText}</td>
+            <td x:fmla="=SUM(M${startRow}:M${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(M${startRow}:M${endRow})</td>
+            <td style="background-color: #162d4a; color: ${trendTotAgsColor}; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;">${trendTotAgsText}</td>
+            <td x:fmla="=SUM(O${startRow}:O${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(O${startRow}:O${endRow})</td>
+            <td x:fmla="=SUM(P${startRow}:P${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(P${startRow}:P${endRow})</td>
+          </tr>
+        `;
+
+        const headerRow1 = `
+          <tr style="height: 50px;" height="50">
+            <th rowspan="2" style="background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 50px;">No</th>
+            <th rowspan="2" style="background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 50px;">CRO</th>
+            <th rowspan="2" style="background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 50px;">Wilayah</th>
+            <th rowspan="2" style="background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 50px;">Nama Kebun / PT HO</th>
+            <th rowspan="2" style="background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 50px;">Name Tag Kebun</th>
+            <th rowspan="2" style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 50px;" width="100">Luasan</th>
+            <th rowspan="2" style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 50px;" width="100">Kebutuhan Tenaga Panen</th>
+            <th colspan="7" style="background-color: #162d4a; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;">Ketersedian TK PANEN</th>
+            <th colspan="2" style="background-color: #162d4a; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;">Rencana Pemenuhan TK Panen</th>
+          </tr>
+        `;
+
+        const headerRow2 = `
+          <tr style="height: 50px;" height="50">
+            <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">MEI</th>
+            <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">JUNI</th>
+            <th style="background-color: #162d4a; color: #6ee7b7; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;">TREND</th>
+            <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">JULI</th>
+            <th style="background-color: #162d4a; color: #6ee7b7; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;">TREND</th>
+            <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">AGUSTUS</th>
+            <th style="background-color: #162d4a; color: #6ee7b7; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;">TREND</th>
+            <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">JULI</th>
+            <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">AGUSTUS</th>
+          </tr>
+        `;
+
+        const html = `
+          <html xmlns:x="urn:schemas-microsoft-com:office:excel">
+            <head>
+              <meta charset="utf-8" />
+              <!--[if gte mso 9]>
+              <xml>
+                <x:ExcelWorkbook>
+                  <x:ExcelWorksheets>
+                    <x:ExcelWorksheet>
+                      <x:Name>Pengisian TK Panen</x:Name>
+                      <x:WorksheetOptions>
+                        <x:DisplayGridlines>False</x:DisplayGridlines>
+                        <x:FreezePanes/>
+                        <x:FrozenNoSplit/>
+                        <x:SplitHorizontal>2</x:SplitHorizontal>
+                        <x:TopRowBottomPane>2</x:TopRowBottomPane>
+                        <x:ActivePane>2</x:ActivePane>
+                      </x:WorksheetOptions>
+                    </x:ExcelWorksheet>
+                  </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+              </xml>
+              <![endif]-->
+              <style>
+                body { background-color: #ffffff; margin: 0; padding: 0; }
+                table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; background-color: #ffffff; }
+                th, td { text-align: center !important; vertical-align: middle !important; }
+                th { font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; }
+                td { font-family: Arial, sans-serif; font-size: 10pt; background-color: #ffffff; }
+              </style>
+            </head>
+            <body style="background-color: #ffffff;">
+              <table>
+                <colgroup>
+                  <col />
+                  <col />
+                  <col />
+                  <col />
+                  <col />
+                  <col style="width: 100px;" width="100" />
+                  <col style="width: 100px;" width="100" />
+                  <col style="width: 100px;" width="100" />
+                  <col style="width: 100px;" width="100" />
+                  <col />
+                  <col style="width: 100px;" width="100" />
+                  <col />
+                  <col style="width: 100px;" width="100" />
+                  <col />
+                  <col style="width: 100px;" width="100" />
+                  <col style="width: 100px;" width="100" />
+                </colgroup>
+                <thead>
+                  ${headerRow1}
+                  ${headerRow2}
+                </thead>
+                <tbody>
+                  ${rowsHtml}
+                  ${totalRowHtml}
+                </tbody>
+              </table>
+            </body>
+          </html>
+        `;
+
+        const regName = selectedRegion && selectedRegion !== 'ALL' ? selectedRegion.replace(/[^a-zA-Z0-9]/g, '_') : 'Semua_Regional';
+        const fileName = `Pengisian_TK_Panen_${regName}.xls`;
+
+        const blob = new Blob(['\ufeff' + html], { type: "application/vnd.ms-excel;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+
       return (
         <div className="flex flex-col gap-6 w-full">
           {toastMsg && (
@@ -4670,17 +4880,27 @@
               </div>
             )}
 
-            <div className="flex-1 max-w-md relative">
-              <input
-                type="text"
-                placeholder="Cari kebun, tag kebun, atau regional..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-              <span className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2">
-                <Icon name="search" size={16} />
-              </span>
+            <div className="flex items-center gap-2 max-w-lg flex-1">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  placeholder="Cari kebun, tag kebun, atau regional..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+                <span className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2">
+                  <Icon name="search" size={16} />
+                </span>
+              </div>
+              <button
+                onClick={handleExportTKPanenExcel}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 whitespace-nowrap"
+                title="Export Excel Pengisian TK Panen"
+              >
+                <Icon name="download" size={16} />
+                <span>Export Excel</span>
+              </button>
             </div>
           </div>
 
