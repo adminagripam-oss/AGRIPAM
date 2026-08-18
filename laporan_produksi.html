@@ -4553,11 +4553,12 @@
       const endIdx = startIdx + pageSize;
       const paginatedKebun = filteredKebun.slice(startIdx, endIdx);
 
-      const cutOffField = summary.cutOffField || 'tk_juli';
-      const cutOffMonth = summary.cutOffMonth || 'Juli';
+      const cutOffField = summary.cutOffField || 'tk_agustus';
+      const cutOffMonth = summary.cutOffMonth || 'Agustus';
 
-      const totalReqTk = summary.totalReqTk !== undefined ? summary.totalReqTk : filteredKebun.reduce((s, x) => s + (parseInt(x.req_tk) || 0), 0);
-      const totalCutOff = summary.totalCutOff !== undefined ? summary.totalCutOff : filteredKebun.reduce((s, x) => s + (parseInt(x[cutOffField]) || 0), 0);
+      const totalLuas = kebunData.reduce((s, x) => s + (parseFloat(x.luasan) || 0), 0);
+      const totalReqTk = kebunData.reduce((s, x) => s + (parseInt(x.req_tk) || 0), 0);
+      const totalCutOff = kebunData.reduce((s, x) => s + (parseInt(x[cutOffField]) || 0), 0);
       const kekurangTK = totalReqTk - totalCutOff;
 
       const handleExportTKPanenExcel = () => {
@@ -4831,7 +4832,7 @@
             <div className="bg-white dark:bg-[#1E1E1E] border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
               <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Luas</span>
               <div className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">
-                {formatRibuan(summary.totalLuas || 0)} <span className="text-xs font-bold text-slate-500">Ha</span>
+                {formatRibuan(totalLuas)} <span className="text-xs font-bold text-slate-500">Ha</span>
               </div>
             </div>
             <div className="bg-white dark:bg-[#1E1E1E] border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between">

@@ -2161,20 +2161,21 @@
       // KPI Badges
       var summaryEl = document.getElementById("tkSummaryBadges");
       if (summaryEl) {
-        var cutOffField = summary && summary.cutOffField ? summary.cutOffField : 'tk_juli';
-        var cutOffMonth = summary && summary.cutOffMonth ? summary.cutOffMonth : 'Juli';
+        var cutOffField = summary && summary.cutOffField ? summary.cutOffField : 'tk_agustus';
+        var cutOffMonth = summary && summary.cutOffMonth ? summary.cutOffMonth : 'Agustus';
 
-        var reqTk = summary && summary.totalReqTk !== undefined ? summary.totalReqTk : items.reduce(function (s, x) { return s + (parseInt(x.req_tk) || 0); }, 0);
-        var tkCutOff = summary && summary.totalCutOff !== undefined ? summary.totalCutOff : items.reduce(function (s, x) { return s + (parseInt(x[cutOffField]) || 0); }, 0);
+        var totalLuas = (globalTKData || []).reduce(function (s, x) { return s + (parseFloat(x.luasan) || 0); }, 0);
+        var reqTk = (globalTKData || []).reduce(function (s, x) { return s + (parseInt(x.req_tk) || 0); }, 0);
+        var tkCutOff = (globalTKData || []).reduce(function (s, x) { return s + (parseInt(x[cutOffField]) || 0); }, 0);
         var kekurangTK = reqTk - tkCutOff;
 
         summaryEl.innerHTML = '<div class="bg-white dark:bg-[#1E1E1E] border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all duration-300">' +
           '<span class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Kebun</span>' +
-          '<div class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">' + items.length + ' <span class="text-xs font-bold text-slate-500">Kebun</span></div>' +
+          '<div class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">' + (globalTKData || []).length + ' <span class="text-xs font-bold text-slate-500">Kebun</span></div>' +
           '</div>' +
           '<div class="bg-white dark:bg-[#1E1E1E] border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all duration-300">' +
           '<span class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Luas</span>' +
-          '<div class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">' + (summary && summary.totalLuas ? summary.totalLuas : 0).toLocaleString('id-ID') + ' <span class="text-xs font-bold text-slate-500">Ha</span></div>' +
+          '<div class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">' + totalLuas.toLocaleString('id-ID') + ' <span class="text-xs font-bold text-slate-500">Ha</span></div>' +
           '</div>' +
           '<div class="bg-white dark:bg-[#1E1E1E] border-2 border-slate-900 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all duration-300">' +
           '<span class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kebutuhan Tenaga Panen</span>' +
