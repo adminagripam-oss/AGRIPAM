@@ -1962,6 +1962,7 @@
           if (json.success) {
             globalTKData = json.data || [];
             globalTKEdits = {};
+            currentSummaryData = json.summary;
             renderTKPanenTable(globalTKData, json.summary);
           } else {
             if (tbody) tbody.innerHTML = '<tr><td colspan="14" class="py-12 text-center text-red-500 font-semibold">Gagal memuat data: ' + json.message + '</td></tr>';
@@ -2122,11 +2123,16 @@
         // Rencana Pemenuhan September
         html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">' + targetSept.toLocaleString('id-ID') + '</td>';
 
-        // Action Cell: Edit Button (Frozen on the Right side)
-        html += '<td class="py-3 px-2 text-center whitespace-nowrap sticky right-0 z-10 w-[65px] min-w-[65px] border-l-2 border-black shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.12)] ' + stickyCellBg + '">';
+        // Action Cell: Edit & Delete Buttons (Frozen on the Right side)
+        html += '<td class="py-3 px-2 text-center whitespace-nowrap sticky right-0 z-10 w-[110px] min-w-[110px] border-l-2 border-black shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.12)] ' + stickyCellBg + '">';
+        html += '<div class="flex items-center justify-center gap-1.5">';
         html += '<button onclick="openEditKebunModal(' + item.id + ')" class="p-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" title="Edit ' + (item.nama_kebun || '') + '">';
         html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>';
         html += '</button>';
+        html += '<button onclick="confirmDeleteKebun(' + item.id + ')" class="p-1.5 rounded-lg text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors" title="Hapus ' + (item.nama_kebun || '') + '">';
+        html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+        html += '</button>';
+        html += '</div>';
         html += '</td>';
 
         html += '</tr>';
@@ -2243,6 +2249,181 @@
         });
     }
 
+    function showReuiConfirm(title, desc, onConfirm) {
+      document.getElementById("reuiConfirmTitle").textContent = title;
+      document.getElementById("reuiConfirmDesc").textContent = desc;
+      
+      var backdrop = document.getElementById("reuiConfirmBackdrop");
+      var dialog = document.getElementById("reuiConfirmDialog");
+      
+      backdrop.classList.remove("hidden");
+      dialog.classList.remove("hidden");
+      
+      var cancelBtn = document.getElementById("reuiConfirmCancelBtn");
+      var okBtn = document.getElementById("reuiConfirmOkBtn");
+      
+      cancelBtn.onclick = function() {
+        backdrop.classList.add("hidden");
+        dialog.classList.add("hidden");
+      };
+      
+      okBtn.onclick = function() {
+        backdrop.classList.add("hidden");
+        dialog.classList.add("hidden");
+        if (onConfirm) onConfirm();
+      };
+    }
+
+    function showReuiToast(message, type) {
+      var container = document.getElementById("reuiToastContainer");
+      if (!container) return;
+      
+      var toast = document.createElement("div");
+      toast.className = "flex items-center gap-3 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-lg pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 w-80 max-w-full";
+      
+      var icon = "";
+      if (type === 'success') {
+        icon = '<div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>';
+      } else {
+        icon = '<div class="w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div>';
+      }
+      
+      toast.innerHTML = icon + '<div class="text-xs font-bold text-slate-800 dark:text-slate-200 flex-1">' + message + '</div>';
+      container.appendChild(toast);
+      
+      setTimeout(function() {
+        toast.classList.remove("translate-y-2", "opacity-0");
+      }, 10);
+      
+      setTimeout(function() {
+        toast.classList.add("translate-y-2", "opacity-0");
+        setTimeout(function() {
+          toast.remove();
+        }, 300);
+      }, 3500);
+    }
+
+    function confirmDeleteKebun(id) {
+      var item = (globalTKData || []).find(function (k) { return k.id === id; });
+      if (!item) return;
+      var name = item.nama_kebun || '';
+
+      showReuiConfirm("Hapus Kebun", "Apakah Anda yakin ingin menghapus kebun '" + name + "' dari database? Tindakan ini tidak dapat dibatalkan.", function() {
+        var s = loadSession() || {};
+        var regParam = s.region || 'ALL';
+
+        fetch('/api/kebunTK?action=deleteKebun&region=' + encodeURIComponent(regParam) + '&id=' + id, {
+          method: 'POST'
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (json.success) {
+            showReuiToast("Kebun '" + name + "' berhasil dihapus!", "success");
+            loadTKPanenDataForSelectedRegion();
+          } else {
+            showReuiToast("Gagal menghapus: " + json.message, "error");
+          }
+        })
+        .catch(function (err) {
+          console.error(err);
+          showReuiToast("Terjadi kesalahan koneksi saat menghapus.", "error");
+        });
+      });
+    }
+
+    function openAddKebunModal() {
+      var s = loadSession() || {};
+      var isUserAdmin = (s.region && s.region.toUpperCase() === "ADMIN");
+
+      var regionInput = document.getElementById("addRegion");
+      if (isUserAdmin) {
+        regionInput.value = "";
+        regionInput.removeAttribute("readonly");
+        regionInput.className = "w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white";
+      } else {
+        regionInput.value = s.region || "";
+        regionInput.setAttribute("readonly", "readonly");
+        regionInput.className = "w-full px-3.5 py-2 bg-slate-50 dark:bg-[#1E1E1E] border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-400";
+      }
+
+      document.getElementById("addNamaKebun").value = "";
+      document.getElementById("addCro").value = "CRO 1";
+      document.getElementById("addLuasan").value = "0";
+      document.getElementById("addReqTK").value = "0";
+      document.getElementById("addTKJuniVal").value = "0";
+      document.getElementById("addTKJuliVal").value = "0";
+      document.getElementById("addTKAgustusVal").value = "0";
+      document.getElementById("addTargetJuliVal").value = "0";
+      document.getElementById("addTargetAgsVal").value = "0";
+      document.getElementById("addTargetSeptVal").value = "0";
+
+      var sheet = document.getElementById("addKebunSheet");
+      var backdrop = document.getElementById("addKebunBackdrop");
+      if (sheet) sheet.classList.remove("hidden");
+      if (backdrop) backdrop.classList.remove("hidden");
+    }
+
+    function closeAddKebunModal() {
+      var sheet = document.getElementById("addKebunSheet");
+      var backdrop = document.getElementById("addKebunBackdrop");
+      if (sheet) sheet.classList.add("hidden");
+      if (backdrop) backdrop.classList.add("hidden");
+    }
+
+    function saveAddKebunForm(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      
+      var s = loadSession() || {};
+      var regParam = s.region || 'ALL';
+
+      var payload = {
+        nama_kebun: document.getElementById("addNamaKebun").value.trim(),
+        cro: document.getElementById("addCro").value,
+        region: document.getElementById("addRegion").value.trim(),
+        luasan: parseFloat(document.getElementById("addLuasan").value) || 0,
+        req_tk: parseInt(document.getElementById("addReqTK").value, 10) || 0,
+        tk_juni: parseInt(document.getElementById("addTKJuniVal").value, 10) || 0,
+        tk_juli: parseInt(document.getElementById("addTKJuliVal").value, 10) || 0,
+        tk_agustus: parseInt(document.getElementById("addTKAgustusVal").value, 10) || 0,
+        target_juli: parseInt(document.getElementById("addTargetJuliVal").value, 10) || 0,
+        target_agustus: parseInt(document.getElementById("addTargetAgsVal").value, 10) || 0,
+        target_september: parseInt(document.getElementById("addTargetSeptVal").value, 10) || 0
+      };
+
+      if (!payload.nama_kebun) {
+        showReuiToast("Nama kebun wajib diisi!", "error");
+        return;
+      }
+      if (!payload.region) {
+        showReuiToast("Region wajib diisi!", "error");
+        return;
+      }
+
+      var btn = e.target.querySelector("button[type='submit']");
+      if (btn) btn.disabled = true;
+
+      fetch('/api/kebunTK?action=addKebun&region=' + encodeURIComponent(regParam), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(function (res) { return res.json(); })
+      .then(function (json) {
+        if (btn) btn.disabled = false;
+        if (json.success) {
+          closeAddKebunModal();
+          showReuiToast("Kebun berhasil ditambahkan!", "success");
+          loadTKPanenDataForSelectedRegion();
+        } else {
+          showReuiToast("Gagal menambahkan: " + json.message, "error");
+        }
+      })
+      .catch(function (err) {
+        if (btn) btn.disabled = false;
+        console.error(err);
+        showReuiToast("Terjadi kesalahan koneksi.", "error");
+      });
+    }
 
     var activeEditingKebunData = null;
 
@@ -3086,11 +3267,17 @@
               </select>
             </div>
 
-            <div class="flex-1 max-w-md relative">
-              <input type="text" id="tkSearchInput" onkeyup="filterTKPanenTable()"
-                placeholder="Cari kebun, tag kebun, atau regional..."
-                class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-              <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" </div>
+            <div class="flex items-center gap-2 max-w-lg flex-1">
+              <div class="flex-1 relative">
+                <input type="text" id="tkSearchInput" onkeyup="filterTKPanenTable()"
+                  placeholder="Cari kebun, tag kebun, atau regional..."
+                  class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </div>
+              <button onclick="openAddKebunModal()" class="px-4 py-2 bg-slate-900 dark:bg-slate-750 hover:bg-slate-800 dark:hover:bg-slate-650 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 whitespace-nowrap">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <span>Tambah Kebun</span>
+              </button>
             </div>
 
 
@@ -3136,7 +3323,7 @@
                         class="py-2.5 px-2 text-center font-black whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black">
                         Rencana Pemenuhan TK Panen</th>
                       <th rowspan="2"
-                        class="py-3.5 px-2 text-center w-[65px] min-w-[65px] font-black whitespace-nowrap sticky right-0 z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-l-2 border-b border-black shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.3)]">
+                        class="py-3.5 px-2 text-center w-[110px] min-w-[110px] font-black whitespace-nowrap sticky right-0 z-40 bg-[#1e3a5f] dark:bg-[#15304f] border-l-2 border-b border-black shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.3)]">
                         AKSI</th>
                     </tr>
                     <!-- Row 2: Sub-column headers under grouped columns -->
@@ -5004,12 +5191,19 @@
       document.getElementById("sapIframe").src = "";
       document.getElementById("loginSection").style.display = "flex";
       document.getElementById("loginPassword").value = "";
-      document.getElementById("status").textContent = "";
-      document.getElementById("statusEstimasi").textContent = "";
-      document.getElementById("displayRegionText").textContent = "";
-      document.getElementById("displayRegionText").style.display = "block";
-      document.getElementById("sessionInfo").textContent = "";
-      document.getElementById("loginError").style.display = "none";
+       var statusEl = document.getElementById("status");
+       if (statusEl) statusEl.textContent = "";
+       var statusEstEl = document.getElementById("statusEstimasi");
+       if (statusEstEl) statusEstEl.textContent = "";
+       var dispRegionTextEl = document.getElementById("displayRegionText");
+       if (dispRegionTextEl) {
+         dispRegionTextEl.textContent = "";
+         dispRegionTextEl.style.display = "block";
+       }
+       var sessionInfoEl = document.getElementById("sessionInfo");
+       if (sessionInfoEl) sessionInfoEl.textContent = "";
+       var loginErrorEl = document.getElementById("loginError");
+       if (loginErrorEl) loginErrorEl.style.display = "none";
 
       var adminContainer = document.getElementById("adminRegionSelectContainer");
       if (adminContainer) adminContainer.style.display = "none";
@@ -6994,6 +7188,125 @@
     </div>
   </div>
 
+  <!-- Tambah Kebun Sheet Modal (Shadcn Pattern) -->
+  <div id="addKebunBackdrop" onclick="closeAddKebunModal()"
+    class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 hidden transition-opacity"></div>
+  <div id="addKebunSheet"
+    class="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white dark:bg-[#1E1E1E] border-l border-slate-200 dark:border-slate-800 z-50 hidden shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
+    <div>
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 class="text-lg font-black text-slate-900 dark:text-white">Tambah Kebun Baru</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Daftarkan kebun baru ke dalam database.</p>
+        </div>
+        <button onclick="closeAddKebunModal()"
+          class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <form id="addKebunForm" onsubmit="saveAddKebunForm(event)" class="py-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Kebun / PT HO</label>
+          <input type="text" id="addNamaKebun" required placeholder="Masukkan nama kebun..."
+            class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">CRO</label>
+            <select id="addCro" class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
+              <option value="CRO 1">CRO 1</option>
+              <option value="CRO 2">CRO 2</option>
+              <option value="CRO 3">CRO 3</option>
+              <option value="CRO 4">CRO 4</option>
+              <option value="CRO 5">CRO 5</option>
+              <option value="CRO 6">CRO 6</option>
+              <option value="CRO 7">CRO 7</option>
+              <option value="CRO 8">CRO 8</option>
+              <option value="CRO 9">CRO 9</option>
+              <option value="CRO 10">CRO 10</option>
+              <option value="CRO 11">CRO 11</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Region</label>
+            <input type="text" id="addRegion" required placeholder="Contoh: Riau 2"
+              class="w-full px-3.5 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Luasan Lahan (Ha)</label>
+            <input type="number" step="0.01" min="0" id="addLuasan" value="0"
+              class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Kebutuhan TK Panen</label>
+            <input type="number" min="0" id="addReqTK" value="0"
+              class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500" />
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 dark:bg-[#1E1E1E]/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3 shadow-xs">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-200 dark:border-slate-700">
+            <span class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">📊 Data TK Awal</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10px] font-extrabold text-blue-900 dark:text-blue-300 mb-0.5">TK Juni</label>
+              <input type="number" min="0" id="addTKJuniVal" value="0"
+                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-extrabold text-blue-900 dark:text-blue-300 mb-0.5">TK Juli</label>
+              <input type="number" min="0" id="addTKJuliVal" value="0"
+                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-extrabold text-blue-900 dark:text-blue-300 mb-0.5">TK Ags</label>
+              <input type="number" min="0" id="addTKAgustusVal" value="0"
+                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-0.5">Rencana Jul</label>
+              <input type="number" min="0" id="addTargetJuliVal" value="0"
+                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-0.5">Rencana Ags</label>
+              <input type="number" min="0" id="addTargetAgsVal" value="0"
+                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-0.5">Rencana Sep</label>
+              <input type="number" min="0" id="addTargetSeptVal" value="0"
+                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <button type="button" onclick="closeAddKebunModal()"
+            class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+            Batal
+          </button>
+          <button type="submit"
+            class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-md transition-all">
+            Tambahkan Kebun
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Offcanvas Backdrop -->
   <div id="inputPanenBackdrop"
     class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] transition-opacity duration-300 opacity-0"
@@ -7073,6 +7386,27 @@
       <p id="status" class="text-xs text-center mt-2 font-semibold"></p>
     </div>
   </div>
-</body>
 
+  <!-- shadcn UI styled Confirm Dialog -->
+  <div id="reuiConfirmBackdrop" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-[100] hidden transition-opacity"></div>
+  <div id="reuiConfirmDialog" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-800 z-[101] hidden rounded-2xl shadow-2xl p-6 space-y-4">
+    <div class="flex items-start gap-3">
+      <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-450 flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold text-slate-900 dark:text-white" id="reuiConfirmTitle">Hapus Kebun</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="reuiConfirmDesc">Apakah Anda yakin ingin menghapus kebun ini?</p>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-2 pt-2">
+      <button id="reuiConfirmCancelBtn" class="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Batal</button>
+      <button id="reuiConfirmOkBtn" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-md">Hapus</button>
+    </div>
+  </div>
+
+  <!-- shadcn UI styled Toast Container -->
+  <div id="reuiToastContainer" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+</body>
 </html>

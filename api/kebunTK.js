@@ -65,7 +65,7 @@ module.exports = async (req, res) => {
   applyCors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const p = req.method === 'POST' ? req.body : req.query;
+  const p = { ...req.query, ...req.body };
   const action = (p.action || '').trim();
   const regionParam = (p.region || '').trim();
   const token = (p.token || '').trim();
@@ -248,6 +248,130 @@ module.exports = async (req, res) => {
         message: 'Gagal memperbarui data. Anda hanya diizinkan mengedit kebun pada wilayah regional Anda.'
       });
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // DELETE KEBUN (Hapus Kebun)
+  // -------------------------------------------------------------------------
+  if (action === 'deleteKebun') {
+    if (!regionParam) {
+      return res.json({ success: false, message: 'Region/User wajib disertakan.' });
+    }
+
+    const targetId = parseInt(p.id, 10);
+    if (isNaN(targetId)) {
+      return res.json({ success: false, message: 'ID kebun tidak valid.' });
+    }
+
+    const isAdmin = regionParam.toUpperCase() === 'ADMIN';
+    const userNormRegion = normalizeRegion(regionParam);
+    const itemIndex = kebunList.findIndex(k => k.id === targetId);
+
+    if (itemIndex === -1) {
+      return res.json({ success: false, message: 'Kebun tidak ditemukan.' });
+    }
+
+    const item = kebunList[itemIndex];
+    const itemNormRegion = normalizeRegion(item.region);
+
+    // Security check: Only Admin or users from the same region can delete
+    if (!isAdmin && userNormRegion !== itemNormRegion && !userNormRegion.includes(itemNormRegion) && !itemNormRegion.includes(userNormRegion)) {
+      return res.json({ success: false, message: 'Anda tidak diizinkan menghapus kebun di regional lain.' });
+    }
+
+    // 1. Remove from local JSON list
+    kebunList.splice(itemIndex, 1);
+    saveKebunData(kebunList);
+
+    // 2. Remove from Supabase
+    try {
+      const { error: sbErr } = await supabase.from('data_kebun_tk').delete().eq('id', targetId);
+      if (sbErr) {
+        console.error(`[kebunTK] Supabase delete failed for id=${targetId}: ${sbErr.message}`);
+      }
+    } catch (sbCatchErr) {
+      console.error(`[kebunTK] Supabase delete exception for id=${targetId}:`, sbCatchErr.message);
+    }
+
+    return res.json({
+      success: true,
+      message: `Kebun '${item.nama_kebun}' berhasil dihapus dari database.`
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // ADD KEBUN (Tambah Kebun Baru)
+  // -------------------------------------------------------------------------
+  if (action === 'addKebun') {
+    if (!regionParam) {
+      return res.json({ success: false, message: 'Region/User wajib disertakan.' });
+    }
+
+    const targetNamaKebun = (p.nama_kebun || '').trim();
+    if (!targetNamaKebun) {
+      return res.json({ success: false, message: 'Nama kebun wajib diisi.' });
+    }
+
+    const isAdmin = regionParam.toUpperCase() === 'ADMIN';
+    const userNormRegion = normalizeRegion(regionParam);
+
+    // Prefecture garden values
+    const targetRegion = (p.region || '').trim();
+    if (!targetRegion) {
+      return res.json({ success: false, message: 'Region kebun wajib diisi.' });
+    }
+
+    const targetNormRegion = normalizeRegion(targetRegion);
+
+    // Security check: Regional user can only add to their own region
+    if (!isAdmin && userNormRegion !== targetNormRegion && !userNormRegion.includes(targetNormRegion) && !targetNormRegion.includes(userNormRegion)) {
+      return res.json({ success: false, message: 'Anda tidak diizinkan menambahkan kebun untuk regional lain.' });
+    }
+
+    // Generate new ID
+    const maxId = kebunList.reduce((max, k) => k.id > max ? k.id : max, 0);
+    const newId = Math.max(896, maxId + 1); // Starting above our synchronized list if possible, or max+1
+
+    const newKebun = {
+      id: newId,
+      cro: (p.cro || '-').trim(),
+      region: targetRegion,
+      region_raw: `Regional ${targetRegion}`,
+      nama_kebun: targetNamaKebun,
+      name_tag: `KB-TAG-${newId}`,
+      luasan: parseFloat(p.luasan) || 0,
+      req_tk: parseInt(p.req_tk, 10) || 0,
+      tk_mei: 0,
+      tk_juni: parseInt(p.tk_juni, 10) || 0,
+      target_juli: parseInt(p.target_juli, 10) || 0,
+      target_agustus: parseInt(p.target_agustus, 10) || 0,
+      target_september: parseInt(p.target_september, 10) || 0,
+      tk_juli: parseInt(p.tk_juli, 10) || 0,
+      tk_agustus: parseInt(p.tk_agustus, 10) || 0,
+      updated_by: regionParam,
+      updated_at: new Date().toISOString(),
+      created_at: new Date().toISOString()
+    };
+
+    // 1. Add to local JSON list
+    kebunList.push(newKebun);
+    saveKebunData(kebunList);
+
+    // 2. Add to Supabase
+    try {
+      const { error: sbErr } = await supabase.from('data_kebun_tk').insert(newKebun);
+      if (sbErr) {
+        console.error(`[kebunTK] Supabase insert failed: ${sbErr.message}`);
+      }
+    } catch (sbCatchErr) {
+      console.error(`[kebunTK] Supabase insert exception:`, sbCatchErr.message);
+    }
+
+    return res.json({
+      success: true,
+      message: `Kebun '${targetNamaKebun}' berhasil ditambahkan ke database.`,
+      data: newKebun
+    });
   }
 
   return res.json({ success: false, message: 'Action tidak dikenal.' });
