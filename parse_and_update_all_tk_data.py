@@ -1,14 +1,13 @@
 import openpyxl
 import json
 import os
+import re
 
 excel_path = r'd:\AGRINAS PALMA NUSANTARA\AGRIPAM\DATA TK PANEN AGRIPAM.xlsx'
+excel_tambahan_path = r'd:\AGRINAS PALMA NUSANTARA\AGRIPAM\DATA TAMBAHAN PENUGASAN APN.xlsx'
 json_path = r'd:\AGRINAS PALMA NUSANTARA\AGRIPAM\data_kebun_tk.json'
 sql_path = r'd:\AGRINAS PALMA NUSANTARA\AGRIPAM\supabase\setup_kebun_tk_table.sql'
 sql_root_path = r'd:\AGRINAS PALMA NUSANTARA\AGRIPAM\supabase_setup_data_kebun_tk.sql'
-
-wb = openpyxl.load_workbook(excel_path, data_only=True)
-sheet = wb['DATA RAW']
 
 def normalize_region(r_raw):
     if not r_raw:
@@ -43,6 +42,65 @@ def normalize_region(r_raw):
 
     return s.replace('Regional', '').strip(), raw
 
+def normalize_cro_tambahan(cro_raw):
+    if not cro_raw:
+        return '-'
+    s = str(cro_raw).strip().upper()
+    if s == 'CRO I': return 'CRO 1'
+    if s == 'CRO II': return 'CRO 2'
+    if s == 'CRO III': return 'CRO 3'
+    if s == 'CRO IV': return 'CRO 4'
+    if s == 'CRO V': return 'CRO 5'
+    if s == 'CRO VI': return 'CRO 6'
+    if s == 'CRO VII': return 'CRO 7'
+    if s == 'CRO VIII': return 'CRO 8'
+    return s
+
+def normalize_region_tambahan(r_raw):
+    if not r_raw:
+        return 'Aceh', 'Regional Aceh'
+    s = str(r_raw).strip()
+    raw = s
+    s_upper = s.upper()
+
+    if 'SUMUT 1' in s_upper or 'SUMATERA UTARA 1' in s_upper: return 'Sumut 1', raw
+    if 'SUMUT 2' in s_upper or 'SUMATERA UTARA 2' in s_upper: return 'Sumut 2', raw
+    if 'TORGANDA 2' in s_upper or 'RIAU 4' in s_upper: return 'Riau 4', raw
+    if 'TORGANDA' in s_upper: return 'Sumut 2', raw
+    if 'KALBAR 1' in s_upper or 'DUTA PALMA' in s_upper: return 'Kalbar 1', raw
+    if 'KALBAR 2' in s_upper or 'KALIMANTAN BARAT 2' in s_upper: return 'Kalbar 2', raw
+    if 'KALSEL 1' in s_upper or 'KALIMANTAN SELATAN 1' in s_upper: return 'Kalsel 1', raw
+    if 'KALSEL 2' in s_upper or 'KALIMANTAN SELATAN 2' in s_upper: return 'Kalsel 2', raw
+    if 'KALTARA' in s_upper or 'KALIMANTAN UTARA' in s_upper: return 'Kaltara', raw
+    if 'KALTIM' in s_upper or 'KALIMANTAN TIMUR' in s_upper: return 'Kaltim', raw
+    if 'KALTENG 1' in s_upper or 'KALIMANTAN TENGAH 1' in s_upper: return 'Kalteng 1', raw
+    if 'KALTENG 2' in s_upper or 'KALIMANTAN TENGAH 2' in s_upper: return 'Kalteng 2', raw
+    if 'KALTENG 3' in s_upper or 'KALIMANTAN TENGAH 3' in s_upper: return 'Kalteng 3', raw
+    if 'BABEL' in s_upper or 'BANGKA BELITUNG' in s_upper or 'BANGKA' in s_upper: return 'Babel', raw
+    if 'SUMBAR' in s_upper or 'SUMATERA BARAT' in s_upper: return 'Sumbar', raw
+    if 'SUMSEL' in s_upper or 'SUMATERA SELATAN' in s_upper: return 'Sumsel', raw
+    if 'SULTENG' in s_upper or 'SULAWESI TENGAH' in s_upper: return 'Sulteng', raw
+    if 'SULTRA' in s_upper or 'SULAWESI TENGGARA' in s_upper: return 'Sultra', raw
+    if 'PAPUA' in s_upper: return 'Papua Selatan', raw
+    if 'ACEH' in s_upper: return 'Aceh', raw
+    if 'JAMBI' in s_upper: return 'Jambi', raw
+    if 'RIAU 1' in s_upper: return 'Riau 1', raw
+    if 'RIAU 2' in s_upper: return 'Riau 2', raw
+    if 'RIAU 3' in s_upper: return 'Riau 3', raw
+    if 'RIAU 4' in s_upper: return 'Riau 4', raw
+
+    return s.replace('Regional', '').strip(), raw
+
+def clean_name(name):
+    if not name:
+        return ""
+    s = str(name).strip().upper()
+    s = re.sub(r'^(PT|CV|KOPERASI|KT|KUD|KELOMPOK TANI|UD)\s+', '', s)
+    s = re.sub(r'\s+(TBK|LTD|PERSERO|CO|INC)$', '', s)
+    s = re.sub(r'[^A-Z0-9\s]', '', s)
+    s = re.sub(r'\s+', ' ', s).strip()
+    return s
+
 def to_num(val):
     if val is None or val == '-' or val == '':
         return 0
@@ -53,6 +111,11 @@ def to_num(val):
 
 items = []
 current_id = 1
+
+# 1. Parse main Excel sheet
+print(f"Reading main Excel file: {excel_path}")
+wb = openpyxl.load_workbook(excel_path, data_only=True)
+sheet = wb['DATA RAW']
 
 for r in range(2, sheet.max_row + 1):
     cro = sheet.cell(r, 1).value
@@ -96,6 +159,76 @@ for r in range(2, sheet.max_row + 1):
 
 print(f"Parsed {len(items)} entries from DATA TK PANEN AGRIPAM.xlsx!")
 
+# 2. Parse additional Excel sheet (Only adding 78 truly new non-overlapping ones)
+if os.path.exists(excel_tambahan_path):
+    print(f"Reading additional Excel file: {excel_tambahan_path}")
+    wb_t = openpyxl.load_workbook(excel_tambahan_path, data_only=True)
+    sheet_t = wb_t.active
+    
+    # Collect existing names from main list
+    existing_names = [item['nama_kebun'].strip().upper() for item in items]
+    existing_clean_names = [clean_name(item['nama_kebun']) for item in items]
+    added_names = set()
+    
+    added_count = 0
+    skipped_count = 0
+    
+    for r in range(2, sheet_t.max_row + 1):
+        cro_raw = sheet_t.cell(r, 1).value
+        wilayah_raw = sheet_t.cell(r, 2).value
+        nama_kebun = sheet_t.cell(r, 4).value
+        
+        if not wilayah_raw and not nama_kebun:
+            continue
+            
+        nama_kebun_str = str(nama_kebun).strip() if nama_kebun else ""
+        if not nama_kebun_str:
+            continue
+            
+        clean_raw = clean_name(nama_kebun_str)
+        
+        is_match = False
+        # Check exact
+        if any(nama_kebun_str.upper() == n for n in existing_names):
+            is_match = True
+        
+        # Check fuzzy/substring
+        if not is_match and len(clean_raw) > 3:
+            if any(len(cn) > 3 and (clean_raw in cn or cn in clean_raw) for cn in existing_clean_names):
+                is_match = True
+                
+        if is_match or nama_kebun_str.upper() in added_names:
+            skipped_count += 1
+            continue
+            
+        added_names.add(nama_kebun_str.upper())
+        cro = normalize_cro_tambahan(cro_raw)
+        region, region_raw = normalize_region_tambahan(wilayah_raw)
+        
+        item = {
+            "id": current_id,
+            "cro": cro,
+            "region_raw": region_raw,
+            "region": region,
+            "nama_kebun": nama_kebun_str,
+            "name_tag": "",
+            "luasan": 0,
+            "req_tk": 0,
+            "tk_mei": 0,
+            "tk_juni": 0,
+            "target_juli": 0,
+            "target_agustus": 0,
+            "tk_juli": 0,
+            "tk_agustus": 0,
+            "updated_by": "EXCEL_SYNC_TAMBAHAN",
+            "updated_at": "2026-08-18T10:00:00.000Z"
+        }
+        items.append(item)
+        current_id += 1
+        added_count += 1
+        
+    print(f"Parsed and appended {added_count} new entries from DATA TAMBAHAN PENUGASAN APN.xlsx (Skipped {skipped_count} duplicates/matches)!")
+
 # Write data_kebun_tk.json
 with open(json_path, 'w', encoding='utf-8') as f:
     json.dump(items, f, indent=2)
@@ -112,7 +245,7 @@ def clean_sql_str(val):
 sql_lines = []
 sql_lines.append("-- ============================================================================")
 sql_lines.append("-- AGRIPAM - SUPABASE SQL EDITOR SCRIPT: DATA KEBUN TK PANEN")
-sql_lines.append(f"-- Source Data: DATA TK PANEN AGRIPAM.xlsx ({len(items)} Entri Kebun)")
+sql_lines.append(f"-- Source Data: Combined ({len(items)} Entri Kebun)")
 sql_lines.append("-- Cara Penggunaan:")
 sql_lines.append("-- 1. Buka Supabase Dashboard Project Anda -> Menu 'SQL Editor'")
 sql_lines.append("-- 2. Copy (Salin) seluruh isi kode SQL ini dan Paste di SQL Editor")
@@ -154,7 +287,7 @@ sql_lines.append("CREATE POLICY \"Allow public select on data_kebun_tk\" ON data
 sql_lines.append("CREATE POLICY \"Allow public insert on data_kebun_tk\" ON data_kebun_tk FOR INSERT WITH CHECK (true);")
 sql_lines.append("CREATE POLICY \"Allow public update on data_kebun_tk\" ON data_kebun_tk FOR UPDATE USING (true);\n")
 
-sql_lines.append(f"-- 5. INSERT {len(items)} DATA KEBUN DARI DATA TK PANEN AGRIPAM.xlsx")
+sql_lines.append(f"-- 5. INSERT {len(items)} DATA KEBUN")
 
 chunk_size = 100
 for i in range(0, len(items), chunk_size):
