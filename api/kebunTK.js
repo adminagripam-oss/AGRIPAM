@@ -76,10 +76,20 @@ module.exports = async (req, res) => {
   try {
     const { data: supaData, error } = await supabase.from('data_kebun_tk').select('*');
     if (!error && supaData && supaData.length > 0) {
-      kebunList = supaData.map(k => ({
-        target_september: 0,
-        ...k
-      }));
+      // Build a lookup from JSON fallback for fields that may be missing in Supabase
+      const jsonLookup = {};
+      const jsonFallback = loadKebunData();
+      jsonFallback.forEach(j => { jsonLookup[j.id] = j; });
+
+      kebunList = supaData.map(k => {
+        const fb = jsonLookup[k.id] || {};
+        return {
+          tk_juli: fb.tk_juli || 0,
+          tk_agustus: fb.tk_agustus || 0,
+          target_september: fb.target_september || 0,
+          ...k
+        };
+      });
     }
   } catch (_) { }
 
@@ -190,9 +200,9 @@ module.exports = async (req, res) => {
           item.updated_at = nowIso;
           updatedCount++;
 
-          // Attempt Supabase update
+          // Attempt Supabase update (with fallback for missing columns)
           try {
-            await supabase.from('data_kebun_tk').update({
+            const fullPayload = {
               tk_juni: item.tk_juni,
               target_juli: item.target_juli,
               target_agustus: item.target_agustus,
@@ -201,8 +211,26 @@ module.exports = async (req, res) => {
               tk_agustus: item.tk_agustus,
               updated_by: regionParam,
               updated_at: nowIso
-            }).eq('id', targetId);
-          } catch (_) { }
+            };
+            const { error: sbErr } = await supabase.from('data_kebun_tk').update(fullPayload).eq('id', targetId);
+            if (sbErr) {
+              console.warn(`[kebunTK] Supabase full update failed for id=${targetId}: ${sbErr.message}. Trying safe fields...`);
+              // Fallback: only update fields that are known to exist
+              const safePayload = {
+                tk_juni: item.tk_juni,
+                target_juli: item.target_juli,
+                target_agustus: item.target_agustus,
+                updated_by: regionParam,
+                updated_at: nowIso
+              };
+              const { error: sbErr2 } = await supabase.from('data_kebun_tk').update(safePayload).eq('id', targetId);
+              if (sbErr2) {
+                console.error(`[kebunTK] Supabase safe update also failed for id=${targetId}: ${sbErr2.message}`);
+              }
+            }
+          } catch (sbCatchErr) {
+            console.error(`[kebunTK] Supabase update exception for id=${targetId}:`, sbCatchErr.message);
+          }
         }
       }
     }
