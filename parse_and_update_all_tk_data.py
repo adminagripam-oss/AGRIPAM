@@ -4,7 +4,7 @@ import os
 import re
 
 excel_path = r'd:\AGRINAS PALMA NUSANTARA\AGRIPAM\DATA TK PANEN AGRIPAM.xlsx'
-excel_tambahan_path = r'd:\AGRINAS PALMA NUSANTARA\AGRIPAM\DATA TAMBAHAN PENUGASAN APN.xlsx'
+excel_tambahan_path = r'd:\AGRINAS PALMA NUSANTARA\AGRIPAM\DATA EXTEND.xlsx'
 json_path = r'd:\AGRINAS PALMA NUSANTARA\AGRIPAM\data_kebun_tk.json'
 sql_path = r'd:\AGRINAS PALMA NUSANTARA\AGRIPAM\supabase\setup_kebun_tk_table.sql'
 sql_root_path = r'd:\AGRINAS PALMA NUSANTARA\AGRIPAM\supabase_setup_data_kebun_tk.sql'
@@ -54,6 +54,8 @@ def normalize_cro_tambahan(cro_raw):
     if s == 'CRO VI': return 'CRO 6'
     if s == 'CRO VII': return 'CRO 7'
     if s == 'CRO VIII': return 'CRO 8'
+    if s == 'CRO IX': return 'CRO 9'
+    if s == 'CRO X': return 'CRO 10'
     return s
 
 def normalize_region_tambahan(r_raw):
@@ -160,51 +162,81 @@ for r in range(2, sheet.max_row + 1):
 
 print(f"Parsed {len(items)} entries from DATA TK PANEN AGRIPAM.xlsx!")
 
-# 2. Parse additional Excel sheet (Only adding 78 truly new non-overlapping ones)
+# 2. Parse additional Excel sheet (Only adding truly new non-overlapping ones)
 if os.path.exists(excel_tambahan_path):
     print(f"Reading additional Excel file: {excel_tambahan_path}")
     wb_t = openpyxl.load_workbook(excel_tambahan_path, data_only=True)
     sheet_t = wb_t.active
     
-    # Collect existing names from main list
-    existing_names = [item['nama_kebun'].strip().upper() for item in items]
-    existing_clean_names = [clean_name(item['nama_kebun']) for item in items]
-    added_names = set()
-    
+    # Collect existing names from main list grouped by region
+    existing_by_region = {}
+    for item in items:
+        reg = item['region'].strip().upper()
+        if reg not in existing_by_region:
+            existing_by_region[reg] = []
+        existing_by_region[reg].append({
+            'name': item['nama_kebun'].strip().upper(),
+            'clean': clean_name(item['nama_kebun'])
+        })
+        
+    added_by_region = {}
     added_count = 0
     skipped_count = 0
     
-    for r in range(2, sheet_t.max_row + 1):
-        cro_raw = sheet_t.cell(r, 1).value
-        wilayah_raw = sheet_t.cell(r, 2).value
-        nama_kebun = sheet_t.cell(r, 4).value
+    # Col 1: CRO, Col 2: Region, Col 3: Garden Name
+    for row in sheet_t.iter_rows(values_only=True):
+        cro_raw = row[0]
+        wilayah_raw = row[1]
+        nama_kebun = row[2]
         
         if not wilayah_raw and not nama_kebun:
             continue
             
         nama_kebun_str = str(nama_kebun).strip().rstrip("'") if nama_kebun else ""
-        if not nama_kebun_str:
+        if not nama_kebun_str or nama_kebun_str.upper() in ["NAMA PT (PALM OPS)", "NAMA KEBUN"]:
             continue
             
+        cro = normalize_cro_tambahan(cro_raw)
+        region, region_raw = normalize_region_tambahan(wilayah_raw)
+        
+        reg_key = region.strip().upper()
         clean_raw = clean_name(nama_kebun_str)
         
         is_match = False
-        # Check exact
-        if any(nama_kebun_str.upper() == n for n in existing_names):
-            is_match = True
         
-        # Check fuzzy/substring
-        if not is_match and len(clean_raw) > 3:
-            if any(len(cn) > 3 and (clean_raw in cn or cn in clean_raw) for cn in existing_clean_names):
-                is_match = True
-                
-        if is_match or nama_kebun_str.upper() in added_names:
+        # Check against existing in this region
+        if reg_key in existing_by_region:
+            for ex in existing_by_region[reg_key]:
+                if nama_kebun_str.upper() == ex['name'] or clean_raw == ex['clean']:
+                    is_match = True
+                    break
+                # Substring check only inside the same region
+                if len(clean_raw) > 3 and len(ex['clean']) > 3:
+                    if clean_raw in ex['clean'] or ex['clean'] in clean_raw:
+                        is_match = True
+                        break
+                        
+        # Check against already added in this region during this run
+        if not is_match and reg_key in added_by_region:
+            for ad in added_by_region[reg_key]:
+                if nama_kebun_str.upper() == ad['name'] or clean_raw == ad['clean']:
+                    is_match = True
+                    break
+                if len(clean_raw) > 3 and len(ad['clean']) > 3:
+                    if clean_raw in ad['clean'] or ad['clean'] in clean_raw:
+                        is_match = True
+                        break
+                        
+        if is_match:
             skipped_count += 1
             continue
             
-        added_names.add(nama_kebun_str.upper())
-        cro = normalize_cro_tambahan(cro_raw)
-        region, region_raw = normalize_region_tambahan(wilayah_raw)
+        if reg_key not in added_by_region:
+            added_by_region[reg_key] = []
+        added_by_region[reg_key].append({
+            'name': nama_kebun_str.upper(),
+            'clean': clean_raw
+        })
         
         item = {
             "id": current_id,
@@ -212,7 +244,7 @@ if os.path.exists(excel_tambahan_path):
             "region_raw": region_raw,
             "region": region,
             "nama_kebun": nama_kebun_str,
-            "name_tag": "",
+            "name_tag": f"KB-TAG-{current_id:03d}",
             "luasan": 0,
             "req_tk": 0,
             "tk_mei": 0,
@@ -229,7 +261,7 @@ if os.path.exists(excel_tambahan_path):
         current_id += 1
         added_count += 1
         
-    print(f"Parsed and appended {added_count} new entries from DATA TAMBAHAN PENUGASAN APN.xlsx (Skipped {skipped_count} duplicates/matches)!")
+    print(f"Parsed and appended {added_count} new entries from DATA EXTEND.xlsx (Skipped {skipped_count} duplicates/matches)!")
 
 # Write data_kebun_tk.json
 with open(json_path, 'w', encoding='utf-8') as f:
