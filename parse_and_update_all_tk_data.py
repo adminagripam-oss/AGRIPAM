@@ -149,6 +149,7 @@ for r in range(2, sheet.max_row + 1):
         "tk_juni": tk_juni,
         "target_juli": target_juli,
         "target_agustus": target_agustus,
+        "target_september": 0,
         "tk_juli": tk_juli,
         "tk_agustus": tk_agustus,
         "updated_by": "EXCEL_SYNC",
@@ -218,6 +219,7 @@ if os.path.exists(excel_tambahan_path):
             "tk_juni": 0,
             "target_juli": 0,
             "target_agustus": 0,
+            "target_september": 0,
             "tk_juli": 0,
             "tk_agustus": 0,
             "updated_by": "EXCEL_SYNC_TAMBAHAN",
@@ -269,6 +271,7 @@ sql_lines.append("""CREATE TABLE data_kebun_tk (
     tk_juni INT DEFAULT 0,
     target_juli INT DEFAULT 0,
     target_agustus INT DEFAULT 0,
+    target_september INT DEFAULT 0,
     tk_juli INT DEFAULT 0,
     tk_agustus INT DEFAULT 0,
     updated_by VARCHAR(100) DEFAULT 'SYSTEM',
@@ -293,7 +296,7 @@ chunk_size = 100
 for i in range(0, len(items), chunk_size):
     chunk = items[i:i + chunk_size]
     sql_lines.append(f"-- Batch Insert Data Kebun ({i + 1} s/d {i + len(chunk)})")
-    sql_lines.append("INSERT INTO data_kebun_tk (id, cro, region, region_raw, nama_kebun, name_tag, luasan, req_tk, tk_mei, tk_juni, target_juli, target_agustus, tk_juli, tk_agustus, updated_by) VALUES")
+    sql_lines.append("INSERT INTO data_kebun_tk (id, cro, region, region_raw, nama_kebun, name_tag, luasan, req_tk, tk_mei, tk_juni, target_juli, target_agustus, target_september, tk_juli, tk_agustus, updated_by) VALUES")
     
     values_list = []
     for item in chunk:
@@ -309,11 +312,12 @@ for i in range(0, len(items), chunk_size):
         tk_juni = item.get('tk_juni', 0)
         target_juli = item.get('target_juli', 0)
         target_agustus = item.get('target_agustus', 0)
+        target_september = item.get('target_september', 0)
         tk_juli = item.get('tk_juli', 0)
         tk_agustus = item.get('tk_agustus', 0)
         updated_by = clean_sql_str(item.get('updated_by', 'SYSTEM'))
 
-        val_str = f"({item_id}, {cro}, {region}, {region_raw}, {nama_kebun}, {name_tag}, {luasan}, {req_tk}, {tk_mei}, {tk_juni}, {target_juli}, {target_agustus}, {tk_juli}, {tk_agustus}, {updated_by})"
+        val_str = f"({item_id}, {cro}, {region}, {region_raw}, {nama_kebun}, {name_tag}, {luasan}, {req_tk}, {tk_mei}, {tk_juni}, {target_juli}, {target_agustus}, {target_september}, {tk_juli}, {tk_agustus}, {updated_by})"
         values_list.append(val_str)
 
     sql_lines.append(",\n".join(values_list) + ";\n")

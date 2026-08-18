@@ -76,7 +76,10 @@ module.exports = async (req, res) => {
   try {
     const { data: supaData, error } = await supabase.from('data_kebun_tk').select('*');
     if (!error && supaData && supaData.length > 0) {
-      kebunList = supaData;
+      kebunList = supaData.map(k => ({
+        target_september: 0,
+        ...k
+      }));
     }
   } catch (_) { }
 
@@ -112,15 +115,10 @@ module.exports = async (req, res) => {
       return 0;
     });
 
-    // Calculate dynamic month (H-1)
-    const monthNames = ['januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember'];
-    const today = new Date();
-    // Default to July (index 6) if the app was meant for July/August, but let's make it truly dynamic
-    let targetMonthIdx = today.getMonth() - 1;
-    if (targetMonthIdx < 0) targetMonthIdx = 11;
-    const targetMonthStr = monthNames[targetMonthIdx];
-    const tkField = 'tk_' + targetMonthStr;
-    const cutOffLabel = targetMonthStr.charAt(0).toUpperCase() + targetMonthStr.slice(1);
+    // Hardcode to Agustus as requested
+    const targetMonthStr = "agustus";
+    const tkField = "tk_agustus";
+    const cutOffLabel = "Agustus";
 
     // Calculate summary statistics
     const totalLuas = result.reduce((sum, item) => sum + (parseFloat(item.luasan) || 0), 0);
@@ -179,6 +177,9 @@ module.exports = async (req, res) => {
           if (edit.target_agustus !== undefined && edit.target_agustus !== null) {
             item.target_agustus = Math.max(0, parseFloat(edit.target_agustus) || 0);
           }
+          if (edit.target_september !== undefined && edit.target_september !== null) {
+            item.target_september = Math.max(0, parseFloat(edit.target_september) || 0);
+          }
           if (edit.tk_juli !== undefined && edit.tk_juli !== null) {
             item.tk_juli = Math.max(0, parseFloat(edit.tk_juli) || 0);
           }
@@ -195,6 +196,7 @@ module.exports = async (req, res) => {
               tk_juni: item.tk_juni,
               target_juli: item.target_juli,
               target_agustus: item.target_agustus,
+              target_september: item.target_september,
               tk_juli: item.tk_juli,
               tk_agustus: item.tk_agustus,
               updated_by: regionParam,
