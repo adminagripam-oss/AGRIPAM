@@ -234,3 +234,112 @@ graph TD
 | **2026-07-23** | **Otimisasi Paginasi Paralel API** | Memperbaiki batas 2.000 baris Supabase PostgREST di `/api/realisasi` & `/api/estimasi` menggunakan query paralel (`Promise.all` 10 page × 1.000 baris) agar grafik tren bulanan tampil utuh tanpa terputus di pertengahan bulan. |
 | **2026-07-23** | **Konfigurasi CSP & Vercel** | Menambahkan `https://unpkg.com` dan `'unsafe-eval'` pada `Content-Security-Policy` di `vercel.json` untuk mendukung CDN React 18, Babel, dan Lucide. Menurunkan risiko timeout dengan set `maxDuration` 30 detik. |
 | **2026-07-23** | **Sinkronisasi Input Tanggal React** | Menambahkan `data-noflatpickr="true"` pada input tanggal FilterBar `laporan_produksi.html` untuk menghindari konflik manipulasi DOM Flatpickr dengan controlled component React 18. |
+
+---
+
+## 8. Lampiran: Daftar 78 Kebun Baru (Tambahan 18 Agustus 2026)
+
+Berikut adalah rincian daftar 78 kebun baru yang ditambahkan ke sistem, dikelompokkan berdasarkan unit regional mereka:
+
+### 8.1 Wilayah Sumatera Utara
+* **Sumut 1**:
+  * Grahadura Leidongprim/Bakrie Group (ID: 801)
+  * Perkebunan Sumatera Utara (ID: 802)
+
+### 8.2 Wilayah Riau
+* **Riau 2**:
+  * Aspl Rayon 2 (Kelompok Tani Nelayan Andalan) (ID: 803)
+  * Udaya Lohjinawi (Sadria Sukses Bersama) (ID: 804)
+  * Ationg/Ateng' (ID: 805)
+  * Eks PT Sawita Balm' (ID: 806)
+  * PT Mitra Agung Swadaya' (ID: 807)
+  * PT Eka Daya Sejati Sukses' (ID: 823)
+  * PT Surya Agro Sukses Bersama' (ID: 824)
+  * PT Wahana Mandiri Indonesia' (ID: 825)
+  * Jaguar Perkasa (ID: 826)
+  * PT Sekato Pratama Makmur' (ID: 827)
+  * PT Sinar Belantara Indah' (ID: 842)
+  * PT Palas Permai' (ID: 843)
+  * PT Riau Abadi Lestari' (ID: 844)
+  * PT Sekar Bumi Alam Lestari' (ID: 845)
+  * Heri Mola' (ID: 846)
+  * Ayau' (ID: 847)
+  * PT Enim Palma Abadi' (ID: 848)
+  * H. Manik' (ID: 849)
+  * PT Nusantara Sentosa Raya' (ID: 850)
+  * Atur Brown' (ID: 870)
+  * Perorangan Budi Dharma Tanuji' (ID: 871)
+  * PT Riau Sakti Trans Mandiri' (ID: 872)
+  * Aguan' (ID: 873)
+  * PT Mustika Anugrah Sukses' (ID: 874)
+  * PT Ruas Utama Jaya' (ID: 876)
+  * PT Citra Sumber Sejahtera' (ID: 877)
+* **Riau 3**:
+  * PT Wananugraha Bima Lestari' (ID: 808)
+  * Mutiara Naga Indonesia (ID: 809)
+  * PT APSL Kasang Padang' (ID: 810)
+  * CV Jaya Keranji Konstruksi' (ID: 811)
+  * PT Riau Mestika Jaya' (ID: 812)
+  * PT Subur Berkah Lestari' (ID: 813)
+  * PT Anugrah Niaga Sawindo' (ID: 814)
+  * PT Sawit Rokan Semesta' (ID: 815)
+  * Sumber Sawindo Kencana (ID: 816)
+  * PT Nusa Prima Manunggal' (ID: 817)
+  * PT Sumber Sawit Sejahtera' (ID: 818)
+  * PTPN V Kebun Air Molek I Rayon Pesikaian' (ID: 819)
+  * CV Setia Abadi Sentosa' (ID: 820)
+  * PT Asam Jawa' (ID: 821)
+  * PT INECDA' (ID: 822)
+  * Koperasi Air Kehidupan' (ID: 852)
+  * KUD Bina Jaya Langgam' (ID: 853)
+  * PT Rimba Lazuardi' (ID: 854)
+  * PT Seko Indah' (ID: 855)
+  * PT Cahaya Permata Indragiri' (ID: 856)
+  * PT Selaras Abadi Utama' (ID: 857)
+  * PT Mitra Kembang Selaras' (ID: 858)
+  * Perorangan Acong, Gilbert, dan Ahwa' (ID: 859)
+  * PT Dharma Wungu Guna' (ID: 860)
+  * Sawit Inti Raya (ID: 861)
+  * PT Safari Riau' (ID: 862)
+* **Riau 4**:
+  * Tor Ganda / Togos Gopas (ID: 828)
+
+### 8.3 Wilayah Kalimantan Tengah & Timur
+* **Kalteng 1**:
+  * PT Tunas Agung Subur Kencana 1 (TASK 1)' (ID: 837)
+  * PT Tunas Agung Subur Kencana 2 (TASK 2)' (ID: 838)
+  * PT Tunas Agung Subur Kencana 3 (TASK 3)' (ID: 839)
+* **Kalteng 2**:
+  * Mitra Karya Agroindo (Sinarmas Group) (ID: 829)
+
+### 8.4 Wilayah Kalimantan Barat
+* **Kalbar 1**:
+  * Ceria Prima - III (KSO) (ID: 834)
+  * Ceria Prima - II (Inti) (ID: 835)
+  * Ceria Prima - I (KSO) (ID: 836)
+  * Wana Hijau Semesta IV (ID: 851)
+* **Kalbar 2**:
+  * PT Citra Sawit Cemerlang' (ID: 863)
+  * PT Mitra Karya Sentosa Sanggau' (ID: 864)
+  * PT Mitra Karya Sentosa Ketapang' (ID: 865)
+  * PT Sinar Kalbar Raya' (ID: 866)
+  * PT Pinang Witmas Abadi' (ID: 867)
+  * PT Karya Makmur Langgeng' (ID: 868)
+  * PT Graha Agro Nusantara' (ID: 869)
+
+### 8.5 Wilayah Sumatera Selatan & Bangka Belitung
+* **Sumsel**:
+  * Lonsum Sumatera (ID: 830)
+  * PT Indralaya Agro Lestari' (ID: 831)
+  * PT Sumatera Asia Mandiri' (ID: 832)
+  * PT Alam Bukit Tiga Puluh' (ID: 833)
+* **Babel**:
+  * PT Gandaerah Hendana' (ID: 875)
+  * PT Sumatera Silva Lestari' (ID: 878)
+
+### 8.6 Wilayah Sulawesi Tengah & Tenggara
+* **Sulteng**:
+  * Rimbunan Alam Sentosa (AAL) (ID: 840)
+* **Sultra**:
+  * Sampe Wali (ID: 841)
+
