@@ -2254,11 +2254,13 @@
 
       var valJuni = editObj.tk_juni !== undefined ? editObj.tk_juni : (item.tk_juni || 0);
       var valJuli = editObj.tk_juli !== undefined ? editObj.tk_juli : (item.tk_juli || 0);
+      var valAgsTK = editObj.tk_agustus !== undefined ? editObj.tk_agustus : (item.tk_agustus || 0);
       var targetJuli = editObj.target_juli !== undefined ? editObj.target_juli : (item.target_juli || 0);
       var targetAgs = editObj.target_agustus !== undefined ? editObj.target_agustus : (item.target_agustus || 0);
 
       document.getElementById("editTKJuniVal").value = valJuni;
       if (document.getElementById("editTKJuliVal")) document.getElementById("editTKJuliVal").value = valJuli;
+      if (document.getElementById("editTKAgustusVal")) document.getElementById("editTKAgustusVal").value = valAgsTK;
       document.getElementById("editTargetJuliVal").value = targetJuli;
       document.getElementById("editTargetAgsVal").value = targetAgs;
 
@@ -2299,18 +2301,21 @@
       var id = activeEditingKebunData.id;
       var vJuni = Math.max(0, parseFloat(document.getElementById("editTKJuniVal").value) || 0);
       var vJuli = document.getElementById("editTKJuliVal") ? Math.max(0, parseFloat(document.getElementById("editTKJuliVal").value) || 0) : 0;
+      var vAgustus = document.getElementById("editTKAgustusVal") ? Math.max(0, parseFloat(document.getElementById("editTKAgustusVal").value) || 0) : 0;
       var vTarJuli = Math.max(0, parseFloat(document.getElementById("editTargetJuliVal").value) || 0);
       var vTarAgs = Math.max(0, parseFloat(document.getElementById("editTargetAgsVal").value) || 0);
 
       if (!globalTKEdits[id]) globalTKEdits[id] = {};
       globalTKEdits[id].tk_juni = vJuni;
       globalTKEdits[id].tk_juli = vJuli;
+      globalTKEdits[id].tk_agustus = vAgustus;
       globalTKEdits[id].target_juli = vTarJuli;
       globalTKEdits[id].target_agustus = vTarAgs;
 
       // Update memory state so table re-renders instantly
       activeEditingKebunData.tk_juni = vJuni;
       activeEditingKebunData.tk_juli = vJuli;
+      activeEditingKebunData.tk_agustus = vAgustus;
       activeEditingKebunData.target_juli = vTarJuli;
       activeEditingKebunData.target_agustus = vTarAgs;
 
@@ -2318,6 +2323,7 @@
       if (item) {
         item.tk_juni = vJuni;
         item.tk_juli = vJuli;
+        item.tk_agustus = vAgustus;
         item.target_juli = vTarJuli;
         item.target_agustus = vTarAgs;
       }
@@ -6920,6 +6926,15 @@
             <input type="number" min="0" id="editTKJuliVal"
               class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
               placeholder="Masukkan ketersediaan Juli..." />
+          </div>
+
+          <!-- Ketersediaan TK Panen Agustus -->
+          <div>
+            <label class="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">Ketersediaan TK Panen
+              Agustus</label>
+            <input type="number" min="0" id="editTKAgustusVal"
+              class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
+              placeholder="Masukkan ketersediaan Agustus..." />
           </div>
 
           <!-- Rencana Pemenuhan TK Panen Juli -->
