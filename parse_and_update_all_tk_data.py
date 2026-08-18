@@ -141,7 +141,7 @@ for r in range(2, sheet.max_row + 1):
         "cro": str(cro).strip() if cro else "-",
         "region_raw": region_raw,
         "region": region,
-        "nama_kebun": str(nama_kebun).strip() if nama_kebun else "-",
+        "nama_kebun": str(nama_kebun).strip().rstrip("'") if nama_kebun else "-",
         "name_tag": str(name_tag).strip(),
         "luasan": round(luasan, 2),
         "req_tk": req_tk,
@@ -182,7 +182,7 @@ if os.path.exists(excel_tambahan_path):
         if not wilayah_raw and not nama_kebun:
             continue
             
-        nama_kebun_str = str(nama_kebun).strip() if nama_kebun else ""
+        nama_kebun_str = str(nama_kebun).strip().rstrip("'") if nama_kebun else ""
         if not nama_kebun_str:
             continue
             
