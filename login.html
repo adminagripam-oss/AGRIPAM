@@ -2339,15 +2339,34 @@
       if (isUserAdmin) {
         regionInput.value = "";
         regionInput.removeAttribute("readonly");
-        regionInput.className = "w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white";
+        regionInput.className = "w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500";
       } else {
         regionInput.value = s.region || "";
         regionInput.setAttribute("readonly", "readonly");
-        regionInput.className = "w-full px-3.5 py-2 bg-slate-50 dark:bg-[#1E1E1E] border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-400";
+        regionInput.className = "w-full px-3.5 py-2 bg-slate-50 dark:bg-[#1E1E1E] border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-400 cursor-not-allowed";
+      }
+
+      var defaultCro = "CRO 1";
+      if (!isUserAdmin && s.region && globalTKData) {
+        var match = globalTKData.find(function(k) {
+          return k.region && k.region.toLowerCase() === s.region.toLowerCase();
+        });
+        if (match && match.cro) {
+          defaultCro = match.cro;
+        }
+      }
+
+      var croSelect = document.getElementById("addCro");
+      if (isUserAdmin) {
+        croSelect.removeAttribute("disabled");
+        croSelect.className = "w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500";
+      } else {
+        croSelect.setAttribute("disabled", "disabled");
+        croSelect.className = "w-full px-3.5 py-2 bg-slate-50 dark:bg-[#1E1E1E] border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-400 cursor-not-allowed";
       }
 
       document.getElementById("addNamaKebun").value = "";
-      document.getElementById("addCro").value = "CRO 1";
+      croSelect.value = defaultCro;
       document.getElementById("addLuasan").value = "0";
       document.getElementById("addReqTK").value = "0";
       document.getElementById("addTKJuniVal").value = "0";
