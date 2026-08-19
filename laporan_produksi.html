@@ -4363,8 +4363,15 @@
                       isNewCro = true;
                     }
 
+                    const isBelumIsiAgustus = valAgs === 0;
+                    const rowClass = `text-xs border-b border-black ${
+                      isBelumIsiAgustus
+                        ? "bg-red-100/60 hover:bg-red-100/80 dark:bg-red-950/30 dark:hover:bg-red-950/40 text-red-700 dark:text-red-300 font-bold"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200"
+                    }`;
+
                     return (
-                      <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-800 dark:text-slate-200">
+                      <tr key={idx} className={rowClass}>
                         <td className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center">{idx + 1}</td>
                         {isNewCro && (
                           <td rowSpan={croCounts[romanCro]} className="border-b border-r border-black dark:border-slate-700 px-3 py-2 text-center font-bold bg-white dark:bg-[#1E1E1E] align-middle">
