@@ -2200,7 +2200,7 @@
 
                 const rawReg = row[1]; // Kolom B
                 let rawValPanen = row[11]; // Kolom L (Panen)
-                let rawValKirim = row[6]; // Kolom G (Kirim)
+                let rawValKirim = row[7]; // Kolom H (Kirim)
 
                 if (!rawReg) continue;
 
@@ -3573,19 +3573,19 @@
 
             for (let r = 6; r < rows.length; r++) {
               const row = rows[r];
-              if (!row || !Array.isArray(row) || row.length < 13) continue;
+              if (!row || !Array.isArray(row)) continue;
               const rawReg = row[1]; // Column B (Wilayah)
               if (!rawReg) continue;
               const matchedReg = findRegionMatch(rawReg);
               if (matchedReg) {
-                let valPanen = row[12]; // Column M
-                let valKirim = row[7]; // Column H
+                let valPanen = row[11]; // Column L (Kg Panen)
+                let valKirim = row[7]; // Column H (Hari Ini Produksi Kg RKAP / Kirim)
 
                 if (typeof valPanen === 'string') valPanen = valPanen.replace(/[^\d.,]/g, '').replace(/,/g, '');
                 if (typeof valKirim === 'string') valKirim = valKirim.replace(/[^\d.,]/g, '').replace(/,/g, '');
 
-                const numPanen = valPanen !== null && valPanen !== '' ? parseFloat(valPanen) : 0;
-                const numKirim = valKirim !== null && valKirim !== '' ? parseFloat(valKirim) : 0;
+                const numPanen = valPanen !== null && valPanen !== undefined && valPanen !== '' ? parseFloat(valPanen) : 0;
+                const numKirim = valKirim !== null && valKirim !== undefined && valKirim !== '' ? parseFloat(valKirim) : 0;
 
                 if (!isNaN(numPanen)) totals[matchedReg].panen += (numPanen / 1000);
                 if (!isNaN(numKirim)) totals[matchedReg].kirim += (numKirim / 1000);
