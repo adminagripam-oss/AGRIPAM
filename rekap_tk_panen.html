@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" class="dark h-full">
+<html lang="id" class="h-full">
 
 <head>
   <meta charset="UTF-8" />
@@ -16,12 +16,6 @@
         extend: {
           fontFamily: {
             sans: ['Inter', 'system-ui', 'sans-serif'],
-          },
-          colors: {
-            slate: {
-              800: '#1E1E1E',
-              900: '#1E1E1E',
-            }
           }
         },
       },
@@ -50,12 +44,13 @@
       height: 100%;
       margin: 0;
       padding: 0;
-      background-color: #121212;
+      background-color: #f8fafc;
+      overflow: hidden;
     }
 
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      color: #e2e8f0;
+      color: #1e293b;
     }
 
     /* Custom scrollbar */
@@ -69,18 +64,75 @@
     }
 
     ::-webkit-scrollbar-thumb {
-      background: #475569;
+      background: #cbd5e1;
       border-radius: 3px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: #64748b;
+      background: #94a3b8;
+    }
+
+    /* Print styling rules */
+    @media print {
+      html, body, #root {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .print-shadow-none {
+        box-shadow: none !important;
+        border: none !important;
+      }
+
+      #monitoring-tk-table {
+        font-size: 8px !important;
+        width: 100% !important;
+        border-collapse: collapse !important;
+        color: #000000 !important;
+      }
+
+      #monitoring-tk-table th, 
+      #monitoring-tk-table td {
+        padding: 4px 2px !important;
+        border: 0.5pt solid #000000 !important;
+        background-color: transparent !important;
+        color: #000000 !important;
+      }
+
+      #monitoring-tk-table thead th {
+        background-color: #46bdc6 !important;
+        color: #ffffff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .bg-red-50 {
+        background-color: #fee2e2 !important;
+        color: #991b1b !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .bg-amber-100\/80 {
+        background-color: #fef3c7 !important;
+        color: #000000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
     }
   </style>
 </head>
 
-<body class="bg-[#121212] min-h-screen p-4 flex items-center justify-center">
-  <div id="root" class="w-full max-w-7xl h-[95vh] flex flex-col justify-center"></div>
+<body class="bg-[#f8fafc] h-screen w-screen overflow-hidden p-2 md:p-4 flex items-center justify-center">
+  <div id="root" class="w-full max-w-[98vw] xl:max-w-7xl h-full flex flex-col justify-center"></div>
 
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
@@ -179,9 +231,9 @@
 
       if (loading) {
         return (
-          <div className="flex flex-col items-center justify-center h-64 gap-4">
+          <div className="flex flex-col items-center justify-center h-full gap-4">
             <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-sm font-semibold text-slate-400">Memuat Data Rekapitulasi...</p>
+            <p className="text-sm font-semibold text-slate-500">Memuat Data Rekapitulasi...</p>
           </div>
         );
       }
@@ -305,22 +357,22 @@
         const diff = current - previous;
         if (diff > 0) {
           return (
-            <div className="inline-flex items-center justify-center gap-1 text-emerald-400 font-extrabold text-[10px]">
-              <svg className="w-2.5 h-2.5 fill-current text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z" /></svg>
+            <div className="inline-flex items-center justify-center gap-1 text-emerald-600 font-extrabold text-[10px]">
+              <svg className="w-2.5 h-2.5 fill-current text-emerald-600" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z" /></svg>
               <span>{diff.toLocaleString('id-ID')}</span>
             </div>
           );
         } else if (diff < 0) {
           return (
-            <div className="inline-flex items-center justify-center gap-1 text-red-400 font-extrabold text-[10px]">
-              <svg className="w-2.5 h-2.5 fill-current text-red-400" viewBox="0 0 24 24"><path d="M12 20l8-16H4z" /></svg>
+            <div className="inline-flex items-center justify-center gap-1 text-red-650 font-extrabold text-[10px]">
+              <svg className="w-2.5 h-2.5 fill-current text-red-650" viewBox="0 0 24 24"><path d="M12 20l8-16H4z" /></svg>
               <span>{Math.abs(diff).toLocaleString('id-ID')}</span>
             </div>
           );
         } else {
           return (
-            <div className="inline-flex items-center justify-center gap-1 text-emerald-405 font-extrabold text-[10px]">
-              <svg className="w-2.5 h-2.5 fill-current text-emerald-405" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z" /></svg>
+            <div className="inline-flex items-center justify-center gap-1 text-emerald-600 font-extrabold text-[10px]">
+              <svg className="w-2.5 h-2.5 fill-current text-emerald-600" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z" /></svg>
               <span>0</span>
             </div>
           );
@@ -401,40 +453,40 @@
       };
 
       return (
-        <div className="bg-[#1E1E1E] rounded-xl border border-slate-800 w-full flex flex-col overflow-hidden shadow-2xl">
-          <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-[#1E1E1E] text-white z-30 relative">
-            <h3 className="font-bold text-lg flex items-center gap-2">
-              <Icon name="users" size={20} className="text-emerald-500" />
+        <div className="bg-white rounded-xl border border-slate-200 w-full h-full flex flex-col overflow-hidden shadow-2xl print-shadow-none">
+          <div className="px-6 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white z-30 relative no-print">
+            <h3 className="font-bold text-base flex items-center gap-2">
+              <Icon name="users" size={18} className="text-emerald-400" />
               <span>Monitoring & Rekapitulasi Tenaga Kerja Panen</span>
             </h3>
-            <button onClick={handleExportExcel} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors">
-              <Icon name="download" size={16} /> Export Excel
+            <button onClick={handleExportExcel} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors">
+              <Icon name="download" size={14} /> Export Excel
             </button>
           </div>
           
-          <div className="px-4 pb-4 pt-0 overflow-auto flex-1 relative bg-[#1E1E1E]">
-            <table id="monitoring-tk-table" className="w-full text-left border-separate border-spacing-0 border-t-2 border-l-2 border-slate-700 mt-0">
+          <div className="px-4 pb-4 pt-2 overflow-auto flex-1 relative bg-white">
+            <table id="monitoring-tk-table" className="w-full text-left border-separate border-spacing-0 border-t-2 border-l-2 border-slate-300 mt-0">
               <thead className="sticky top-0 z-30 bg-[#46bdc6] text-white">
-                <tr>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">No</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">CRO</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">Wilayah</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">LUASAN</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">Kebutuhan Tenaga Panen</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" colSpan="7">Ketersedian TK PANEN</th>
-                  <th className="border-b border-r-2 border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" colSpan="3">RENCANA PEMENUHAN TK PANEN</th>
+                <tr className="text-[10px] xl:text-xs">
+                  <th className="border-b border-r border-slate-300 px-2 py-1.5 text-center font-bold bg-[#46bdc6]" rowSpan="2">No</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1.5 text-center font-bold bg-[#46bdc6]" rowSpan="2">CRO</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1.5 text-center font-bold bg-[#46bdc6]" rowSpan="2">Wilayah</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1.5 text-center font-bold bg-[#46bdc6]" rowSpan="2">LUASAN</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1.5 text-center font-bold bg-[#46bdc6]" rowSpan="2">Kebutuhan Tenaga Panen</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1.5 text-center font-bold bg-[#46bdc6]" colSpan="7">Ketersedian TK PANEN</th>
+                  <th className="border-b border-r-2 border-slate-300 px-2 py-1.5 text-center font-bold bg-[#46bdc6]" colSpan="3">RENCANA PEMENUHAN TK PANEN</th>
                 </tr>
-                <tr>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">MEI</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">JUNI</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6] text-emerald-100">TREND</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">JULI</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6] text-emerald-100">TREND</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">AGUSTUS</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6] text-emerald-100">TREND</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">JULI</th>
-                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">AGUSTUS</th>
-                  <th className="border-b border-r-2 border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">SEPTEMBER</th>
+                <tr className="text-[9px] xl:text-[10px]">
+                  <th className="border-b border-r border-slate-300 px-2 py-1 text-center font-bold bg-[#46bdc6]">MEI</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1 text-center font-bold bg-[#46bdc6]">JUNI</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1 text-center font-bold bg-[#46bdc6] text-emerald-100">TREND</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1 text-center font-bold bg-[#46bdc6]">JULI</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1 text-center font-bold bg-[#46bdc6] text-emerald-100">TREND</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1 text-center font-bold bg-[#46bdc6]">AGUSTUS</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1 text-center font-bold bg-[#46bdc6] text-emerald-100">TREND</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1 text-center font-bold bg-[#46bdc6]">JULI</th>
+                  <th className="border-b border-r border-slate-300 px-2 py-1 text-center font-bold bg-[#46bdc6]">AGUSTUS</th>
+                  <th className="border-b border-r-2 border-slate-300 px-2 py-1 text-center font-bold bg-[#46bdc6]">SEPTEMBER</th>
                 </tr>
               </thead>
               <tbody>
@@ -466,50 +518,50 @@
                   }
 
                   const isBelumIsiAgustus = valAgs === 0;
-                  const rowClass = `text-xs border-b border-slate-700 text-slate-200 ${
+                  const rowClass = `text-[10px] xl:text-xs border-b border-slate-300 text-slate-800 ${
                     isBelumIsiAgustus
-                      ? "bg-red-950/40 hover:bg-red-950/60 text-red-350 font-bold animate-pulse-slow"
-                      : "hover:bg-slate-800"
+                      ? "bg-red-50 hover:bg-red-100 text-red-900 font-bold"
+                      : "hover:bg-slate-50"
                   }`;
 
                   return (
                     <tr key={idx} className={rowClass}>
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center">{idx + 1}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center">{idx + 1}</td>
                       {isNewCro && (
-                        <td rowSpan={croCounts[romanCro]} className="border-b border-r border-slate-700 px-3 py-2 text-center font-bold bg-[#1E1E1E] align-middle text-white">
+                        <td rowSpan={croCounts[romanCro]} className="border-b border-r border-slate-300 px-2 py-1 text-center font-bold bg-white align-middle text-slate-900">
                           {romanCro}
                         </td>
                       )}
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center font-medium">{item.region}</td>
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center">{luasan.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center text-emerald-400 font-bold">{reqTk.toLocaleString('id-ID')}</td>
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{valMei.toLocaleString('id-ID')}</td>
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{valJuni.toLocaleString('id-ID')}</td>
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center bg-[#1E1E1E]/50">{formatTrendBadge(valJuni, valMei)}</td>
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{valJuli.toLocaleString('id-ID')}</td>
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center bg-[#1E1E1E]/50">{formatTrendBadge(valJuli, valJuni)}</td>
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{valAgs.toLocaleString('id-ID')}</td>
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center bg-[#1E1E1E]/50">{formatTrendBadge(valAgs, valJuli)}</td>
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center text-purple-400 font-bold">{targetJuli.toLocaleString('id-ID')}</td>
-                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center font-bold">{targetAgs.toLocaleString('id-ID')}</td>
-                      <td className="border-b border-r-2 border-slate-700 px-3 py-2 text-center font-bold">{targetSept.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center font-medium">{item.region}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center">{luasan.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center text-emerald-600 font-bold">{reqTk.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center text-slate-700 font-medium">{valMei.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center text-slate-700 font-medium">{valJuni.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center bg-slate-50/50">{formatTrendBadge(valJuni, valMei)}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center text-slate-700 font-medium">{valJuli.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center bg-slate-50/50">{formatTrendBadge(valJuli, valJuni)}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center text-slate-700 font-medium">{valAgs.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center bg-slate-50/50">{formatTrendBadge(valAgs, valJuli)}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center text-purple-600 font-bold">{targetJuli.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-300 px-2 py-1 text-center font-bold">{targetAgs.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r-2 border-slate-300 px-2 py-1 text-center font-bold">{targetSept.toLocaleString('id-ID')}</td>
                     </tr>
                   );
                 })}
-                <tr className="bg-amber-950/40 font-bold text-xs text-slate-100">
-                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center" colSpan="3">TOTAL KESELURUHAN</td>
-                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center">{sumLuasan.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center text-emerald-400">{sumKebutuhan.toLocaleString('id-ID')}</td>
-                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{sumMei.toLocaleString('id-ID')}</td>
-                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{sumJuni.toLocaleString('id-ID')}</td>
-                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center bg-[#1E1E1E]/50">{formatTrendBadge(sumJuni, sumMei)}</td>
-                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{sumJuli.toLocaleString('id-ID')}</td>
-                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center bg-[#1E1E1E]/50">{formatTrendBadge(sumJuli, sumJuni)}</td>
-                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{sumAgs.toLocaleString('id-ID')}</td>
-                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center bg-[#1E1E1E]/50">{formatTrendBadge(sumAgs, sumJuli)}</td>
-                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center text-purple-400">{sumRencanaJuli.toLocaleString('id-ID')}</td>
-                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center">{sumRencanaAgs.toLocaleString('id-ID')}</td>
-                  <td className="border-b-2 border-r-2 border-slate-700 px-3 py-2 text-center">{(window.sumRencanaSept || 0).toLocaleString('id-ID')}</td>
+                <tr className="bg-amber-100/80 font-bold text-[10px] xl:text-xs text-slate-900">
+                  <td className="border-b-2 border-r border-slate-300 px-2 py-1.5 text-center" colSpan="3">TOTAL KESELURUHAN</td>
+                  <td className="border-b-2 border-r border-slate-300 px-2 py-1.5 text-center">{sumLuasan.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td className="border-b-2 border-r border-slate-300 px-2 py-1.5 text-center text-emerald-600">{sumKebutuhan.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r border-slate-300 px-2 py-1.5 text-center text-slate-700 font-medium">{sumMei.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r border-slate-300 px-2 py-1.5 text-center text-slate-700 font-medium">{sumJuni.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r border-slate-300 px-2 py-1.5 text-center bg-slate-50/50">{formatTrendBadge(sumJuni, sumMei)}</td>
+                  <td className="border-b-2 border-r border-slate-300 px-2 py-1.5 text-center text-slate-700 font-medium">{sumJuli.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r border-slate-300 px-2 py-1.5 text-center bg-slate-50/50">{formatTrendBadge(sumJuli, sumJuni)}</td>
+                  <td className="border-b-2 border-r border-slate-300 px-2 py-1.5 text-center text-slate-700 font-medium">{sumAgs.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r border-slate-300 px-2 py-1.5 text-center bg-slate-50/50">{formatTrendBadge(sumAgs, sumJuli)}</td>
+                  <td className="border-b-2 border-r border-slate-300 px-2 py-1.5 text-center text-purple-650">{sumRencanaJuli.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r border-slate-300 px-2 py-1.5 text-center">{sumRencanaAgs.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r-2 border-slate-300 px-2 py-1.5 text-center">{(window.sumRencanaSept || 0).toLocaleString('id-ID')}</td>
                 </tr>
               </tbody>
             </table>
