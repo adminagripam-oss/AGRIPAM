@@ -2191,16 +2191,41 @@
 
             if (isLHP) {
               // ── PEMBACAAN DINAMIS KHUSUS LHP ──
-              // Karena baris subtotal di LHP hasil export seringkali kosong datanya,
-              // kita loop semua baris data kebun (dimulai setelah baris header)
-              // Kolom B (index 1) = Regional, Kolom L (index 11) = Kg Panen, Kolom G (index 6) = Kg Kirim
-              for (let r = 5; r < rows.length; r++) {
+              // Mendeteksi header kolom secara dinamis
+              let headerRowIndex = 5; // Default baris ke-6 (0-indexed 5)
+              for (let i = 0; i < Math.min(rows.length, 10); i++) {
+                if (rows[i]) {
+                  const hasKgPanen = rows[i].some(cell => cell && cell.toString().toLowerCase().replace(/\s+/g, '') === 'kgpanen');
+                  if (hasKgPanen) {
+                    headerRowIndex = i;
+                    break;
+                  }
+                }
+              }
+              const headerRow = rows[headerRowIndex] || [];
+              let colWilayah = 1; // Default Kolom B (Wilayah)
+              let colPanen = 11;  // Default Kolom L (Kg Panen)
+              let colKirim = 7;   // Default Kolom H (Kirim)
+
+              headerRow.forEach((cell, idx) => {
+                if (!cell) return;
+                const valClean = cell.toString().toLowerCase().replace(/\s+/g, '');
+                if (valClean === 'wilayah') {
+                  colWilayah = idx;
+                } else if (valClean === 'kgpanen') {
+                  colPanen = idx;
+                } else if (valClean === 'rkap' && colKirim === 7) {
+                  colKirim = idx;
+                }
+              });
+
+              for (let r = headerRowIndex + 1; r < rows.length; r++) {
                 const row = rows[r];
                 if (!row || !Array.isArray(row)) continue;
 
-                const rawReg = row[1]; // Kolom B
-                let rawValPanen = row[11]; // Kolom L (Panen)
-                let rawValKirim = row[7]; // Kolom H (Kirim)
+                const rawReg = row[colWilayah];
+                let rawValPanen = row[colPanen];
+                let rawValKirim = row[colKirim];
 
                 if (!rawReg) continue;
 
@@ -3565,32 +3590,60 @@
             const activeEstimasi = estJson.success ? (estJson.allEstimasi || {}) : {};
             setDbEstimasi(normalizeEstimasiData(activeEstimasi));
 
-            // Compute LHP totals
-            const totals = {};
-            ALL_REGIONS.forEach(reg => {
-              totals[reg] = { panen: 0, kirim: 0 };
-            });
+             // Compute LHP totals
+             const totals = {};
+             ALL_REGIONS.forEach(reg => {
+               totals[reg] = { panen: 0, kirim: 0 };
+             });
 
-            for (let r = 6; r < rows.length; r++) {
-              const row = rows[r];
-              if (!row || !Array.isArray(row)) continue;
-              const rawReg = row[1]; // Column B (Wilayah)
-              if (!rawReg) continue;
-              const matchedReg = findRegionMatch(rawReg);
-              if (matchedReg) {
-                let valPanen = row[11]; // Column L (Kg Panen)
-                let valKirim = row[7]; // Column H (Hari Ini Produksi Kg RKAP / Kirim)
+             // Mendeteksi header kolom secara dinamis
+             let headerRowIndex = 5; // Default baris ke-6 (0-indexed 5)
+             for (let i = 0; i < Math.min(rows.length, 10); i++) {
+               if (rows[i]) {
+                 const hasKgPanen = rows[i].some(cell => cell && cell.toString().toLowerCase().replace(/\s+/g, '') === 'kgpanen');
+                 if (hasKgPanen) {
+                   headerRowIndex = i;
+                   break;
+                 }
+               }
+             }
+             const headerRow = rows[headerRowIndex] || [];
+             let colWilayah = 1; // Default Column B (Wilayah)
+             let colPanen = 11;  // Default Column L (Kg Panen)
+             let colKirim = 7;   // Default Column H (Kirim)
 
-                if (typeof valPanen === 'string') valPanen = valPanen.replace(/[^\d.,]/g, '').replace(/,/g, '');
-                if (typeof valKirim === 'string') valKirim = valKirim.replace(/[^\d.,]/g, '').replace(/,/g, '');
+             headerRow.forEach((cell, idx) => {
+               if (!cell) return;
+               const valClean = cell.toString().toLowerCase().replace(/\s+/g, '');
+               if (valClean === 'wilayah') {
+                 colWilayah = idx;
+               } else if (valClean === 'kgpanen') {
+                 colPanen = idx;
+               } else if (valClean === 'rkap' && colKirim === 7) {
+                 colKirim = idx;
+               }
+             });
 
-                const numPanen = valPanen !== null && valPanen !== undefined && valPanen !== '' ? parseFloat(valPanen) : 0;
-                const numKirim = valKirim !== null && valKirim !== undefined && valKirim !== '' ? parseFloat(valKirim) : 0;
+             for (let r = headerRowIndex + 1; r < rows.length; r++) {
+               const row = rows[r];
+               if (!row || !Array.isArray(row)) continue;
+               const rawReg = row[colWilayah];
+               if (!rawReg) continue;
+               const matchedReg = findRegionMatch(rawReg);
+               if (matchedReg) {
+                 let valPanen = row[colPanen];
+                 let valKirim = row[colKirim];
 
-                if (!isNaN(numPanen)) totals[matchedReg].panen += (numPanen / 1000);
-                if (!isNaN(numKirim)) totals[matchedReg].kirim += (numKirim / 1000);
-              }
-            }
+                 if (typeof valPanen === 'string') valPanen = valPanen.replace(/[^\d.,]/g, '').replace(/,/g, '');
+                 if (typeof valKirim === 'string') valKirim = valKirim.replace(/[^\d.,]/g, '').replace(/,/g, '');
+
+                 const numPanen = valPanen !== null && valPanen !== undefined && valPanen !== '' ? parseFloat(valPanen) : 0;
+                 const numKirim = valKirim !== null && valKirim !== undefined && valKirim !== '' ? parseFloat(valKirim) : 0;
+
+                 if (!isNaN(numPanen)) totals[matchedReg].panen += (numPanen / 1000);
+                 if (!isNaN(numKirim)) totals[matchedReg].kirim += (numKirim / 1000);
+               }
+             }
 
             setRegionTotals(totals);
           } catch (err) {
