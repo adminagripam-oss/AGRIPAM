@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="id" class="dark h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitoring & Rekapitulasi Tenaga Kerja Panen | AGRI-PAM</title>
+  
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: ['class', '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            slate: {
+              800: '#1E1E1E',
+              900: '#1E1E1E',
+            }
+          }
+        },
+      },
+    };
+  </script>
+
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- React 18 CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Babel Standalone for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons (via unpkg) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    html,
+    body,
+    #root {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: #121212;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      color: #e2e8f0;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+  </style>
+</head>
+
+<body class="bg-[#121212] min-h-screen p-4 flex items-center justify-center">
+  <div id="root" class="w-full max-w-7xl h-[95vh] flex flex-col justify-center"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const RENCANA_REALISASI_ROWS = [
+      // CRO I
+      { label: "Sumatera Utara 1", regionKey: "Sumatera Utara 1", excelKey: "Sumut 1", luas: 6498.24, target: 50, type: "detail" },
+      { label: "Sumut 2 Ex Torganda", regionKey: "Sumatera Utara 2 Ex Torganda", excelKey: "Sumut 2", luas: 46677.70, target: 680, type: "detail" },
+      { label: "Aceh", regionKey: "Aceh", excelKey: "Aceh", luas: 1257.17, target: 10, type: "detail" },
+      { label: "CRO I", type: "subtotal", children: ["Sumatera Utara 1", "Sumut 2 Ex Torganda", "Aceh"] },
+
+      // CRO II
+      { label: "Riau 1 Ex Duta Palma", regionKey: "Riau 1", excelKey: "Riau 1", luas: 66610.43, target: 3025, type: "detail" },
+      { label: "CRO II", type: "subtotal", children: ["Riau 1 Ex Duta Palma"] },
+
+      // CRO III
+      { label: "Riau 2", regionKey: "Riau 2", excelKey: "Riau 2", luas: 48101.86, target: 680, type: "detail" },
+      { label: "Riau 3", regionKey: "Riau 3", excelKey: "Riau 3", luas: 4840.18, target: 55, type: "detail" },
+      { label: "CRO III", type: "subtotal", children: ["Riau 2", "Riau 3"] },
+
+      // CRO IV
+      { label: "Torganda 2 Riau 4", regionKey: "Riau 4", excelKey: "Riau 4", luas: 38121.47, target: 340, type: "detail" },
+      { label: "CRO IV", type: "subtotal", children: ["Torganda 2 Riau 4"] },
+
+      // CRO V
+      { label: "Bangka Belitung", regionKey: "Bangka Belitung", excelKey: "Babel", luas: 568.47, target: 15, type: "detail" },
+      { label: "Jambi", regionKey: "Jambi", excelKey: "Jambi", luas: 565.59, target: 10, type: "detail" },
+      { label: "Sumatera Barat", regionKey: "Sumatera Barat", excelKey: "Sumbar", luas: 2741.65, target: 100, type: "detail" },
+      { label: "Sumatera Selatan", regionKey: "Sumatera Selatan", excelKey: "Sumsel", luas: 8712.90, target: 45, type: "detail" },
+      { label: "CRO V", type: "subtotal", children: ["Bangka Belitung", "Jambi", "Sumatera Barat", "Sumatera Selatan"] },
+
+      // CRO VI
+      { label: "Kalbar 1A", regionKey: "Kalimantan Barat 1A", excelKey: "Kalbar 1A", luas: 39838.88, target: 875, type: "detail" },
+      { label: "Kalbar 1B", regionKey: "Kalimantan Barat 1B", excelKey: "Kalbar 1B", luas: 38117.11, target: 875, type: "detail" },
+      { label: "Kalimantan Barat 2", regionKey: "Kalimantan Barat 2", excelKey: "Kalbar 2", luas: 12993.09, target: 55, type: "detail" },
+      { label: "CRO VI", type: "subtotal", children: ["Kalbar 1A", "Kalbar 1B", "Kalimantan Barat 2"] },
+
+      // CRO VII
+      { label: "Kalimantan Selatan 1", regionKey: "Kalimantan Selatan 1", excelKey: "Kalsel 1", luas: 4772.06, target: 85, type: "detail" },
+      { label: "Kalimantan Selatan 2", regionKey: "Kalimantan Selatan 2", excelKey: "Kalsel 2", luas: 2850.38, target: 50, type: "detail" },
+      { label: "Kalimantan Timur", regionKey: "Kalimantan Timur", excelKey: "Kaltim", luas: 3562.21, target: 85, type: "detail" },
+      { label: "Kalimantan Utara", regionKey: "Kalimantan Utara", excelKey: "Kaltara", luas: 1145.28, target: 5, type: "detail" },
+      { label: "CRO VII", type: "subtotal", children: ["Kalimantan Selatan 1", "Kalimantan Selatan 2", "Kalimantan Timur", "Kalimantan Utara"] },
+
+      // CRO VIII
+      { label: "Kalimantan Tengah 1", regionKey: "Kalimantan Tengah 1", excelKey: "Kalteng 1", luas: 63248.25, target: 845, type: "detail" },
+      { label: "Kalimantan Tengah 3", regionKey: "Kalimantan Tengah 3", excelKey: "Kalteng 3", luas: 30467.52, target: 100, type: "detail" },
+      { label: "CRO VIII", type: "subtotal", children: ["Kalimantan Tengah 1", "Kalimantan Tengah 3"] },
+
+      // CRO IX
+      { label: "Kalimantan Tengah 2", regionKey: "Kalimantan Tengah 2", excelKey: "Kalteng 2", luas: 17408.64, target: 565, type: "detail" },
+      { label: "CRO IX", type: "subtotal", children: ["Kalimantan Tengah 2"] },
+
+      // CRO X
+      { label: "Sulawesi Tenggara", regionKey: "Sulawesi Tenggara", excelKey: "Sultra", luas: 3231.46, target: 20, type: "detail" },
+      { label: "Sulawesi Tengah", regionKey: "Sulawesi Tengah", excelKey: "Sulteng", luas: 2116.83, target: 15, type: "detail" },
+      { label: "CRO X", type: "subtotal", children: ["Sulawesi Tenggara", "Sulawesi Tengah"] },
+    ];
+
+    function Icon({ name, size = 18, className = '' }) {
+      const ref = useRef(null);
+      useEffect(() => {
+        if (ref.current && window.lucide) {
+          ref.current.innerHTML = '';
+          const el = document.createElement('div');
+          el.setAttribute('data-lucide', name);
+          el.style.width = size + 'px';
+          el.style.height = size + 'px';
+          ref.current.appendChild(el);
+          window.lucide.createIcons({ nameAttr: 'data-lucide', rootElement: ref.current });
+        }
+      }, [name, size]);
+      return <span ref={ref} className={`inline-flex items-center justify-center ${className}`} />;
+    }
+
+    function PublicRekapTKView() {
+      const [kebunData, setKebunData] = useState([]);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        const fetchData = async () => {
+          try {
+            const res = await fetch(`/api/kebunTK?action=getKebun&region=ALL&_t=${Date.now()}`);
+            const json = await res.json();
+            if (json.success) {
+              setKebunData(json.data || []);
+            }
+          } catch (err) {
+            console.error("Error fetching data:", err);
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchData();
+      }, []);
+
+      if (loading) {
+        return (
+          <div className="flex flex-col items-center justify-center h-64 gap-4">
+            <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-sm font-semibold text-slate-400">Memuat Data Rekapitulasi...</p>
+          </div>
+        );
+      }
+
+      let sumLuasan = 0;
+      let sumKebutuhan = 0;
+      let sumMei = 0, sumJuni = 0, sumJuli = 0, sumAgs = 0;
+      let sumRencanaJuli = 0, sumRencanaAgs = 0;
+      window.sumRencanaSept = 0;
+
+      // Grouping data
+      const grouped = {};
+      (kebunData || []).forEach(item => {
+        const region = item.region || '-';
+        if (region.toLowerCase() === 'papua selatan') return;
+        const cro = item.cro || '-';
+        const key = `${cro}_${region}`;
+        if (!grouped[key]) {
+          let officialLuas = 0;
+          if (region.toLowerCase() === 'kalbar 1') {
+            const row1A = RENCANA_REALISASI_ROWS.find(r => r.type === 'detail' && r.excelKey === 'Kalbar 1A');
+            const row1B = RENCANA_REALISASI_ROWS.find(r => r.type === 'detail' && r.excelKey === 'Kalbar 1B');
+            officialLuas = (row1A ? (row1A.luas || 0) : 0) + (row1B ? (row1B.luas || 0) : 0);
+          } else {
+            const officialRow = RENCANA_REALISASI_ROWS.find(r => r.type === 'detail' && r.excelKey === region);
+            officialLuas = officialRow ? (officialRow.luas || 0) : 0;
+          }
+          grouped[key] = {
+            cro: cro,
+            region: region,
+            luasan: officialLuas,
+            req_tk: 0,
+            tk_mei: 0,
+            tk_juni: 0,
+            tk_juli: 0,
+            tk_agustus: 0,
+            target_juli: 0,
+            target_agustus: 0,
+            target_september: 0
+          };
+        }
+        grouped[key].req_tk += parseInt(item.req_tk, 10) || 0;
+        grouped[key].tk_mei += parseInt(item.tk_mei, 10) || 0;
+        grouped[key].tk_juni += parseInt(item.tk_juni, 10) || 0;
+        grouped[key].tk_juli += parseInt(item.tk_juli, 10) || 0;
+        grouped[key].tk_agustus += parseInt(item.tk_agustus, 10) || 0;
+        grouped[key].target_juli += parseInt(item.target_juli, 10) || 0;
+        grouped[key].target_agustus += parseInt(item.target_agustus, 10) || 0;
+        grouped[key].target_september += parseInt(item.target_september, 10) || 0;
+      });
+
+      const romanToInt = (str) => {
+        const romanMap = { I: 1, V: 5, X: 10, L: 50, C: 100 };
+        let num = 0;
+        for (let i = 0; i < str.length; i++) {
+          if (i > 0 && romanMap[str[i]] > romanMap[str[i - 1]]) {
+            num += romanMap[str[i]] - 2 * romanMap[str[i - 1]];
+          } else {
+            num += romanMap[str[i]];
+          }
+        }
+        return num;
+      };
+
+      const intToRoman = (num) => {
+        const romanMap = { M: 1000, CM: 900, D: 500, CD: 400, C: 100, XC: 90, L: 50, XL: 40, X: 10, IX: 9, V: 5, IV: 4, I: 1 };
+        let str = '';
+        for (let i of Object.keys(romanMap)) {
+          let q = Math.floor(num / romanMap[i]);
+          num -= q * romanMap[i];
+          str += i.repeat(q);
+        }
+        return str;
+      };
+
+      const parseCro = (croStr) => {
+        const parts = croStr.trim().split(' ');
+        if (parts.length > 1) {
+          const lastPart = parts[parts.length - 1].toUpperCase();
+          if (/^[IVXLC]+$/.test(lastPart)) {
+            return romanToInt(lastPart);
+          }
+          const num = parseInt(lastPart, 10);
+          if (!isNaN(num)) return num;
+        }
+        return 999;
+      };
+
+      const formatCroToRoman = (croStr) => {
+        const parts = croStr.trim().split(' ');
+        if (parts.length > 1) {
+          const lastPart = parts[parts.length - 1];
+          const num = parseInt(lastPart, 10);
+          if (!isNaN(num)) {
+            parts[parts.length - 1] = intToRoman(num);
+            return parts.join(' ');
+          }
+        }
+        return croStr;
+      };
+
+      const aggregatedData = Object.values(grouped).sort((a, b) => {
+        if (a.cro != b.cro) {
+          const aVal = parseCro(a.cro);
+          const bVal = parseCro(b.cro);
+          if (aVal !== 999 && bVal !== 999 && aVal !== bVal) {
+            return aVal - bVal;
+          }
+          return a.cro.localeCompare(b.cro, undefined, { numeric: true, sensitivity: 'base' });
+        }
+        return a.region.localeCompare(b.region, undefined, { numeric: true, sensitivity: 'base' });
+      });
+
+      const croCounts = {};
+      aggregatedData.forEach(item => {
+        const romanCro = formatCroToRoman(item.cro);
+        croCounts[romanCro] = (croCounts[romanCro] || 0) + 1;
+      });
+
+      const formatTrendBadge = (current, previous) => {
+        const diff = current - previous;
+        if (diff > 0) {
+          return (
+            <div className="inline-flex items-center justify-center gap-1 text-emerald-400 font-extrabold text-[10px]">
+              <svg className="w-2.5 h-2.5 fill-current text-emerald-400" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z" /></svg>
+              <span>{diff.toLocaleString('id-ID')}</span>
+            </div>
+          );
+        } else if (diff < 0) {
+          return (
+            <div className="inline-flex items-center justify-center gap-1 text-red-400 font-extrabold text-[10px]">
+              <svg className="w-2.5 h-2.5 fill-current text-red-400" viewBox="0 0 24 24"><path d="M12 20l8-16H4z" /></svg>
+              <span>{Math.abs(diff).toLocaleString('id-ID')}</span>
+            </div>
+          );
+        } else {
+          return (
+            <div className="inline-flex items-center justify-center gap-1 text-emerald-405 font-extrabold text-[10px]">
+              <svg className="w-2.5 h-2.5 fill-current text-emerald-405" viewBox="0 0 24 24"><path d="M12 4l-8 16h16z" /></svg>
+              <span>0</span>
+            </div>
+          );
+        }
+      };
+
+      const handleExportExcel = () => {
+        const table = document.getElementById("monitoring-tk-table");
+        if (!table) return;
+
+        const tableClone = table.cloneNode(true);
+        const trs = tableClone.querySelectorAll("tr");
+        trs.forEach((tr, rowIndex) => {
+          const cells = tr.querySelectorAll("th, td");
+          cells.forEach((cell) => {
+            cell.style.border = "0.5pt solid black";
+            cell.style.textAlign = "center";
+            cell.style.color = "black";
+            cell.style.fontFamily = "Arial";
+            cell.style.fontWeight = "bold";
+            cell.style.verticalAlign = "middle";
+
+            if (rowIndex === 0 || rowIndex === 1) {
+              cell.style.backgroundColor = "#4BACC6";
+            }
+
+            const svg = cell.querySelector("svg");
+            if (svg) {
+              const path = svg.querySelector("path");
+              let arrow = "";
+              if (path && path.getAttribute("d") === "M12 4l-8 16h16z") {
+                arrow = "▲ ";
+                cell.style.color = "#059669";
+              } else if (path && path.getAttribute("d") === "M12 20l8-16H4z") {
+                arrow = "▼ ";
+                cell.style.color = "#dc2626";
+              }
+              const textNode = document.createTextNode(arrow);
+              svg.parentNode.replaceChild(textNode, svg);
+            }
+          });
+        });
+
+        const html = `
+          <html xmlns:x="urn:schemas-microsoft-com:office:excel">
+            <head>
+              <meta charset="utf-8" />
+              <!--[if gte mso 9]>
+              <xml>
+                <x:ExcelWorkbook>
+                  <x:ExcelWorksheets>
+                    <x:ExcelWorksheet>
+                      <x:Name>Monitoring TK</x:Name>
+                      <x:WorksheetOptions>
+                        <x:DisplayGridlines/>
+                      </x:WorksheetOptions>
+                    </x:ExcelWorksheet>
+                  </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+              </xml>
+              <![endif]-->
+            </head>
+            <body>
+              ${tableClone.outerHTML}
+            </body>
+          </html>
+        `;
+
+        const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "Monitoring_Rekapitulasi_TK_Panen.xls";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+
+      return (
+        <div className="bg-[#1E1E1E] rounded-xl border border-slate-800 w-full flex flex-col overflow-hidden shadow-2xl">
+          <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-[#1E1E1E] text-white z-30 relative">
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Icon name="users" size={20} className="text-emerald-500" />
+              <span>Monitoring & Rekapitulasi Tenaga Kerja Panen</span>
+            </h3>
+            <button onClick={handleExportExcel} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors">
+              <Icon name="download" size={16} /> Export Excel
+            </button>
+          </div>
+          
+          <div className="px-4 pb-4 pt-0 overflow-auto flex-1 relative bg-[#1E1E1E]">
+            <table id="monitoring-tk-table" className="w-full text-left border-separate border-spacing-0 border-t-2 border-l-2 border-slate-700 mt-0">
+              <thead className="sticky top-0 z-30 bg-[#46bdc6] text-white">
+                <tr>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">No</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">CRO</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">Wilayah</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">LUASAN</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" rowSpan="2">Kebutuhan Tenaga Panen</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" colSpan="7">Ketersedian TK PANEN</th>
+                  <th className="border-b border-r-2 border-slate-700 px-3 py-2 text-center text-xs font-bold bg-[#46bdc6]" colSpan="3">RENCANA PEMENUHAN TK PANEN</th>
+                </tr>
+                <tr>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">MEI</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">JUNI</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6] text-emerald-100">TREND</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">JULI</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6] text-emerald-100">TREND</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">AGUSTUS</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6] text-emerald-100">TREND</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">JULI</th>
+                  <th className="border-b border-r border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">AGUSTUS</th>
+                  <th className="border-b border-r-2 border-slate-700 px-3 py-2 text-center text-[10px] font-bold bg-[#46bdc6]">SEPTEMBER</th>
+                </tr>
+              </thead>
+              <tbody>
+                {aggregatedData.map((item, idx) => {
+                  const valMei = item.tk_mei;
+                  const valJuni = item.tk_juni;
+                  const valJuli = item.tk_juli;
+                  const valAgs = item.tk_agustus;
+                  const targetJuli = item.target_juli;
+                  const targetAgs = item.target_agustus;
+                  const targetSept = item.target_september || 0;
+                  const reqTk = item.req_tk;
+                  const luasan = item.luasan;
+
+                  sumLuasan += luasan;
+                  sumKebutuhan += reqTk;
+                  sumMei += valMei;
+                  sumJuni += valJuni;
+                  sumJuli += valJuli;
+                  sumAgs += valAgs;
+                  sumRencanaJuli += targetJuli;
+                  sumRencanaAgs += targetAgs;
+                  window.sumRencanaSept += targetSept;
+
+                  const romanCro = formatCroToRoman(item.cro);
+                  let isNewCro = false;
+                  if (idx === 0 || formatCroToRoman(aggregatedData[idx - 1].cro) !== romanCro) {
+                    isNewCro = true;
+                  }
+
+                  const isBelumIsiAgustus = valAgs === 0;
+                  const rowClass = `text-xs border-b border-slate-700 text-slate-200 ${
+                    isBelumIsiAgustus
+                      ? "bg-red-950/40 hover:bg-red-950/60 text-red-350 font-bold animate-pulse-slow"
+                      : "hover:bg-slate-800"
+                  }`;
+
+                  return (
+                    <tr key={idx} className={rowClass}>
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center">{idx + 1}</td>
+                      {isNewCro && (
+                        <td rowSpan={croCounts[romanCro]} className="border-b border-r border-slate-700 px-3 py-2 text-center font-bold bg-[#1E1E1E] align-middle text-white">
+                          {romanCro}
+                        </td>
+                      )}
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center font-medium">{item.region}</td>
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center">{luasan.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center text-emerald-400 font-bold">{reqTk.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{valMei.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{valJuni.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center bg-[#1E1E1E]/50">{formatTrendBadge(valJuni, valMei)}</td>
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{valJuli.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center bg-[#1E1E1E]/50">{formatTrendBadge(valJuli, valJuni)}</td>
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{valAgs.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center bg-[#1E1E1E]/50">{formatTrendBadge(valAgs, valJuli)}</td>
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center text-purple-400 font-bold">{targetJuli.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r border-slate-700 px-3 py-2 text-center font-bold">{targetAgs.toLocaleString('id-ID')}</td>
+                      <td className="border-b border-r-2 border-slate-700 px-3 py-2 text-center font-bold">{targetSept.toLocaleString('id-ID')}</td>
+                    </tr>
+                  );
+                })}
+                <tr className="bg-amber-950/40 font-bold text-xs text-slate-100">
+                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center" colSpan="3">TOTAL KESELURUHAN</td>
+                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center">{sumLuasan.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center text-emerald-400">{sumKebutuhan.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{sumMei.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{sumJuni.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center bg-[#1E1E1E]/50">{formatTrendBadge(sumJuni, sumMei)}</td>
+                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{sumJuli.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center bg-[#1E1E1E]/50">{formatTrendBadge(sumJuli, sumJuni)}</td>
+                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center text-white font-medium">{sumAgs.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center bg-[#1E1E1E]/50">{formatTrendBadge(sumAgs, sumJuli)}</td>
+                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center text-purple-400">{sumRencanaJuli.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r border-slate-700 px-3 py-2 text-center">{sumRencanaAgs.toLocaleString('id-ID')}</td>
+                  <td className="border-b-2 border-r-2 border-slate-700 px-3 py-2 text-center">{(window.sumRencanaSept || 0).toLocaleString('id-ID')}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<PublicRekapTKView />);
+  </script>
+</body>
+
+</html>
