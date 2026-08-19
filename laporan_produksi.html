@@ -2191,11 +2191,15 @@
 
             if (isLHP) {
               // ── PEMBACAAN DINAMIS KHUSUS LHP ──
-              // Mendeteksi header kolom secara dinamis
+              // Mendeteksi header kolom secara dinamis (mengabaikan tanda baca, spasi, dan satuan)
               let headerRowIndex = 5; // Default baris ke-6 (0-indexed 5)
               for (let i = 0; i < Math.min(rows.length, 10); i++) {
                 if (rows[i]) {
-                  const hasKgPanen = rows[i].some(cell => cell && cell.toString().toLowerCase().replace(/\s+/g, '') === 'kgpanen');
+                  const hasKgPanen = rows[i].some(cell => {
+                    if (!cell) return false;
+                    const valClean = cell.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+                    return valClean.includes('kgpanen') || valClean.includes('panenkg');
+                  });
                   if (hasKgPanen) {
                     headerRowIndex = i;
                     break;
@@ -2203,15 +2207,15 @@
                 }
               }
               const headerRow = rows[headerRowIndex] || [];
-              let colWilayah = 1; // Default Kolom B (Wilayah)
-              let colPanen = 11;  // Default Kolom L (Kg Panen)
-              let colKirim = 7;   // Default Kolom H (Kirim)
+              let colWilayah = 1; // Default Column B (Wilayah)
+              let colPanen = 11;  // Default Column L (Kg Panen)
+              let colKirim = 7;   // Default Column H (Kirim)
               headerRow.forEach((cell, idx) => {
                 if (!cell) return;
-                const valClean = cell.toString().toLowerCase().replace(/\s+/g, '');
-                if (valClean === 'wilayah') {
+                const valClean = cell.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (valClean.includes('wilayah')) {
                   colWilayah = idx;
-                } else if (valClean === 'kgpanen') {
+                } else if (valClean.includes('kgpanen') || valClean.includes('panenkg')) {
                   colPanen = idx;
                 }
               });
@@ -2219,16 +2223,19 @@
               // Cari kolom RKAP untuk Kirim (seharusnya berada di colPanen - 4)
               let foundKirim = false;
               const offsetKirim = colPanen - 4;
-              if (offsetKirim >= 0 && headerRow[offsetKirim] && headerRow[offsetKirim].toString().toLowerCase().replace(/\s+/g, '') === 'rkap') {
-                colKirim = offsetKirim;
-                foundKirim = true;
+              if (offsetKirim >= 0 && headerRow[offsetKirim]) {
+                const valClean = headerRow[offsetKirim].toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (valClean.includes('rkap')) {
+                  colKirim = offsetKirim;
+                  foundKirim = true;
+                }
               }
 
               if (!foundKirim) {
                 headerRow.forEach((cell, idx) => {
                   if (!cell) return;
-                  const valClean = cell.toString().toLowerCase().replace(/\s+/g, '');
-                  if (valClean === 'rkap' && idx >= 6 && !foundKirim) {
+                  const valClean = cell.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+                  if (valClean.includes('rkap') && idx >= 6 && !foundKirim) {
                     colKirim = idx;
                     foundKirim = true;
                   }
@@ -3612,11 +3619,15 @@
                totals[reg] = { panen: 0, kirim: 0 };
              });
 
-             // Mendeteksi header kolom secara dinamis
+             // Mendeteksi header kolom secara dinamis (mengabaikan tanda baca, spasi, dan satuan)
              let headerRowIndex = 5; // Default baris ke-6 (0-indexed 5)
              for (let i = 0; i < Math.min(rows.length, 10); i++) {
                if (rows[i]) {
-                 const hasKgPanen = rows[i].some(cell => cell && cell.toString().toLowerCase().replace(/\s+/g, '') === 'kgpanen');
+                 const hasKgPanen = rows[i].some(cell => {
+                   if (!cell) return false;
+                   const valClean = cell.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+                   return valClean.includes('kgpanen') || valClean.includes('panenkg');
+                 });
                  if (hasKgPanen) {
                    headerRowIndex = i;
                    break;
@@ -3629,10 +3640,10 @@
              let colKirim = 7;   // Default Column H (Kirim)
              headerRow.forEach((cell, idx) => {
                if (!cell) return;
-               const valClean = cell.toString().toLowerCase().replace(/\s+/g, '');
-               if (valClean === 'wilayah') {
+               const valClean = cell.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+               if (valClean.includes('wilayah')) {
                  colWilayah = idx;
-               } else if (valClean === 'kgpanen') {
+               } else if (valClean.includes('kgpanen') || valClean.includes('panenkg')) {
                  colPanen = idx;
                }
              });
@@ -3640,16 +3651,19 @@
              // Cari kolom RKAP untuk Kirim (seharusnya berada di colPanen - 4)
              let foundKirim = false;
              const offsetKirim = colPanen - 4;
-             if (offsetKirim >= 0 && headerRow[offsetKirim] && headerRow[offsetKirim].toString().toLowerCase().replace(/\s+/g, '') === 'rkap') {
-               colKirim = offsetKirim;
-               foundKirim = true;
+             if (offsetKirim >= 0 && headerRow[offsetKirim]) {
+               const valClean = headerRow[offsetKirim].toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+               if (valClean.includes('rkap')) {
+                 colKirim = offsetKirim;
+                 foundKirim = true;
+               }
              }
 
              if (!foundKirim) {
                headerRow.forEach((cell, idx) => {
                  if (!cell) return;
-                 const valClean = cell.toString().toLowerCase().replace(/\s+/g, '');
-                 if (valClean === 'rkap' && idx >= 6 && !foundKirim) {
+                 const valClean = cell.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+                 if (valClean.includes('rkap') && idx >= 6 && !foundKirim) {
                    colKirim = idx;
                    foundKirim = true;
                  }
