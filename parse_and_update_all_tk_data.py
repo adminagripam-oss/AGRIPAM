@@ -199,6 +199,25 @@ if os.path.exists(excel_tambahan_path):
         cro = normalize_cro_tambahan(cro_raw)
         region, region_raw = normalize_region_tambahan(wilayah_raw)
         
+        # Override known region/CRO typos in DATA EXTEND.xlsx
+        nama_kebun_upper = nama_kebun_str.upper()
+        if "BATANG KUMU 1" in nama_kebun_upper:
+            region = "Riau 4"
+            cro = "CRO 4"
+            region_raw = "Riau 4"
+        elif "SURYAMAS CIPTA" in nama_kebun_upper:
+            region = "Kalteng 1"
+            cro = "CRO 8"
+            region_raw = "Kalteng 1"
+        elif "BAHAUR ERA" in nama_kebun_upper:
+            region = "Kalteng 1"
+            cro = "CRO 8"
+            region_raw = "Kalteng 1"
+        elif "DINAMIKA PRIMA" in nama_kebun_upper:
+            region = "Kaltim"
+            cro = "CRO 7"
+            region_raw = "Kaltim"
+        
         reg_key = region.strip().upper()
         clean_raw = clean_name(nama_kebun_str)
         
