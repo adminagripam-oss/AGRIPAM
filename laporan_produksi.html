@@ -4508,6 +4508,8 @@
             if (edited) {
               return {
                 ...item,
+                req_tk: edited.req_tk,
+                luasan: edited.luasan,
                 tk_juni: edited.tk_juni,
                 tk_juli: edited.tk_juli,
                 tk_agustus: edited.tk_agustus,
@@ -5219,6 +5221,8 @@
                     onSubmit={(e) => {
                       e.preventDefault();
                       const item = activeEditKebun;
+                      const vReqTK = Math.max(0, parseInt(document.getElementById("editReqTK")?.value, 10) || 0);
+                      const vLuasan = Math.max(0, parseFloat(document.getElementById("editLuasanLahan")?.value) || 0);
                       const vJuni = Math.max(0, parseFloat(document.getElementById("editTKJuniVal")?.value) || 0);
                       const vTKJuli = Math.max(0, parseFloat(document.getElementById("editTKJuliVal")?.value) || 0);
                       const vTKAgustus = Math.max(0, parseFloat(document.getElementById("editTKAgustusVal")?.value) || 0);
@@ -5230,6 +5234,8 @@
                         ...edits,
                         [item.id]: {
                           ...edits[item.id],
+                          req_tk: vReqTK,
+                          luasan: vLuasan,
                           tk_juni: vJuni,
                           tk_juli: vTKJuli,
                           tk_agustus: vTKAgustus,
@@ -5239,13 +5245,10 @@
                         }
                       };
                       setEdits(newEdits);
-
-                      const editPayload = Object.keys(newEdits).map(id => ({
+                      handleSaveEdits(Object.keys(newEdits).map(id => ({
                         id: parseInt(id, 10),
                         ...newEdits[id]
-                      }));
-
-                      handleSaveEdits(editPayload);
+                      })));
                     }}
                     className="py-6 space-y-4"
                   >
@@ -5263,19 +5266,22 @@
                       <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Luasan Lahan (Ha)</label>
                         <input
-                          type="text"
-                          value={`${formatRibuan(activeEditKebun.luasan || 0)} Ha`}
-                          readOnly
-                          className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#1E1E1E] border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          id="editLuasanLahan"
+                          defaultValue={(edits[activeEditKebun.id]?.luasan !== undefined ? edits[activeEditKebun.id].luasan : activeEditKebun.luasan) || 0}
+                          className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-slate-500 shadow-xs"
                         />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Kebutuhan TK Panen</label>
                         <input
-                          type="text"
-                          value={`${formatRibuan(activeEditKebun.req_tk || 0)} Orang`}
-                          readOnly
-                          className="w-full px-3.5 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 rounded-xl text-xs font-black text-amber-900 dark:text-amber-200"
+                          type="number"
+                          min="0"
+                          id="editReqTK"
+                          defaultValue={(edits[activeEditKebun.id]?.req_tk !== undefined ? edits[activeEditKebun.id].req_tk : activeEditKebun.req_tk) || 0}
+                          className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-amber-300 dark:border-amber-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 shadow-xs"
                         />
                       </div>
                     </div>

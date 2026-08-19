@@ -178,6 +178,12 @@ module.exports = async (req, res) => {
         const itemNormRegion = normalizeRegion(item.region);
 
         if (isAdmin || userNormRegion === itemNormRegion || userNormRegion.includes(itemNormRegion) || itemNormRegion.includes(userNormRegion)) {
+          if (edit.req_tk !== undefined && edit.req_tk !== null) {
+            item.req_tk = Math.max(0, parseInt(edit.req_tk, 10) || 0);
+          }
+          if (edit.luasan !== undefined && edit.luasan !== null) {
+            item.luasan = Math.max(0, parseFloat(edit.luasan) || 0);
+          }
           if (edit.tk_juni !== undefined && edit.tk_juni !== null) {
             item.tk_juni = Math.max(0, parseFloat(edit.tk_juni) || 0);
           }
@@ -203,6 +209,8 @@ module.exports = async (req, res) => {
           // Attempt Supabase update (with fallback for missing columns)
           try {
             const fullPayload = {
+              req_tk: item.req_tk,
+              luasan: item.luasan,
               tk_juni: item.tk_juni,
               target_juli: item.target_juli,
               target_agustus: item.target_agustus,
@@ -217,6 +225,8 @@ module.exports = async (req, res) => {
               console.warn(`[kebunTK] Supabase full update failed for id=${targetId}: ${sbErr.message}. Trying safe fields...`);
               // Fallback: only update fields that are known to exist
               const safePayload = {
+                req_tk: item.req_tk,
+                luasan: item.luasan,
                 tk_juni: item.tk_juni,
                 target_juli: item.target_juli,
                 target_agustus: item.target_agustus,
