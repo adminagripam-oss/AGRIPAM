@@ -2206,7 +2206,6 @@
               let colWilayah = 1; // Default Kolom B (Wilayah)
               let colPanen = 11;  // Default Kolom L (Kg Panen)
               let colKirim = 7;   // Default Kolom H (Kirim)
-
               headerRow.forEach((cell, idx) => {
                 if (!cell) return;
                 const valClean = cell.toString().toLowerCase().replace(/\s+/g, '');
@@ -2214,10 +2213,27 @@
                   colWilayah = idx;
                 } else if (valClean === 'kgpanen') {
                   colPanen = idx;
-                } else if (valClean === 'rkap' && colKirim === 7) {
-                  colKirim = idx;
                 }
               });
+
+              // Cari kolom RKAP untuk Kirim (seharusnya berada di colPanen - 4)
+              let foundKirim = false;
+              const offsetKirim = colPanen - 4;
+              if (offsetKirim >= 0 && headerRow[offsetKirim] && headerRow[offsetKirim].toString().toLowerCase().replace(/\s+/g, '') === 'rkap') {
+                colKirim = offsetKirim;
+                foundKirim = true;
+              }
+
+              if (!foundKirim) {
+                headerRow.forEach((cell, idx) => {
+                  if (!cell) return;
+                  const valClean = cell.toString().toLowerCase().replace(/\s+/g, '');
+                  if (valClean === 'rkap' && idx >= 6 && !foundKirim) {
+                    colKirim = idx;
+                    foundKirim = true;
+                  }
+                });
+              }
 
               for (let r = headerRowIndex + 1; r < rows.length; r++) {
                 const row = rows[r];
@@ -3611,7 +3627,6 @@
              let colWilayah = 1; // Default Column B (Wilayah)
              let colPanen = 11;  // Default Column L (Kg Panen)
              let colKirim = 7;   // Default Column H (Kirim)
-
              headerRow.forEach((cell, idx) => {
                if (!cell) return;
                const valClean = cell.toString().toLowerCase().replace(/\s+/g, '');
@@ -3619,10 +3634,27 @@
                  colWilayah = idx;
                } else if (valClean === 'kgpanen') {
                  colPanen = idx;
-               } else if (valClean === 'rkap' && colKirim === 7) {
-                 colKirim = idx;
                }
              });
+
+             // Cari kolom RKAP untuk Kirim (seharusnya berada di colPanen - 4)
+             let foundKirim = false;
+             const offsetKirim = colPanen - 4;
+             if (offsetKirim >= 0 && headerRow[offsetKirim] && headerRow[offsetKirim].toString().toLowerCase().replace(/\s+/g, '') === 'rkap') {
+               colKirim = offsetKirim;
+               foundKirim = true;
+             }
+
+             if (!foundKirim) {
+               headerRow.forEach((cell, idx) => {
+                 if (!cell) return;
+                 const valClean = cell.toString().toLowerCase().replace(/\s+/g, '');
+                 if (valClean === 'rkap' && idx >= 6 && !foundKirim) {
+                   colKirim = idx;
+                   foundKirim = true;
+                 }
+               });
+             }
 
              for (let r = headerRowIndex + 1; r < rows.length; r++) {
                const row = rows[r];
