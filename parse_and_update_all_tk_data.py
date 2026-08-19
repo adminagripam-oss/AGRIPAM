@@ -257,6 +257,11 @@ if os.path.exists(excel_tambahan_path):
             'clean': clean_raw
         })
         
+        # Override specific garden acreages if needed
+        luas_val = 0
+        if "GRAHADURA" in nama_kebun_str.upper():
+            luas_val = 3260.34
+
         item = {
             "id": current_id,
             "cro": cro,
@@ -264,7 +269,7 @@ if os.path.exists(excel_tambahan_path):
             "region": region,
             "nama_kebun": nama_kebun_str,
             "name_tag": f"KB-TAG-{current_id:03d}",
-            "luasan": 0,
+            "luasan": luas_val,
             "req_tk": 0,
             "tk_mei": 0,
             "tk_juni": 0,

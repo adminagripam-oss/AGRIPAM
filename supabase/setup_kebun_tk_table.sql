@@ -870,7 +870,7 @@ INSERT INTO data_kebun_tk (id, cro, region, region_raw, nama_kebun, name_tag, lu
 
 -- Batch Insert Data Kebun (801 s/d 891)
 INSERT INTO data_kebun_tk (id, cro, region, region_raw, nama_kebun, name_tag, luasan, req_tk, tk_mei, tk_juni, target_juli, target_agustus, target_september, tk_juli, tk_agustus, updated_by) VALUES
-(801, 'CRO 1', 'Sumut 1', 'Sumut 1', 'Grahadura Leidongprim/Bakrie Group', 'KB-TAG-801', 0, 0, 0, 0, 0, 0, 0, 0, 0, 'EXCEL_SYNC_TAMBAHAN'),
+(801, 'CRO 1', 'Sumut 1', 'Sumut 1', 'Grahadura Leidongprim/Bakrie Group', 'KB-TAG-801', 3260.34, 0, 0, 0, 0, 0, 0, 0, 0, 'EXCEL_SYNC_TAMBAHAN'),
 (802, 'CRO 1', 'Sumut 1', 'Sumut 1', 'Perkebunan Sumatera Utara', 'KB-TAG-802', 0, 0, 0, 0, 0, 0, 0, 0, 0, 'EXCEL_SYNC_TAMBAHAN'),
 (803, 'CRO 3', 'Riau 2', 'Riau 2', 'Aspl Rayon 2 (Kelompok Tani Nelayan Andalan)', 'KB-TAG-803', 0, 0, 0, 0, 0, 0, 0, 0, 0, 'EXCEL_SYNC_TAMBAHAN'),
 (804, 'CRO 3', 'Riau 2', 'Riau 2', 'Udaya Lohjinawi (Sadria Sukses Bersama)', 'KB-TAG-804', 0, 0, 0, 0, 0, 0, 0, 0, 0, 'EXCEL_SYNC_TAMBAHAN'),
