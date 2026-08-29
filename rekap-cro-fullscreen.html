@@ -170,18 +170,19 @@
             const wibTime = new Date(utc + (7 * 3600000));
             const hour = wibTime.getHours();
 
-            if (hour === 6) return "06.00";
-            if (hour === 7) return "07.00";
-            if (hour === 8) return "08.00";
-            if (hour === 9) return "09.00";
-            if (hour === 10) return "10.00";
-            if (hour === 11) return "11.00";
-            if (hour === 12) return "12.00";
-            if (hour === 13) return "13.00";
-            if (hour === 14) return "14.00";
-            if (hour === 15) return "15.00";
-            if (hour === 16) return "16.00";
-            if (hour === 17) return "17.30";
+            // Diundur 1 jam (misal: jam 11 WIB mengecek kolom jam 10.00)
+            if (hour === 7) return "06.00";
+            if (hour === 8) return "07.00";
+            if (hour === 9) return "08.00";
+            if (hour === 10) return "09.00";
+            if (hour === 11) return "10.00";
+            if (hour === 12) return "11.00";
+            if (hour === 13) return "12.00";
+            if (hour === 14) return "13.00";
+            if (hour === 15) return "14.00";
+            if (hour === 16) return "15.00";
+            if (hour === 17) return "16.00";
+            if (hour === 18) return "17.30";
             return null;
         }
 
