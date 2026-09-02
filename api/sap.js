@@ -37,6 +37,8 @@ module.exports = async (req, res) => {
     const jenis_surat = p.jenis_surat;
     const perihal = p.perihal;
     const tanggal_surat = p.tanggal_surat || null;
+    const tujuan = p.tujuan || null;
+    const link_redirect = p.link_redirect || null;
 
     let file_url = p.file_url;
     if (p.fileData && p.fileName) {
@@ -64,9 +66,15 @@ module.exports = async (req, res) => {
       }
     }
 
-    const { error } = await supabase.from('surat').insert({
-      nomor_surat, jenis_surat, perihal, file_url, regional_pengirim: region, status: 'menunggu', tanggal_surat: tanggal_surat
-    });
+    const payload = {
+      nomor_surat, jenis_surat, perihal, file_url, regional_pengirim: region, status: 'menunggu', tanggal_surat: tanggal_surat, tujuan: tujuan
+    };
+    
+    if (link_redirect) {
+      payload.link_redirect = link_redirect;
+    }
+
+    const { error } = await supabase.from('surat').insert(payload);
 
     if (error) return res.json({ success: false, message: error.message });
 
@@ -157,6 +165,19 @@ module.exports = async (req, res) => {
     if (!surat_id) return res.json({ success: false, message: 'ID surat tidak valid.' });
 
     const { error } = await supabase.from('surat').delete().eq('id', surat_id);
+    if (error) return res.json({ success: false, message: 'Gagal menghapus surat: ' + error.message });
+
+    return res.json({ success: true, message: 'Surat berhasil dihapus.' });
+  }
+  if (action === 'deleteSuratMultiple') {
+    if (region !== 'ADMIN') return res.json({ success: false, message: 'Hanya Admin yang dapat menghapus surat.' });
+
+    const surat_ids = p.surat_ids;
+    if (!surat_ids || !Array.isArray(surat_ids) || surat_ids.length === 0) {
+        return res.json({ success: false, message: 'ID surat tidak valid.' });
+    }
+
+    const { error } = await supabase.from('surat').delete().in('id', surat_ids);
     if (error) return res.json({ success: false, message: 'Gagal menghapus surat: ' + error.message });
 
     return res.json({ success: true, message: 'Surat berhasil dihapus.' });
