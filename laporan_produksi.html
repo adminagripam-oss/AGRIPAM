@@ -4194,19 +4194,10 @@
         const cro = item.cro || '-';
         const key = `${cro}_${region}`;
         if (!grouped[key]) {
-          let officialLuas = 0;
-          if (region.toLowerCase() === 'kalbar 1') {
-            const row1A = RENCANA_REALISASI_ROWS.find(r => r.type === 'detail' && r.excelKey === 'Kalbar 1A');
-            const row1B = RENCANA_REALISASI_ROWS.find(r => r.type === 'detail' && r.excelKey === 'Kalbar 1B');
-            officialLuas = (row1A ? (row1A.luas || 0) : 0) + (row1B ? (row1B.luas || 0) : 0);
-          } else {
-            const officialRow = RENCANA_REALISASI_ROWS.find(r => r.type === 'detail' && r.excelKey === region);
-            officialLuas = officialRow ? (officialRow.luas || 0) : 0;
-          }
           grouped[key] = {
             cro: cro,
             region: region,
-            luasan: officialLuas,
+            luasan: 0,
             req_tk: 0,
             tk_mei: 0,
             tk_juni: 0,
@@ -4217,6 +4208,7 @@
             target_september: 0
           };
         }
+        grouped[key].luasan += parseFloat(item.luasan) || 0;
         grouped[key].req_tk += parseInt(item.req_tk, 10) || 0;
         grouped[key].tk_mei += parseInt(item.tk_mei, 10) || 0;
         grouped[key].tk_juni += parseInt(item.tk_juni, 10) || 0;
