@@ -221,6 +221,66 @@
             </div>
 
         </main>
+
+        <!-- Update Sheet Overlay -->
+        <div id="updateSheetOverlay" class="fixed inset-0 bg-slate-900/50 z-[60] hidden transition-opacity duration-300 opacity-0" onclick="closeUpdateSheet()"></div>
+
+        <!-- Update Sheet Panel -->
+        <div id="updateSheet" class="fixed inset-y-0 right-0 z-[70] w-full md:w-[450px] bg-white shadow-2xl transform transition-transform duration-300 translate-x-full flex flex-col overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800" id="updateSheetTitle">Update Surat</h3>
+                <button onclick="closeUpdateSheet()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="flex-1 p-6 space-y-5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Status</label>
+                    <select id="sheet_status" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teruskan ke Bagian</label>
+                    <select id="sheet_tujuan" onchange="if(this.value==='lainnya'){document.getElementById('sheet_tujuan_lainnya').classList.remove('hidden');}else{document.getElementById('sheet_tujuan_lainnya').classList.add('hidden');}" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 outline-none text-sm">
+                        <option value="">-- Pilih Tujuan --</option>
+                        <option value="Direktorat SDM & UMUM">Direktorat SDM & UMUM</option>
+                        <option value="Direktorat Keuangan & Manajemen Risiko">Direktorat Keuangan & Manajemen Risiko</option>
+                        <option value="Direktorat Bisnis">Direktorat Bisnis</option>
+                        <option value="Direktorat Pemasaran">Direktorat Pemasaran</option>
+                        <option value="Direktorat Kepatuhan & Keberlanjutan">Direktorat Kepatuhan & Keberlanjutan</option>
+                        <option value="CRO I">CRO I</option>
+                        <option value="CRO II">CRO II</option>
+                        <option value="CRO III">CRO III</option>
+                        <option value="CRO IV">CRO IV</option>
+                        <option value="CRO V">CRO V</option>
+                        <option value="CRO VI">CRO VI</option>
+                        <option value="CRO VII">CRO VII</option>
+                        <option value="CRO VIII">CRO VIII</option>
+                        <option value="CRO IX">CRO IX</option>
+                        <option value="CRO X">CRO X</option>
+                        <option value="lainnya">Lainnya...</option>
+                    </select>
+                    <input type="text" id="sheet_tujuan_lainnya" placeholder="Ketik nama bagian..." class="hidden w-full mt-2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tanggal Surat</label>
+                    <input type="date" id="sheet_tanggal_surat" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm [color-scheme:light]">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Catatan Disposisi</label>
+                    <input type="text" id="sheet_catatan" placeholder="Tambahkan catatan opsional..." class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm">
+                </div>
+                <div id="sheet_container_balasan" style="display: none;">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">File Balasan (Opsional)</label>
+                    <input type="file" id="sheet_file_balasan" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm bg-white">
+                </div>
+                <div id="sheet_msg" class="hidden text-sm px-3 py-2 rounded mt-4"></div>
+            </div>
+            <div class="p-6 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+                <button onclick="closeUpdateSheet()" class="px-5 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors">Batal</button>
+                <button onclick="submitUpdate()" id="sheet_submit_btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow">Simpan Perubahan</button>
+            </div>
+        </div>
+
     </div> <!-- End Main Wrapper -->
 
     <script>
@@ -496,7 +556,7 @@
                              ${row.link_redirect ? `<a href="${row.link_redirect}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Buka Link</a><span class="text-slate-300">|</span>` : ''}
                              ${!row.file_url && !row.link_redirect ? '<span class="text-slate-400 text-sm">Tidak ada file/link</span><span class="text-slate-300">|</span>' : ''}
                              ${row.file_url && /\.docx(\?|$)/i.test(row.file_url) ? `<button onclick="openDocxEditor('${row.id}')" class="text-emerald-600 hover:text-emerald-800 text-sm font-medium">Edit</button><span class="text-slate-300">|</span>` : ''}
-                             <button onclick="toggleUpdateRow('${row.id}', this)" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Update</button>
+                             <button onclick="openUpdateSheet('${row.id}')" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Update</button>
                              <span class="text-slate-300">|</span>
                              <button onclick="deleteSurat('${row.id}')" class="text-red-600 hover:text-red-800 text-sm font-medium">Hapus</button>
                         </td>
@@ -572,24 +632,10 @@
             }
         }
 
-        window.toggleUpdateRow = function (id, btnEl) {
-            const tr = btnEl.closest('tr');
-            const nextTr = tr.nextElementSibling;
+        let currentUpdateId = null;
 
-            // Jika row update sudah ada, tutup (toggle)
-            if (nextTr && nextTr.classList.contains('update-row')) {
-                nextTr.remove();
-                btnEl.textContent = 'Update';
-                return;
-            }
-
-            // Tutup row update yang lain jika ada
-            document.querySelectorAll('.update-row').forEach(row => {
-                row.previousElementSibling.querySelector('button').textContent = 'Update';
-                row.remove();
-            });
-
-            // Ambil data terbaru dari state global
+        window.openUpdateSheet = function (id) {
+            currentUpdateId = id;
             const rowData = (window.suratData || []).find(r => r.id === id) || {};
             const noSurat = rowData.nomor_surat || '-';
             const currentStatus = rowData.status || 'menunggu';
@@ -597,7 +643,7 @@
             const currentCatatan = rowData.catatan || '';
             const currentTanggalSurat = rowData.tanggal_surat || '';
 
-            btnEl.textContent = 'Tutup';
+            document.getElementById('updateSheetTitle').textContent = `Update Surat: ${noSurat}`;
 
             let statusOptionsHtml = '';
             if (rowData.jenis_surat === 'SP2 Pembayaran' || rowData.jenis_surat === 'SP3 Panjar') {
@@ -623,75 +669,89 @@
                 `;
             }
 
-            const updateTr = document.createElement('tr');
-            updateTr.className = 'update-row bg-slate-50 border-b border-slate-200';
-            updateTr.innerHTML = `
-                <td colspan="10" class="p-4">
-                    <div class="max-w-4xl mx-auto bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4">
-                        <div class="flex-1">
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Status (${noSurat})</label>
-                            <select id="status_${id}" onchange="if(document.getElementById('container_balasan_${id}')){ document.getElementById('container_balasan_${id}').style.display = ['selesai', 'diproses'].includes(this.value) ? 'block' : 'none'; }" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm">
-                                ${statusOptionsHtml}
-                            </select>
-                        </div>
-                        <div class="flex-1">
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teruskan ke Bagian</label>
-                            <select id="tujuan_${id}" onchange="if(this.value==='lainnya'){document.getElementById('tujuan_lainnya_${id}').classList.remove('hidden');}else{document.getElementById('tujuan_lainnya_${id}').classList.add('hidden');} document.getElementById('td_tujuan_${id}').textContent = (this.value==='lainnya' ? document.getElementById('tujuan_lainnya_${id}').value || '-' : this.value || '-');" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 outline-none text-sm">
-                                <option value="">-- Pilih Tujuan --</option>
-                                ${[
-                                    'Direktorat SDM & UMUM',
-                                    'Direktorat Keuangan & Manajemen Risiko',
-                                    'Direktorat Bisnis',
-                                    'Direktorat Pemasaran',
-                                    'Direktorat Kepatuhan & Keberlanjutan',
-                                    'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V',
-                                    'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'
-                                ].map(opt => `<option value="${opt}" ${currentTujuan === opt ? 'selected' : ''}>${opt}</option>`).join('')}
-                                <option value="lainnya" ${!['', 'Direktorat SDM & UMUM', 'Direktorat Keuangan & Manajemen Risiko', 'Direktorat Bisnis', 'Direktorat Pemasaran', 'Direktorat Kepatuhan & Keberlanjutan', 'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V', 'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'].includes(currentTujuan) ? 'selected' : ''}>Lainnya...</option>
-                            </select>
-                            <input type="text" id="tujuan_lainnya_${id}" value="${!['', 'Direktorat SDM & UMUM', 'Direktorat Keuangan & Manajemen Risiko', 'Direktorat Bisnis', 'Direktorat Pemasaran', 'Direktorat Kepatuhan & Keberlanjutan', 'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V', 'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'].includes(currentTujuan) ? currentTujuan : ''}" oninput="if(document.getElementById('tujuan_${id}').value==='lainnya'){document.getElementById('td_tujuan_${id}').textContent = this.value || '-';}" placeholder="Ketik nama bagian..." class="${!['', 'Direktorat SDM & UMUM', 'Direktorat Keuangan & Manajemen Risiko', 'Direktorat Bisnis', 'Direktorat Pemasaran', 'Direktorat Kepatuhan & Keberlanjutan', 'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V', 'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'].includes(currentTujuan) ? '' : 'hidden '}w-full mt-2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 outline-none text-sm">
-                        </div>
-                        <div class="flex-1">
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tanggal Surat</label>
-                            <input type="date" id="update_tanggal_surat_${id}" value="${currentTanggalSurat}" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm [color-scheme:light]">
-                        </div>
-                        <div class="flex-2 w-full md:w-1/3">
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Catatan Disposisi</label>
-                            <input type="text" id="catatan_${id}" value="${currentCatatan || ''}" placeholder="Tambahkan catatan opsional..." class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm">
-                        </div>
-                        ${(!rowData.jenis_surat || rowData.jenis_surat === 'Surat Masuk') ? `
-                        <div class="flex-2 w-full md:w-1/3" id="container_balasan_${id}" style="display: ${['selesai', 'diproses'].includes(currentStatus) ? 'block' : 'none'}">
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">File Balasan (Opsional)</label>
-                            <input type="file" id="file_balasan_${id}" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm bg-white">
-                        </div>` : ''}
-                        <div class="flex items-end">
-                            <button onclick="submitUpdate('${id}')" id="btn_${id}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow flex items-center h-[38px]">Simpan</button>
-                        </div>
-                    </div>
-                    <div id="msg_${id}" class="hidden max-w-4xl mx-auto mt-2 text-sm px-3 py-2 rounded"></div>
-                </td>
-            `;
-            tr.after(updateTr);
+            document.getElementById('sheet_status').innerHTML = statusOptionsHtml;
+            document.getElementById('sheet_tanggal_surat').value = currentTanggalSurat;
+            document.getElementById('sheet_catatan').value = currentCatatan;
+            
+            const selectTujuan = document.getElementById('sheet_tujuan');
+            const inputTujuanLainnya = document.getElementById('sheet_tujuan_lainnya');
+            
+            const predefinedTujuan = ['', 'Direktorat SDM & UMUM', 'Direktorat Keuangan & Manajemen Risiko', 'Direktorat Bisnis', 'Direktorat Pemasaran', 'Direktorat Kepatuhan & Keberlanjutan', 'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V', 'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'];
+            
+            if (predefinedTujuan.includes(currentTujuan)) {
+                selectTujuan.value = currentTujuan;
+                inputTujuanLainnya.classList.add('hidden');
+                inputTujuanLainnya.value = '';
+            } else {
+                selectTujuan.value = 'lainnya';
+                inputTujuanLainnya.classList.remove('hidden');
+                inputTujuanLainnya.value = currentTujuan;
+            }
+
+            const containerBalasan = document.getElementById('sheet_container_balasan');
+            const fileBalasan = document.getElementById('sheet_file_balasan');
+            fileBalasan.value = ''; // reset file
+            
+            if (!rowData.jenis_surat || rowData.jenis_surat === 'Surat Masuk') {
+                containerBalasan.style.display = ['selesai', 'diproses'].includes(currentStatus) ? 'block' : 'none';
+                
+                document.getElementById('sheet_status').onchange = function(e) {
+                    containerBalasan.style.display = ['selesai', 'diproses'].includes(e.target.value) ? 'block' : 'none';
+                };
+            } else {
+                containerBalasan.style.display = 'none';
+                document.getElementById('sheet_status').onchange = null;
+            }
+
+            const msg = document.getElementById('sheet_msg');
+            msg.className = "hidden text-sm px-3 py-2 rounded mt-4";
+            msg.textContent = "";
+
+            const overlay = document.getElementById('updateSheetOverlay');
+            const sheet = document.getElementById('updateSheet');
+            
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0');
+                sheet.classList.remove('translate-x-full');
+            }, 10);
         };
 
-        window.submitUpdate = async function (id) {
-            const btn = document.getElementById(`btn_${id}`);
-            const msg = document.getElementById(`msg_${id}`);
-            const newStatus = document.getElementById(`status_${id}`).value;
-            const catatan = document.getElementById(`catatan_${id}`).value;
-            const selectTujuan = document.getElementById(`tujuan_${id}`);
-            const tujuan = selectTujuan ? (selectTujuan.value === 'lainnya' ? document.getElementById(`tujuan_lainnya_${id}`).value : selectTujuan.value) : '';
-            const tanggalSuratUpdate = document.getElementById(`update_tanggal_surat_${id}`).value;
+        window.closeUpdateSheet = function() {
+            const overlay = document.getElementById('updateSheetOverlay');
+            const sheet = document.getElementById('updateSheet');
+            
+            sheet.classList.add('translate-x-full');
+            overlay.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                currentUpdateId = null;
+            }, 300);
+        };
+
+        window.submitUpdate = async function () {
+            if (!currentUpdateId) return;
+            const id = currentUpdateId;
+            const btn = document.getElementById('sheet_submit_btn');
+            const msg = document.getElementById('sheet_msg');
+            
+            const newStatus = document.getElementById('sheet_status').value;
+            const catatan = document.getElementById('sheet_catatan').value;
+            const selectTujuan = document.getElementById('sheet_tujuan');
+            const tujuan = selectTujuan.value === 'lainnya' ? document.getElementById('sheet_tujuan_lainnya').value : selectTujuan.value;
+            const tanggalSuratUpdate = document.getElementById('sheet_tanggal_surat').value;
 
             btn.disabled = true;
-            btn.textContent = '...';
-            msg.className = "hidden max-w-3xl mx-auto mt-2 text-sm px-3 py-2 rounded";
+            btn.textContent = 'Menyimpan...';
+            msg.className = "hidden text-sm px-3 py-2 rounded mt-4";
 
-            const fileInput = document.getElementById(`file_balasan_${id}`);
+            const fileInput = document.getElementById('sheet_file_balasan');
             let fileData = null;
             let fileName = null;
             let mimeType = null;
-            if (fileInput && fileInput.files.length > 0) {
+            
+            if (fileInput && fileInput.files.length > 0 && document.getElementById('sheet_container_balasan').style.display !== 'none') {
                 const file = fileInput.files[0];
                 fileName = file.name;
                 mimeType = file.type;
@@ -732,7 +792,6 @@
                 }
                 msg.classList.remove('hidden');
 
-                // Visual update immediately on the main row (to simulate fast response)
                 const badge = document.getElementById(`statusBadge_${id}`);
                 if (badge) {
                     badge.textContent = newStatus;
@@ -748,7 +807,6 @@
                     tdCatatan.title = catatan || '';
                 }
 
-                // Update the state locally too
                 const rowObj = (window.suratData || []).find(r => r.id === id);
                 if (rowObj) {
                     rowObj.status = newStatus;
@@ -757,15 +815,16 @@
                     rowObj.tanggal_surat = tanggalSuratUpdate;
                 }
 
-                // Refresh table after short delay
                 setTimeout(fetchSurat, 500);
+                setTimeout(closeUpdateSheet, 1000);
 
             } catch (err) {
                 msg.textContent = "Error: " + err.message;
                 msg.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
                 msg.classList.remove('hidden');
+            } finally {
                 btn.disabled = false;
-                btn.textContent = 'Simpan';
+                btn.textContent = 'Simpan Perubahan';
             }
         };
 
