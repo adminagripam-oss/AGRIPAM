@@ -473,10 +473,8 @@
                 } else {
                     filterStatusEl.innerHTML = `
                         <option value="all">Semua Status</option>
-                        <option value="menunggu">Menunggu</option>
-                        <option value="diproses">Diproses</option>
-                        <option value="selesai">Selesai</option>
-                        <option value="ditolak">Ditolak</option>
+                        <option value="Sudah dikirim ke Regional">Sudah dikirim ke Regional</option>
+                        <option value="Sudah dikirim ke Direktorat Lain">Sudah dikirim ke Direktorat Lain</option>
                     `;
                 }
                 filterStatusEl.value = 'all'; // Reset selection
@@ -662,10 +660,8 @@
                 `;
             } else {
                 statusOptionsHtml = `
-                    <option value="menunggu" ${currentStatus === 'menunggu' ? 'selected' : ''}>Menunggu</option>
-                    <option value="diproses" ${currentStatus === 'diproses' ? 'selected' : ''}>Diproses</option>
-                    <option value="selesai" ${currentStatus === 'selesai' ? 'selected' : ''}>Selesai</option>
-                    <option value="ditolak" ${currentStatus === 'ditolak' ? 'selected' : ''}>Ditolak</option>
+                    <option value="Sudah dikirim ke Regional" ${currentStatus === 'Sudah dikirim ke Regional' ? 'selected' : ''}>Sudah dikirim ke Regional</option>
+                    <option value="Sudah dikirim ke Direktorat Lain" ${currentStatus === 'Sudah dikirim ke Direktorat Lain' ? 'selected' : ''}>Sudah dikirim ke Direktorat Lain</option>
                 `;
             }
 
@@ -693,10 +689,10 @@
             fileBalasan.value = ''; // reset file
             
             if (!rowData.jenis_surat || rowData.jenis_surat === 'Surat Masuk') {
-                containerBalasan.style.display = ['selesai', 'diproses'].includes(currentStatus) ? 'block' : 'none';
+                containerBalasan.style.display = ['Sudah dikirim ke Regional', 'Sudah dikirim ke Direktorat Lain'].includes(document.getElementById('sheet_status').value) ? 'block' : 'none';
                 
                 document.getElementById('sheet_status').onchange = function(e) {
-                    containerBalasan.style.display = ['selesai', 'diproses'].includes(e.target.value) ? 'block' : 'none';
+                    containerBalasan.style.display = ['Sudah dikirim ke Regional', 'Sudah dikirim ke Direktorat Lain'].includes(e.target.value) ? 'block' : 'none';
                 };
             } else {
                 containerBalasan.style.display = 'none';
