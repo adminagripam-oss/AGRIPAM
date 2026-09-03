@@ -614,7 +614,11 @@
             const selectedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
             if (selectedIds.length === 0) return;
 
-            if (!confirm('Apakah Anda yakin ingin menghapus ' + selectedIds.length + ' surat terpilih? Tindakan ini tidak dapat dibatalkan.')) return;
+            const confirmed = await shadcnConfirm(
+                'Apakah Anda yakin?', 
+                `Anda akan menghapus ${selectedIds.length} surat terpilih. Tindakan ini tidak dapat dibatalkan.`
+            );
+            if (!confirmed) return;
 
             try {
                 const res = await fetch('/api/sap', {
@@ -839,7 +843,11 @@
         };
 
         window.deleteSurat = async function (id) {
-            if (!confirm("Apakah Anda yakin ingin menghapus surat ini? Data tidak dapat dikembalikan.")) return;
+            const confirmed = await shadcnConfirm(
+                'Apakah Anda yakin?', 
+                'Surat ini akan dihapus secara permanen. Data tidak dapat dikembalikan.'
+            );
+            if (!confirmed) return;
 
             try {
                 const res = await fetch(`${API_BASE}/sap`, {
@@ -1154,6 +1162,22 @@
         </div>
     </div>
 
+    <!-- Shadcn-like Confirmation Dialog -->
+    <div id="shadcnConfirmOverlay" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm hidden transition-opacity duration-200 opacity-0 flex items-center justify-center p-4">
+        <div id="shadcnConfirmDialog" class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-200">
+            <h2 id="shadcnConfirmTitle" class="text-lg font-semibold text-slate-900 mb-2">Konfirmasi</h2>
+            <p id="shadcnConfirmMessage" class="text-sm text-slate-500 mb-6">Apakah Anda yakin ingin melanjutkan tindakan ini?</p>
+            <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                <button id="shadcnConfirmCancel" class="mt-2 sm:mt-0 inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 transition-colors">
+                    Batal
+                </button>
+                <button id="shadcnConfirmAction" class="inline-flex items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors">
+                    Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let docxEditorSuratId = null;
 
@@ -1200,6 +1224,44 @@
         window.closeDocxEditor = function () {
             document.getElementById('docxEditorModal').classList.remove('active');
             docxEditorSuratId = null;
+        };
+
+        // Shadcn-like Confirmation Dialog Logic
+        window.shadcnConfirm = function(title, message) {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('shadcnConfirmOverlay');
+                const dialog = document.getElementById('shadcnConfirmDialog');
+                const titleEl = document.getElementById('shadcnConfirmTitle');
+                const messageEl = document.getElementById('shadcnConfirmMessage');
+                const btnCancel = document.getElementById('shadcnConfirmCancel');
+                const btnAction = document.getElementById('shadcnConfirmAction');
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                // Show
+                overlay.classList.remove('hidden');
+                overlay.classList.remove('opacity-0');
+                dialog.classList.remove('opacity-0', 'scale-95');
+                dialog.classList.add('opacity-100', 'scale-100');
+
+                const cleanup = () => {
+                    overlay.classList.add('opacity-0');
+                    dialog.classList.remove('opacity-100', 'scale-100');
+                    dialog.classList.add('opacity-0', 'scale-95');
+                    setTimeout(() => {
+                        overlay.classList.add('hidden');
+                    }, 200); // match transition duration
+                    btnCancel.removeEventListener('click', onCancel);
+                    btnAction.removeEventListener('click', onAction);
+                };
+
+                const onCancel = () => { cleanup(); resolve(false); };
+                const onAction = () => { cleanup(); resolve(true); };
+
+                btnCancel.addEventListener('click', onCancel);
+                btnAction.addEventListener('click', onAction);
+            });
         };
 
         window.saveDocxEditor = async function () {
