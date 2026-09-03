@@ -336,7 +336,7 @@
                 }
             }
 
-            if (sessionRole !== 'admin_ho') {
+            if (!sessionToken || !sessionRegion || sessionRegion !== 'ADMIN') {
                 shadcnAlert("Akses Ditolak", "Anda bukan pengguna Admin HO.");
                 window.location.href = 'login.html';
                 return;
