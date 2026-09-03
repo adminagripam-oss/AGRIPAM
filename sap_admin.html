@@ -207,13 +207,14 @@
                                 <th class="p-4 font-medium border-b">Status</th>
                                 <th class="p-4 font-medium border-b">Tanggal Surat</th>
                                 <th class="p-4 font-medium border-b">Tanggal Masuk</th>
+                                <th class="p-4 font-medium border-b text-center">Status Balasan</th>
                                 <th class="p-4 font-medium border-b">Keterangan</th>
                                 <th class="p-4 font-medium border-b text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody" class="text-sm divide-y divide-slate-200">
                             <tr>
-                                <td colspan="10" class="p-8 text-center text-slate-500">Memuat data...</td>
+                                <td colspan="11" class="p-8 text-center text-slate-500">Memuat data...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -515,7 +516,7 @@
                 : filteredData;
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="p-8 text-center text-slate-500">${keyword ? 'Surat tidak ditemukan.' : 'Belum ada surat masuk.'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-slate-500">${keyword ? 'Surat tidak ditemukan.' : 'Belum ada surat masuk.'}</td></tr>`;
                 return;
             }
 
@@ -548,6 +549,13 @@
                         </td>
                         <td class="p-4 whitespace-nowrap text-slate-600">${row.tanggal_surat ? new Date(row.tanggal_surat).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
                         <td class="p-4 whitespace-nowrap text-slate-600">${date}</td>
+                        <td class="p-4 text-center">
+                            ${row.jenis_surat === 'Surat Masuk' ? 
+                                (allData.some(r => r.nomor_surat && r.nomor_surat.includes('BALASAN-' + row.nomor_surat))
+                                    ? '<span class="px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-green-100 text-green-700 whitespace-nowrap">Sudah Dibalas</span>'
+                                    : '<span class="px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-600 whitespace-nowrap">Belum Dibalas</span>') 
+                            : '-'}
+                        </td>
                         <td id="td_catatan_${row.id}" class="p-4 text-slate-600 max-w-[200px] truncate" title="${row.catatan || ''}">${row.catatan || '-'}</td>
                         <td class="p-4 text-center space-x-2">
                              ${row.file_url ? `<a href="${row.file_url}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Buka File</a><span class="text-slate-300">|</span>` : ''}

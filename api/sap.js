@@ -163,7 +163,7 @@ module.exports = async (req, res) => {
             balasanMsg = ' dan Surat Balasan berhasil dibuat';
         }
       } catch (err) {
-        balasanMsg = ` (namun terjadi kesalahan pada Surat Balasan: ${err.message})`;
+        return res.json({ success: false, message: 'Status diupdate, TAPI gagal membuat Surat Balasan: ' + err.message });
       }
     }
 
