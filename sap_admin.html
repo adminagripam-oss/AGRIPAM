@@ -162,8 +162,8 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-6 border-b bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800">Master Data Surat</h2>
-                        <p class="text-xs text-slate-500 mt-1">Mengelola semua surat yang masuk dari regional.</p>
+                        <h2 id="tableHeaderTitle" class="text-xl font-bold text-slate-800">Semua Surat</h2>
+                        <p id="tableHeaderSubtitle" class="text-xs text-slate-500 mt-1">Mengelola semua surat yang masuk dari regional.</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-3">
                         <select id="filterStatus" onchange="renderSuratTable()"
@@ -433,6 +433,33 @@
                 if (icon) {
                     icon.classList.remove('text-slate-400');
                     icon.classList.add('text-black');
+                }
+            }
+
+            const titleEl = document.getElementById('tableHeaderTitle');
+            const subEl = document.getElementById('tableHeaderSubtitle');
+            if (titleEl && subEl) {
+                if (filterName === 'Semua' || filterName === 'all') {
+                    titleEl.textContent = 'Semua Surat';
+                    subEl.textContent = 'Mengelola seluruh data surat dari regional.';
+                } else if (filterName === 'Surat Keluar') {
+                    titleEl.textContent = 'Surat Keluar';
+                    subEl.textContent = 'Mengelola semua jenis Surat Keluar (SP2, SP3, Balasan).';
+                } else if (filterName === 'SP2 Pembayaran') {
+                    titleEl.textContent = 'SP2 Pembayaran';
+                    subEl.textContent = 'Mengelola data Surat Keluar tipe SP2 Pembayaran.';
+                } else if (filterName === 'SP3 Panjar') {
+                    titleEl.textContent = 'SP3 Panjar';
+                    subEl.textContent = 'Mengelola data Surat Keluar tipe SP3 Panjar.';
+                } else if (filterName === 'Surat Balasan') {
+                    titleEl.textContent = 'Surat Balasan';
+                    subEl.textContent = 'Mengelola data dokumen Surat Balasan.';
+                } else if (filterName === 'Surat Masuk') {
+                    titleEl.textContent = 'Surat Masuk';
+                    subEl.textContent = 'Mengelola data Surat Masuk dari regional.';
+                } else {
+                    titleEl.textContent = filterName;
+                    subEl.textContent = `Mengelola data ${filterName}.`;
                 }
             }
 
