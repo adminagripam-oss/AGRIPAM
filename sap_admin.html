@@ -680,8 +680,14 @@
             const selectTujuan = document.getElementById('sheet_tujuan');
             const inputTujuanLainnya = document.getElementById('sheet_tujuan_lainnya');
             
-            const predefinedTujuan = ['', 'Direktorat SDM & UMUM', 'Direktorat Keuangan & Manajemen Risiko', 'Direktorat Bisnis', 'Direktorat Pemasaran', 'Direktorat Kepatuhan & Keberlanjutan', 'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V', 'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'];
+            const predefinedTujuan = (!rowData.jenis_surat || rowData.jenis_surat === 'Surat Masuk') 
+                ? ['', 'Produksi Tanaman', 'QC & Administrasi Tanaman', 'Pemupukan & Proteksi', 'Traksi']
+                : ['', 'Direktorat SDM & UMUM', 'Direktorat Keuangan & Manajemen Risiko', 'Direktorat Bisnis', 'Direktorat Pemasaran', 'Direktorat Kepatuhan & Keberlanjutan', 'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V', 'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'];
             
+            selectTujuan.innerHTML = '<option value="">-- Pilih Tujuan --</option>' + 
+                predefinedTujuan.filter(v => v !== '').map(opt => `<option value="${opt}">${opt}</option>`).join('') + 
+                '<option value="lainnya">Lainnya...</option>';
+
             if (predefinedTujuan.includes(currentTujuan)) {
                 selectTujuan.value = currentTujuan;
                 inputTujuanLainnya.classList.add('hidden');
@@ -993,8 +999,8 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Jenis Surat</label>
                         <select id="admin_jenis_surat" required
-                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm"
-                            onchange="if(this.value.includes('SP2')) { document.getElementById('admin_link_redirect_container').classList.remove('hidden'); } else { document.getElementById('admin_link_redirect_container').classList.add('hidden'); document.getElementById('admin_link_redirect').value = ''; }">
+                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm"
+                        onchange="handleJenisSuratChange(this.value)">
                             <option value="Surat Masuk">Surat Masuk</option>
                             <optgroup label="Surat Keluar">
                                 <option value="SP2 Pembayaran">SP2 Pembayaran</option>
@@ -1045,21 +1051,10 @@
                     <select id="admin_tujuan" required
                         class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm">
                         <option value="" disabled selected>-- Pilih Tujuan --</option>
-                        <option value="Direktorat SDM & UMUM">Direktorat SDM & UMUM</option>
-                        <option value="Direktorat Keuangan & Manajemen Risiko">Direktorat Keuangan & Manajemen Risiko</option>
-                        <option value="Direktorat Bisnis">Direktorat Bisnis</option>
-                        <option value="Direktorat Pemasaran">Direktorat Pemasaran</option>
-                        <option value="Direktorat Kepatuhan & Keberlanjutan">Direktorat Kepatuhan & Keberlanjutan</option>
-                        <option value="CRO I">CRO I</option>
-                        <option value="CRO II">CRO II</option>
-                        <option value="CRO III">CRO III</option>
-                        <option value="CRO IV">CRO IV</option>
-                        <option value="CRO V">CRO V</option>
-                        <option value="CRO VI">CRO VI</option>
-                        <option value="CRO VII">CRO VII</option>
-                        <option value="CRO VIII">CRO VIII</option>
-                        <option value="CRO IX">CRO IX</option>
-                        <option value="CRO X">CRO X</option>
+                        <option value="Produksi Tanaman">Produksi Tanaman</option>
+                        <option value="QC & Administrasi Tanaman">QC & Administrasi Tanaman</option>
+                        <option value="Pemupukan & Proteksi">Pemupukan & Proteksi</option>
+                        <option value="Traksi">Traksi</option>
                     </select>
                 </div>
 
@@ -1246,6 +1241,28 @@
                 btn.disabled = false;
                 btn.textContent = 'Simpan Dokumen';
             }
+        };
+        window.handleJenisSuratChange = function(val) {
+            if(val.includes('SP2')) {
+                document.getElementById('admin_link_redirect_container').classList.remove('hidden');
+            } else {
+                document.getElementById('admin_link_redirect_container').classList.add('hidden');
+                document.getElementById('admin_link_redirect').value = '';
+            }
+
+            const selectTujuan = document.getElementById('admin_tujuan');
+            if (!selectTujuan) return;
+
+            let options = [];
+            if (val === 'Surat Masuk') {
+                options = ['Produksi Tanaman', 'QC & Administrasi Tanaman', 'Pemupukan & Proteksi', 'Traksi'];
+            } else {
+                options = [
+                    'Direktorat SDM & UMUM', 'Direktorat Keuangan & Manajemen Risiko', 'Direktorat Bisnis', 'Direktorat Pemasaran', 'Direktorat Kepatuhan & Keberlanjutan',
+                    'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V', 'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'
+                ];
+            }
+            selectTujuan.innerHTML = '<option value="" disabled selected>-- Pilih Tujuan --</option>' + options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
         };
     </script>
 </body>
