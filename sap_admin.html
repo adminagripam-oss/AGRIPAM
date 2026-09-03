@@ -684,9 +684,7 @@
             const selectTujuan = document.getElementById('sheet_tujuan');
             const inputTujuanLainnya = document.getElementById('sheet_tujuan_lainnya');
             
-            const predefinedTujuan = (!rowData.jenis_surat || rowData.jenis_surat === 'Surat Masuk') 
-                ? ['', 'Produksi Tanaman', 'QC & Administrasi Tanaman', 'Pemupukan & Proteksi', 'Traksi']
-                : ['', 'Direktorat SDM & UMUM', 'Direktorat Keuangan & Manajemen Risiko', 'Direktorat Bisnis', 'Direktorat Pemasaran', 'Direktorat Kepatuhan & Keberlanjutan', 'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V', 'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'];
+            const predefinedTujuan = ['', 'Direktorat SDM & UMUM', 'Direktorat Keuangan & Manajemen Risiko', 'Direktorat Bisnis', 'Direktorat Pemasaran', 'Direktorat Kepatuhan & Keberlanjutan', 'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V', 'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'];
             
             selectTujuan.innerHTML = '<option value="">-- Pilih Tujuan --</option>' + 
                 predefinedTujuan.filter(v => v !== '').map(opt => `<option value="${opt}">${opt}</option>`).join('') + 
