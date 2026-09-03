@@ -336,8 +336,8 @@
                 }
             }
 
-            if (!sessionToken || !sessionRegion || sessionRegion !== 'ADMIN') {
-                alert("Akses ditolak! Anda bukan pengguna Admin HO.");
+            if (sessionRole !== 'admin_ho') {
+                shadcnAlert("Akses Ditolak", "Anda bukan pengguna Admin HO.");
                 window.location.href = 'login.html';
                 return;
             }
@@ -662,10 +662,10 @@
                 if (jsonRes.success) {
                     fetchSurat();
                 } else {
-                    alert('Gagal: ' + jsonRes.message);
+                    shadcnAlert('Gagal', jsonRes.message);
                 }
             } catch (e) {
-                alert('Error: ' + e.message);
+                shadcnAlert('Error', e.message);
             }
         }
 
@@ -889,11 +889,11 @@
                 const jsonRes = await res.json();
                 if (!jsonRes.success) throw new Error(jsonRes.message);
 
-                alert("Surat berhasil dihapus.");
+                await shadcnAlert("Sukses", "Surat berhasil dihapus.");
                 fetchSurat(); // Refresh table
 
             } catch (err) {
-                alert("Gagal menghapus surat: " + err.message);
+                shadcnAlert("Gagal", "Gagal menghapus surat: " + err.message);
             }
         };
 
@@ -1203,6 +1203,19 @@
         </div>
     </div>
 
+    <!-- Shadcn-like Alert Dialog -->
+    <div id="shadcnAlertOverlay" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm hidden transition-opacity duration-200 opacity-0 flex items-center justify-center p-4">
+        <div id="shadcnAlertDialog" class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-200">
+            <h2 id="shadcnAlertTitle" class="text-lg font-semibold text-slate-900 mb-2">Informasi</h2>
+            <p id="shadcnAlertMessage" class="text-sm text-slate-500 mb-6">Pesan informasi.</p>
+            <div class="flex flex-col-reverse sm:flex-row sm:justify-end">
+                <button id="shadcnAlertOk" class="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-colors">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let docxEditorSuratId = null;
 
@@ -1286,6 +1299,39 @@
 
                 btnCancel.addEventListener('click', onCancel);
                 btnAction.addEventListener('click', onAction);
+            });
+        };
+
+        // Shadcn-like Alert Dialog Logic
+        window.shadcnAlert = function(title, message) {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('shadcnAlertOverlay');
+                const dialog = document.getElementById('shadcnAlertDialog');
+                const titleEl = document.getElementById('shadcnAlertTitle');
+                const messageEl = document.getElementById('shadcnAlertMessage');
+                const btnOk = document.getElementById('shadcnAlertOk');
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                // Show
+                overlay.classList.remove('hidden');
+                overlay.classList.remove('opacity-0');
+                dialog.classList.remove('opacity-0', 'scale-95');
+                dialog.classList.add('opacity-100', 'scale-100');
+
+                const cleanup = () => {
+                    overlay.classList.add('opacity-0');
+                    dialog.classList.remove('opacity-100', 'scale-100');
+                    dialog.classList.add('opacity-0', 'scale-95');
+                    setTimeout(() => {
+                        overlay.classList.add('hidden');
+                    }, 200); // match transition duration
+                    btnOk.removeEventListener('click', onOk);
+                };
+
+                const onOk = () => { cleanup(); resolve(); };
+                btnOk.addEventListener('click', onOk);
             });
         };
 
