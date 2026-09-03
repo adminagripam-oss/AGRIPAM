@@ -35,6 +35,7 @@ module.exports = async (req, res) => {
   if (action === 'insertSurat') {
     const nomor_surat = p.nomor_surat;
     const jenis_surat = p.jenis_surat;
+    const asal_surat = p.asal_surat || null;
     const perihal = p.perihal;
     const tanggal_surat = p.tanggal_surat || null;
     const tujuan = p.tujuan || null;
@@ -67,8 +68,12 @@ module.exports = async (req, res) => {
     }
 
     const payload = {
-      nomor_surat, jenis_surat, perihal, file_url, regional_pengirim: region, status: 'menunggu', tanggal_surat: tanggal_surat, tujuan: tujuan
+      nomor_surat, jenis_surat, perihal, file_url, regional_pengirim: asal_surat || region, status: 'menunggu', tanggal_surat: tanggal_surat, tujuan: tujuan
     };
+
+    if (asal_surat) {
+      payload.asal_surat = asal_surat;
+    }
     
     if (link_redirect) {
       payload.link_redirect = link_redirect;
