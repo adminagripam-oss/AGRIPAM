@@ -630,7 +630,7 @@
                     <div class="max-w-4xl mx-auto bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4">
                         <div class="flex-1">
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Status (${noSurat})</label>
-                            <select id="status_${id}" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm">
+                            <select id="status_${id}" onchange="if(document.getElementById('container_balasan_${id}')){ document.getElementById('container_balasan_${id}').style.display = ['selesai', 'diproses'].includes(this.value) ? 'block' : 'none'; }" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm">
                                 ${statusOptionsHtml}
                             </select>
                         </div>
@@ -654,6 +654,11 @@
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Catatan Disposisi</label>
                             <input type="text" id="catatan_${id}" value="${currentCatatan || ''}" placeholder="Tambahkan catatan opsional..." class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm">
                         </div>
+                        ${(!rowData.jenis_surat || rowData.jenis_surat === 'Surat Masuk') ? `
+                        <div class="flex-2 w-full md:w-1/3" id="container_balasan_${id}" style="display: ${['selesai', 'diproses'].includes(currentStatus) ? 'block' : 'none'}">
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">File Balasan (Opsional)</label>
+                            <input type="file" id="file_balasan_${id}" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none text-sm bg-white">
+                        </div>` : ''}
                         <div class="flex items-end">
                             <button onclick="submitUpdate('${id}')" id="btn_${id}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow flex items-center h-[38px]">Simpan</button>
                         </div>
@@ -677,6 +682,21 @@
             btn.textContent = '...';
             msg.className = "hidden max-w-3xl mx-auto mt-2 text-sm px-3 py-2 rounded";
 
+            const fileInput = document.getElementById(`file_balasan_${id}`);
+            let fileData = null;
+            let fileName = null;
+            let mimeType = null;
+            if (fileInput && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileName = file.name;
+                mimeType = file.type;
+                const reader = new FileReader();
+                fileData = await new Promise((resolve) => {
+                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                    reader.readAsDataURL(file);
+                });
+            }
+
             try {
                 const res = await fetch(`${API_BASE}/sap`, {
                     method: 'POST',
@@ -689,7 +709,10 @@
                         status: newStatus,
                         tujuan: tujuan,
                         catatan: catatan,
-                        tanggal_surat: tanggalSuratUpdate
+                        tanggal_surat: tanggalSuratUpdate,
+                        fileData: fileData,
+                        fileName: fileName,
+                        mimeType: mimeType
                     })
                 });
 

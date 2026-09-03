@@ -119,14 +119,62 @@ module.exports = async (req, res) => {
 
     if (logError) return res.json({ success: false, message: logError.message });
 
+    const fileData = p.fileData;
+    const fileName = p.fileName;
+    const mimeType = p.mimeType;
+
+    let balasanMsg = '';
+
+    if (fileData && fileName && mimeType) {
+      try {
+        const uniqueFileName = `${Date.now()}_${fileName.replace(/\\s+/g, '_')}`;
+        const buffer = Buffer.from(fileData, 'base64');
+        
+        const { error: uploadError } = await supabase
+          .storage
+          .from('surat_files')
+          .upload(`uploads/${uniqueFileName}`, buffer, {
+            contentType: mimeType,
+            upsert: false
+          });
+          
+        if (uploadError) throw new Error('Gagal mengupload file balasan: ' + uploadError.message);
+
+        const { data: publicUrlData } = supabase.storage.from('surat_files').getPublicUrl(`uploads/${uniqueFileName}`);
+        const fileUrl = publicUrlData.publicUrl;
+
+        const { data: origData } = await supabase.from('surat').select('*').eq('id', surat_id).single();
+        
+        if (origData) {
+            const newSurat = {
+                jenis_surat: 'Surat Balasan',
+                nomor_surat: 'BALASAN-' + (origData.nomor_surat || surat_id),
+                perihal: 'Balasan: ' + (origData.perihal || '-'),
+                asal_surat: origData.tujuan || region,
+                tujuan: origData.asal_surat || origData.regional_pengirim || '-',
+                tanggal_surat: new Date().toISOString().split('T')[0],
+                file_url: fileUrl,
+                regional_pengirim: region,
+                status: 'menunggu'
+            };
+            const { error: insertError } = await supabase.from('surat').insert([newSurat]);
+            if (insertError) throw new Error('Gagal membuat Surat Balasan: ' + insertError.message);
+            
+            balasanMsg = ' dan Surat Balasan berhasil dibuat';
+        }
+      } catch (err) {
+        balasanMsg = ` (namun terjadi kesalahan pada Surat Balasan: ${err.message})`;
+      }
+    }
+
     if (err1 && (err1.code === 'PGRST204' || err1.code === '42703' || err1.message.includes('column'))) {
       return res.json({
         success: true,
-        message: 'Status diupdate, TAPI Tujuan/Catatan gagal disimpan! Anda wajib menambahkan kolom "tujuan" dan "catatan" di tabel surat pada database Supabase.'
+        message: 'Status diupdate' + balasanMsg + ', TAPI Tujuan/Catatan gagal disimpan! Anda wajib menambahkan kolom "tujuan" dan "catatan" di tabel surat.'
       });
     }
 
-    return res.json({ success: true, message: 'Data surat berhasil diupdate sepenuhnya.' });
+    return res.json({ success: true, message: 'Data surat berhasil diupdate sepenuhnya' + balasanMsg + '.' });
   }
 
   if (action === 'saveSuratDocx') {
