@@ -29,7 +29,8 @@ const LOCAL_REGIONS_MAP = {
   'Kalimantan Tengah 3': 'ROKalteng3',
   'Sulawesi Tenggara': 'ROSultra',
   'Sulawesi Tengah': 'ROSulteng',
-  'ADMIN': 'TANAMAN'
+  'ADMIN': 'TANAMAN',
+  'QC admin': 'QCSolid'
 };
 
 module.exports = async (req, res) => {

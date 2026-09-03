@@ -2888,6 +2888,7 @@
                   <option value="Sulawesi Tenggara">Sulawesi Tenggara</option>
                   <option value="Sulawesi Tengah">Sulawesi Tengah</option>
                   <option value="ADMIN">ADMIN</option>
+                  <option value="QC admin">QC admin</option>
                 </select>
                 <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
@@ -4896,6 +4897,10 @@
               if (region === "ADMIN") {
                 isInternalNavigation = true;
                 window.location.href = "laporan_produksi.html";
+                return;
+              } else if (region === "QC admin") {
+                isInternalNavigation = true;
+                window.location.href = "qc_admin.html";
                 return;
               }
               document.getElementById("loginSection").style.display = "none";

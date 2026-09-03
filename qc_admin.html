@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QC Spreadsheet | AGRI-PAM</title>
+
+  <script>
+    // --- 1. Authentication Flow & Anti-BFCache ---
+    (function checkAuth() {
+      const sessionKey = "agripam_session";
+      try {
+        const raw = sessionStorage.getItem(sessionKey);
+        if (!raw) {
+          window.location.replace("login.html?msg=" + encodeURIComponent("Harap login terlebih dahulu."));
+          return;
+        }
+        const s = JSON.parse(raw);
+        if (Date.now() > s.expiry) {
+          sessionStorage.removeItem(sessionKey);
+          window.location.replace("login.html?msg=" + encodeURIComponent("Sesi Anda telah berakhir. Silakan login kembali."));
+          return;
+        }
+        if (s.region !== "QC admin" && s.region !== "ADMIN") {
+          window.location.replace("login.html?msg=" + encodeURIComponent("Akses ditolak. Halaman ini khusus QC admin."));
+          return;
+        }
+      } catch (e) {
+        sessionStorage.removeItem(sessionKey);
+        window.location.replace("login.html?msg=" + encodeURIComponent("Sesi tidak valid."));
+      }
+
+      // Handle Browser Back Button explicitly (Logout and redirect to Login)
+      window.history.pushState(null, null, window.location.href);
+      window.onpopstate = function () {
+        sessionStorage.removeItem(sessionKey);
+        window.location.replace("login.html");
+      };
+    })();
+
+    // Apply theme
+    var savedTheme = localStorage.getItem("agripam_theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --text-color: #0f172a;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --hover-bg: #f1f5f9;
+      --cell-border: #cbd5e1;
+      --header-bg: #ffffff;
+      --toolbar-bg: #f8fafc;
+      --sidebar-bg: #f1f5f9;
+      --active-item: #e2e8f0;
+      --active-text: #0f172a;
+    }
+    [data-theme="dark"] {
+      --bg-color: #0f172a;
+      --text-color: #f8fafc;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --hover-bg: #334155;
+      --cell-border: #475569;
+      --header-bg: #1e293b;
+      --toolbar-bg: #0f172a;
+      --sidebar-bg: #1e293b;
+      --active-item: #334155;
+      --active-text: #f8fafc;
+    }
+    
+    html, body {
+      height: 100vh;
+      margin: 0;
+      overflow: hidden; /* Prevent full page scroll */
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Layout Structure */
+    .app-layout {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background-color: var(--header-bg);
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .app-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background-color: var(--toolbar-bg);
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .app-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Sidebar */
+    .app-sidebar {
+      width: 250px;
+      background-color: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      overflow-y: auto;
+      flex-shrink: 0;
+      transition: transform 0.3s ease, width 0.3s ease;
+    }
+
+    .sidebar-collapsed .app-sidebar {
+      width: 0;
+      transform: translateX(-100%);
+      border-right: none;
+    }
+
+    /* Main Content */
+    .app-main {
+      flex: 1;
+      overflow: auto;
+      background-color: var(--card-bg);
+      position: relative;
+    }
+
+    /* Spreadsheet Table Styles */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 800px;
+    }
+    th, td {
+      border: 1px solid var(--cell-border);
+      padding: 0;
+      min-width: 120px;
+      position: relative;
+    }
+    th {
+      background-color: var(--hover-bg);
+      padding: 0.5rem;
+      font-weight: 600;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    td input[type="text"], td input[type="url"], td select {
+      width: 100%;
+      height: 100%;
+      min-height: 40px;
+      padding: 0.5rem;
+      border: none;
+      background: transparent;
+      color: inherit;
+      font-family: inherit;
+      font-size: inherit;
+      outline: none;
+    }
+    td input:focus, td select:focus {
+      box-shadow: inset 0 0 0 2px #3b82f6;
+    }
+    
+    /* Utilities */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-icon {
+      padding: 0.375rem;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-color);
+    }
+    .btn-ghost:hover {
+      background: var(--hover-bg);
+    }
+    .btn-primary {
+      background: #10b981;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #059669;
+    }
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .sidebar-item {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--text-muted);
+      border-left: 3px solid transparent;
+    }
+    .sidebar-item:hover {
+      background-color: var(--hover-bg);
+    }
+    .sidebar-item.active {
+      background-color: var(--active-item);
+      color: var(--active-text);
+      border-left-color: #10b981;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="app-layout" id="appLayout">
+
+  <!-- 1. Header (Sticky Top) -->
+  <header class="app-header flex items-center justify-between p-3 px-4">
+    <div class="flex items-center gap-3">
+      <!-- Toggle Sidebar -->
+      <button onclick="toggleSidebar()" class="btn btn-ghost btn-icon" title="Toggle Menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <div class="w-8 h-8 rounded bg-emerald-100 flex items-center justify-center text-emerald-600">
+        <span class="material-symbols-outlined text-[20px]">table_chart</span>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold leading-tight">QC Spreadsheet</h1>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="saveStatus" class="text-xs text-slate-500 mr-2 flex items-center gap-1 hidden">
+        <span class="material-symbols-outlined text-[14px] animate-spin">sync</span> Menyimpan...
+      </span>
+      <button onclick="saveData()" class="btn btn-primary shadow-sm" title="Simpan Perubahan ke Database">
+        <span class="material-symbols-outlined text-[18px]">save</span> Simpan
+      </button>
+      <button onclick="goBackToLogin()" class="btn btn-ghost text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30" title="Kembali ke Halaman Login">
+        <span class="material-symbols-outlined text-[18px]">logout</span> Kembali
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. Toolbar (Sticky, Actionable) -->
+  <div class="app-toolbar p-2 px-4 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Font Family -->
+      <select id="toolFontFamily" onchange="dispatch('SET_FONT_FAMILY', this.value)" class="border rounded px-2 py-1.5 text-sm bg-transparent" style="border-color: var(--border-color);">
+        <option value="'Inter', sans-serif">Inter</option>
+        <option value="'Roboto', sans-serif">Roboto</option>
+        <option value="'Outfit', sans-serif">Outfit</option>
+      </select>
+      
+      <!-- Font Size -->
+      <select id="toolFontSize" onchange="dispatch('SET_FONT_SIZE', this.value)" class="border rounded px-2 py-1.5 text-sm bg-transparent" style="border-color: var(--border-color);">
+        <option value="12px">12px</option>
+        <option value="14px">14px</option>
+        <option value="16px">16px</option>
+      </select>
+
+      <div class="h-5 w-px bg-slate-300 dark:bg-slate-700 mx-1"></div>
+
+      <!-- Add Actions -->
+      <button onclick="dispatch('ADD_ROW')" class="btn btn-ghost btn-icon" title="Tambah Baris Baru">
+        <span class="material-symbols-outlined text-[20px]">add_row_below</span>
+      </button>
+      <button onclick="openAddColModal()" class="btn btn-ghost btn-icon" title="Tambah Kolom Baru">
+        <span class="material-symbols-outlined text-[20px]">add_column_right</span>
+      </button>
+      <!-- Upload Excel -->
+      <label class="btn btn-ghost btn-icon cursor-pointer" title="Import Excel">
+        <span class="material-symbols-outlined text-[20px]">upload_file</span>
+        <input type="file" id="fileUpload" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
+      </label>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <!-- Search Input (Realtime Filtering) -->
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-2 top-1.5 text-slate-400 text-[18px]">search</span>
+        <input type="text" id="toolSearch" onkeyup="handleSearch(this.value)" placeholder="Cari data..." 
+          class="pl-8 pr-3 py-1.5 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:border-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 w-48 transition-all focus:w-64">
+      </div>
+      
+      <!-- View Toggle (Table vs Cards mock) -->
+      <button onclick="dispatch('TOGGLE_VIEW_MODE')" class="btn btn-ghost btn-icon" title="Ubah Mode Tampilan">
+        <span class="material-symbols-outlined text-[20px]" id="viewModeIcon">grid_view</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 3. Body (Sidebar + Main Content) -->
+  <div class="app-body">
+    
+    <!-- Sidebar -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="p-3">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">Filter Status</h3>
+        <ul id="sidebarCategoryList" class="space-y-1">
+          <!-- Injected via state -->
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="app-main" id="appMain">
+      <div id="tableContainer" class="w-full h-full">
+        <table id="qcTable">
+          <thead id="theadRow"></thead>
+          <tbody id="tbodyData"></tbody>
+        </table>
+        <div id="emptyState" class="hidden flex-col items-center justify-center h-full opacity-50 p-8">
+          <span class="material-symbols-outlined text-4xl mb-2">search_off</span>
+          <p>Tidak ada data yang cocok.</p>
+        </div>
+      </div>
+      <!-- Placeholder for Grid View -->
+      <div id="gridContainer" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+        <!-- Grid Items Injected -->
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Add Column Modal -->
+  <div id="addColModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[100]">
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md p-6">
+      <h2 class="text-lg font-bold mb-4">Tambah Kolom Baru</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Nama Kolom</label>
+          <input type="text" id="newColName" class="w-full border rounded-lg p-2 bg-white text-slate-900 dark:bg-slate-900 dark:text-white dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Tipe Data</label>
+          <select id="newColType" class="w-full border rounded-lg p-2 bg-white text-slate-900 dark:bg-slate-900 dark:text-white dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <option value="text">Teks Bebas</option>
+            <option value="status">Status (Dropdown)</option>
+            <option value="link">Tautan (URL)</option>
+            <option value="file">File Upload</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end gap-3">
+        <button onclick="closeAddColModal()" class="btn btn-ghost border">Batal</button>
+        <button onclick="submitAddColumn()" class="btn btn-primary">Simpan Kolom</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- 4. Centralized State Management (Vanilla JS Reactive Pattern) ---
+    
+    const STATUS_COLORS = {
+      'Menunggu': '#fef9c3', // kuning muda
+      'Proses':   '#dbeafe', // biru muda
+      'Revisi':   '#fee2e2', // merah muda
+      'Selesai':  '#dcfce7'  // hijau muda
+    };
+
+    // Initial State
+    const AppState = {
+      sheetData: [],
+      columns: [
+        { id: 'col_1', name: 'No.', type: 'text' },
+        { id: 'col_2', name: 'Keterangan', type: 'text' },
+        { id: 'col_3', name: 'Status', type: 'status' }
+      ],
+      settings: {
+        fontFamily: "'Inter', sans-serif",
+        fontSize: "14px"
+      },
+      searchQuery: "",
+      activeSidebarCategory: "Semua", // 'Semua', 'Menunggu', 'Proses', 'Revisi', 'Selesai'
+      viewMode: "table" // 'table' or 'grid'
+    };
+
+    const sidebarCategories = [
+      { id: 'Semua', label: 'Semua Data', icon: 'list_alt' },
+      { id: 'Menunggu', label: 'Menunggu', icon: 'pending_actions' },
+      { id: 'Proses', label: 'Proses', icon: 'autorenew' },
+      { id: 'Revisi', label: 'Revisi', icon: 'edit_document' },
+      { id: 'Selesai', label: 'Selesai', icon: 'task_alt' },
+    ];
+
+    let searchTimeout = null;
+    const sessionToken = JSON.parse(sessionStorage.getItem("agripam_session"))?.token || "";
+    const sessionRegion = JSON.parse(sessionStorage.getItem("agripam_session"))?.region || "";
+
+    // Dispatcher
+    function dispatch(action, payload) {
+      // Before structural changes, make sure inputs are synced to state
+      if (['ADD_ROW', 'ADD_COLUMN', 'REMOVE_COLUMN', 'SET_SEARCH', 'SET_CATEGORY'].includes(action)) {
+        syncTableToState();
+      }
+
+      switch(action) {
+        case 'SET_DATA':
+          AppState.sheetData = payload.data || [];
+          AppState.columns = payload.columns || AppState.columns;
+          AppState.settings = payload.settings || AppState.settings;
+          break;
+        case 'SET_SEARCH':
+          AppState.searchQuery = payload;
+          break;
+        case 'SET_CATEGORY':
+          AppState.activeSidebarCategory = payload;
+          break;
+        case 'ADD_ROW':
+          const newRow = { id: 'row_' + Date.now() };
+          AppState.columns.forEach(c => newRow[c.id] = (c.type === 'status' ? 'Menunggu' : ''));
+          AppState.sheetData.push(newRow);
+          break;
+        case 'ADD_COLUMN':
+          AppState.columns.push(payload);
+          break;
+        case 'REMOVE_COLUMN':
+          AppState.columns = AppState.columns.filter(c => c.id !== payload);
+          AppState.sheetData.forEach(row => delete row[payload]);
+          break;
+        case 'REMOVE_ROW':
+          AppState.sheetData = AppState.sheetData.filter(r => r.id !== payload);
+          break;
+        case 'SET_ROW_COLOR':
+          const rowObj = AppState.sheetData.find(r => r.id === payload.id);
+          if (rowObj) rowObj.bgColor = payload.color;
+          break;
+        case 'RESET_ROW_COLOR':
+          const resetRow = AppState.sheetData.find(r => r.id === payload);
+          if (resetRow) delete resetRow.bgColor;
+          break;
+        case 'IMPORT_EXCEL':
+          AppState.columns = payload.columns;
+          AppState.sheetData = payload.data;
+          break;
+        case 'SET_FONT_FAMILY':
+          AppState.settings.fontFamily = payload;
+          break;
+        case 'SET_FONT_SIZE':
+          AppState.settings.fontSize = payload;
+          break;
+        case 'TOGGLE_VIEW_MODE':
+          AppState.viewMode = AppState.viewMode === 'table' ? 'grid' : 'table';
+          break;
+      }
+      
+      // Re-render UI based on new state
+      renderApp();
+    }
+
+    // --- Data Fetching & Sync ---
+    
+    async function initApp() {
+      try {
+        const res = await fetch(`/api/qcSheet?token=${sessionToken}&region=${sessionRegion}`);
+        const result = await res.json();
+        
+        if (result.success && result.data) {
+          dispatch('SET_DATA', {
+            data: result.data.data && result.data.data.length > 0 ? result.data.data : AppState.sheetData,
+            columns: result.data.columns && result.data.columns.length > 0 ? result.data.columns : AppState.columns,
+            settings: result.data.settings || AppState.settings
+          });
+        } else {
+          dispatch('SET_DATA', { data: [], columns: AppState.columns, settings: AppState.settings });
+        }
+      } catch (err) {
+        console.error("Gagal load data", err);
+        // Fallback to initial state
+        renderApp();
+      }
+    }
+
+    function syncTableToState() {
+      // Only sync if in table mode
+      if (AppState.viewMode !== 'table') return;
+      
+      const tbody = document.getElementById('tbodyData');
+      const rows = tbody.querySelectorAll('tr');
+      
+      // Create a map to update existing state (to preserve data hidden by filters)
+      const dataMap = {};
+      AppState.sheetData.forEach(r => dataMap[r.id] = r);
+      
+      rows.forEach((tr) => {
+        const rowId = tr.dataset.id;
+        if (!dataMap[rowId]) dataMap[rowId] = { id: rowId };
+        
+        AppState.columns.forEach(col => {
+          const input = tr.querySelector(`[data-colid="${col.id}"]`);
+          if (input) {
+             if (col.type === 'file') {
+               dataMap[rowId][col.id] = input.dataset.fileval || input.value || '';
+             } else {
+               dataMap[rowId][col.id] = input.value;
+             }
+          }
+        });
+      });
+      
+      AppState.sheetData = Object.values(dataMap);
+    }
+
+    async function saveData() {
+      syncTableToState();
+      
+      const saveStatus = document.getElementById('saveStatus');
+      saveStatus.classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/qcSheet', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionToken}`,
+            'x-region': sessionRegion
+          },
+          body: JSON.stringify({ 
+            sheetData: AppState.sheetData, 
+            columns: AppState.columns, 
+            settings: AppState.settings 
+          })
+        });
+        const result = await res.json();
+        if (result.success) {
+          saveStatus.innerHTML = `<span class="material-symbols-outlined text-[14px] text-emerald-500">check_circle</span> Tersimpan`;
+        } else {
+          saveStatus.innerHTML = `<span class="text-red-500">Gagal simpan</span>`;
+        }
+      } catch (err) {
+        saveStatus.innerHTML = `<span class="text-red-500">Error koneksi</span>`;
+      }
+      
+      setTimeout(() => {
+        saveStatus.classList.add('hidden');
+        saveStatus.innerHTML = `<span class="material-symbols-outlined text-[14px] animate-spin">sync</span> Menyimpan...`;
+      }, 3000);
+    }
+
+    // --- Rendering Functions ---
+    
+    function renderApp() {
+      // Derived State
+      const filteredData = AppState.sheetData.filter(row => {
+        // 1. Sidebar Category Filter (assuming we filter by a column named 'Status' or type 'status')
+        const statusCol = AppState.columns.find(c => c.type === 'status');
+        let categoryMatch = true;
+        if (AppState.activeSidebarCategory !== 'Semua' && statusCol) {
+          const rowStatus = row[statusCol.id] || '';
+          categoryMatch = rowStatus === AppState.activeSidebarCategory;
+        }
+
+        // 2. Search Query Filter
+        let searchMatch = true;
+        if (AppState.searchQuery.trim() !== '') {
+          const q = AppState.searchQuery.toLowerCase();
+          searchMatch = Object.values(row).some(val => 
+            String(val).toLowerCase().includes(q)
+          );
+        }
+
+        return categoryMatch && searchMatch;
+      });
+
+      renderToolbar();
+      renderSidebar();
+      renderMainContent(filteredData);
+    }
+
+    function renderToolbar() {
+      document.getElementById('toolFontFamily').value = AppState.settings.fontFamily;
+      document.getElementById('toolFontSize').value = AppState.settings.fontSize;
+      document.getElementById('viewModeIcon').textContent = AppState.viewMode === 'table' ? 'grid_view' : 'table_rows';
+    }
+
+    function renderSidebar() {
+      const ul = document.getElementById('sidebarCategoryList');
+      ul.innerHTML = '';
+      sidebarCategories.forEach(cat => {
+        const li = document.createElement('li');
+        li.className = `sidebar-item rounded-lg mx-2 my-1 ${AppState.activeSidebarCategory === cat.id ? 'active' : ''}`;
+        li.onclick = () => dispatch('SET_CATEGORY', cat.id);
+        li.innerHTML = `
+          <span class="material-symbols-outlined text-[20px]">${cat.icon}</span>
+          <span class="text-sm">${cat.label}</span>
+        `;
+        ul.appendChild(li);
+      });
+    }
+
+    function renderMainContent(filteredData) {
+      const tableContainer = document.getElementById('tableContainer');
+      const gridContainer = document.getElementById('gridContainer');
+      const emptyState = document.getElementById('emptyState');
+
+      if (AppState.viewMode === 'table') {
+        tableContainer.classList.remove('hidden');
+        gridContainer.classList.add('hidden');
+        renderTable(filteredData, emptyState, tableContainer);
+      } else {
+        tableContainer.classList.add('hidden');
+        gridContainer.classList.remove('hidden');
+        renderGrid(filteredData, emptyState, gridContainer);
+      }
+    }
+
+    function renderTable(data, emptyState, container) {
+      const thead = document.getElementById('theadRow');
+      const tbody = document.getElementById('tbodyData');
+      const qcTable = document.getElementById('qcTable');
+
+      // Apply Settings
+      qcTable.style.fontFamily = AppState.settings.fontFamily;
+      qcTable.style.fontSize = AppState.settings.fontSize;
+
+      if (data.length === 0) {
+        qcTable.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        emptyState.style.display = 'flex';
+        return;
+      } else {
+        qcTable.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+        emptyState.style.display = 'none';
+      }
+
+      // Headers
+      thead.innerHTML = '';
+      AppState.columns.forEach(col => {
+        const th = document.createElement('th');
+        th.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span>${escapeHtml(col.name)}</span>
+            <button onclick="dispatch('REMOVE_COLUMN', '${col.id}')" class="text-red-400 hover:text-red-600 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity" title="Hapus Kolom">
+              <span class="material-symbols-outlined text-[16px]">delete</span>
+            </button>
+          </div>
+        `;
+        thead.appendChild(th);
+      });
+      // Action Column Header
+      const actionTh = document.createElement('th');
+      actionTh.innerHTML = `<span class="material-symbols-outlined text-[16px]">settings</span>`;
+      actionTh.style.width = '70px';
+      thead.appendChild(actionTh);
+
+      // Body
+      tbody.innerHTML = '';
+      const statusCol = AppState.columns.find(c => c.type === 'status');
+
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.dataset.id = row.id;
+        
+        const autoColor = statusCol ? STATUS_COLORS[row[statusCol.id]] : null;
+        tr.style.backgroundColor = row.bgColor || autoColor || '';
+        
+        AppState.columns.forEach(col => {
+          const td = document.createElement('td');
+          const val = row[col.id] || '';
+          
+          if (col.type === 'text') {
+            td.innerHTML = `<input type="text" data-colid="${col.id}" value="${escapeHtml(val)}" />`;
+          } 
+          else if (col.type === 'link') {
+            td.innerHTML = `<input type="url" data-colid="${col.id}" value="${escapeHtml(val)}" placeholder="https://..." class="text-blue-500 underline" />`;
+          }
+          else if (col.type === 'status') {
+            td.innerHTML = `
+              <select data-colid="${col.id}" class="font-semibold" style="background-color: transparent;">
+                <option value="Menunggu" ${val === 'Menunggu' ? 'selected' : ''}>Menunggu</option>
+                <option value="Proses" ${val === 'Proses' ? 'selected' : ''}>Proses</option>
+                <option value="Revisi" ${val === 'Revisi' ? 'selected' : ''}>Revisi</option>
+                <option value="Selesai" ${val === 'Selesai' ? 'selected' : ''}>Selesai</option>
+              </select>
+            `;
+          }
+          else if (col.type === 'file') {
+            const fileName = val ? val : '';
+            td.innerHTML = `
+              <div class="flex items-center p-1 w-full relative">
+                <input type="file" onchange="handleFileUpload(this, '${col.id}')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="Unggah File" />
+                <input type="hidden" data-colid="${col.id}" data-fileval="${escapeHtml(fileName)}" value="${escapeHtml(fileName)}" />
+                <span class="material-symbols-outlined text-slate-400 text-[18px] mr-2">attach_file</span>
+                <span class="text-xs truncate max-w-[150px] pointer-events-none">${fileName || 'Pilih file...'}</span>
+              </div>
+            `;
+          }
+          tr.appendChild(td);
+        });
+        
+        if (statusCol) {
+          const statusSelect = tr.querySelector(`select[data-colid="${statusCol.id}"]`);
+          if (statusSelect) {
+            statusSelect.addEventListener('change', function() {
+              if (!row.bgColor) { // hanya update otomatis kalau belum ada override manual
+                tr.style.backgroundColor = STATUS_COLORS[this.value] || '';
+              }
+            });
+          }
+        }
+        
+        // Row Action Cell (Color & Delete)
+        const actionTd = document.createElement('td');
+        actionTd.innerHTML = `
+          <div class="flex items-center gap-2 justify-center p-1">
+             <input type="color" value="${row.bgColor || '#ffffff'}" onchange="dispatch('SET_ROW_COLOR', { id: '${row.id}', color: this.value })" class="w-6 h-6 p-0 border-0 cursor-pointer bg-transparent" title="Ubah Warna Baris">
+             <button onclick="dispatch('RESET_ROW_COLOR', '${row.id}')" class="text-slate-400 hover:text-slate-600 p-1" title="Kembalikan ke Warna Otomatis (sesuai Status)">
+               <span class="material-symbols-outlined text-[16px]">format_color_reset</span>
+             </button>
+             <button onclick="dispatch('REMOVE_ROW', '${row.id}')" class="text-red-500 hover:text-red-700 p-1" title="Hapus Baris">
+               <span class="material-symbols-outlined text-[18px]">delete</span>
+             </button>
+          </div>
+        `;
+        tr.appendChild(actionTd);
+        
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderGrid(data, emptyState, container) {
+      // Very basic read-only grid view implementation for demo purposes
+      container.innerHTML = '';
+      container.style.fontFamily = AppState.settings.fontFamily;
+      
+      if (data.length === 0) {
+        emptyState.classList.remove('hidden');
+        emptyState.style.display = 'flex';
+        return;
+      } else {
+        emptyState.classList.add('hidden');
+        emptyState.style.display = 'none';
+      }
+
+      data.forEach(row => {
+        const card = document.createElement('div');
+        card.className = "border dark:border-slate-700 rounded-xl p-4 shadow-sm bg-white dark:bg-slate-800 flex flex-col gap-2";
+        
+        AppState.columns.forEach(col => {
+          const val = row[col.id] || '-';
+          card.innerHTML += `
+            <div class="flex justify-between items-center text-sm border-b dark:border-slate-700 pb-1">
+              <span class="text-slate-500 font-semibold">${escapeHtml(col.name)}</span>
+              <span class="font-medium truncate max-w-[150px] text-right" title="${escapeHtml(val)}">${escapeHtml(val)}</span>
+            </div>
+          `;
+        });
+        container.appendChild(card);
+      });
+    }
+
+    // --- Interactivity ---
+
+    function handleSearch(val) {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        dispatch('SET_SEARCH', val);
+      }, 300);
+    }
+
+    function handleFileUpload(fileInput, colId) {
+      const file = fileInput.files[0];
+      if (file) {
+        const hiddenInput = fileInput.nextElementSibling;
+        hiddenInput.dataset.fileval = file.name;
+        hiddenInput.value = file.name;
+        fileInput.parentElement.querySelector('span.text-xs').textContent = file.name;
+      }
+    }
+
+    function handleExcelUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+          const data = new Uint8Array(ev.target.result);
+          const workbook = XLSX.read(data, {type: 'array'});
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+          
+          if(jsonData.length === 0) {
+              alert("File Excel kosong!");
+              return;
+          }
+          
+          const headerExcel = jsonData[0];
+          const newColumns = headerExcel.map((h, i) => ({
+             id: 'col_' + Date.now() + '_' + i,
+             name: h || ('Kolom ' + (i+1)),
+             type: 'text' // default to text for imported cols
+          }));
+          
+          const newData = [];
+          for (let i = 1; i < jsonData.length; i++) {
+              if (jsonData[i].length === 0) continue; // skip empty rows
+              const newRow = { id: 'row_' + Date.now() + '_' + i };
+              newColumns.forEach((col, j) => {
+                 newRow[col.id] = jsonData[i][j] !== undefined ? String(jsonData[i][j]) : "";
+              });
+              newData.push(newRow);
+          }
+          
+          dispatch('IMPORT_EXCEL', { columns: newColumns, data: newData });
+          e.target.value = ''; // reset input
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function toggleSidebar() {
+      document.getElementById('appLayout').classList.toggle('sidebar-collapsed');
+    }
+
+    function openAddColModal() {
+      document.getElementById('newColName').value = '';
+      document.getElementById('addColModal').classList.remove('hidden');
+      document.getElementById('addColModal').classList.add('flex');
+    }
+
+    function closeAddColModal() {
+      document.getElementById('addColModal').classList.add('hidden');
+      document.getElementById('addColModal').classList.remove('flex');
+    }
+
+    function submitAddColumn() {
+      const name = document.getElementById('newColName').value.trim();
+      const type = document.getElementById('newColType').value;
+      if (!name) return alert("Nama kolom wajib diisi.");
+      
+      const newCol = { id: 'col_' + Date.now(), name, type };
+      dispatch('ADD_COLUMN', newCol);
+      closeAddColModal();
+    }
+
+    function escapeHtml(unsafe) {
+      return (unsafe || '').toString()
+           .replace(/&/g, "&amp;")
+           .replace(/</g, "&lt;")
+           .replace(/>/g, "&gt;")
+           .replace(/"/g, "&quot;")
+           .replace(/'/g, "&#039;");
+    }
+
+    function goBackToLogin() {
+      // Logs out and goes to login via button click
+      fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'logout', token: sessionToken, region: sessionRegion })
+      }).finally(() => {
+        sessionStorage.removeItem("agripam_session");
+        window.location.replace("login.html");
+      });
+    }
+
+    // Initialize application
+    document.addEventListener("DOMContentLoaded", () => {
+      initApp();
+    });
+
+  </script>
+</body>
+</html>

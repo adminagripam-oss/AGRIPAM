@@ -102,8 +102,20 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
+app.get('/qc_admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'qc_admin.html'));
+});
+
+app.get('/vendor_monitoring', (req, res) => {
+  res.sendFile(path.join(__dirname, 'vendor_monitoring.html'));
+});
+
 app.get('/laporan-produksi', (req, res) => {
   res.sendFile(path.join(__dirname, 'laporan_produksi.html'));
+});
+
+app.get('/sap_admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'sap_admin.html'));
 });
 
 // Clean URL routes for TKPanen router

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitoring Vendor | AGRI-PAM</title>
+
+  <script>
+    // Authentication Check
+    (function checkAuth() {
+      const sessionKey = "agripam_session";
+      try {
+        const raw = sessionStorage.getItem(sessionKey);
+        if (!raw) {
+          window.location.replace("login.html?msg=" + encodeURIComponent("Harap login terlebih dahulu."));
+          return;
+        }
+        const s = JSON.parse(raw);
+        if (Date.now() > s.expiry) {
+          sessionStorage.removeItem(sessionKey);
+          window.location.replace("login.html?msg=" + encodeURIComponent("Sesi Anda telah berakhir. Silakan login kembali."));
+          return;
+        }
+      } catch (e) {
+        sessionStorage.removeItem(sessionKey);
+        window.location.replace("login.html?msg=" + encodeURIComponent("Sesi tidak valid."));
+      }
+
+      window.history.pushState(null, null, window.location.href);
+      window.onpopstate = function () {
+        sessionStorage.removeItem("agripam_session");
+        window.location.replace("login.html");
+      };
+    })();
+
+    var savedTheme = localStorage.getItem("agripam_theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --text-color: #0f172a;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --hover-bg: #f1f5f9;
+      --cell-border: #cbd5e1;
+      --header-bg: #ffffff;
+      --toolbar-bg: #f8fafc;
+      --sidebar-bg: #f1f5f9;
+      --active-item: #e2e8f0;
+      --active-text: #0f172a;
+    }
+    [data-theme="dark"] {
+      --bg-color: #0f172a;
+      --text-color: #f8fafc;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --hover-bg: #334155;
+      --cell-border: #475569;
+      --header-bg: #1e293b;
+      --toolbar-bg: #0f172a;
+      --sidebar-bg: #1e293b;
+      --active-item: #334155;
+      --active-text: #f8fafc;
+    }
+    
+    html, body {
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .app-layout { display: flex; flex-direction: column; height: 100vh; }
+    .app-header { position: sticky; top: 0; z-index: 50; background-color: var(--header-bg); border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+    .app-toolbar { position: sticky; top: 0; z-index: 40; background-color: var(--toolbar-bg); border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+    .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
+    
+    .app-sidebar {
+      width: 260px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border-color);
+      overflow-y: auto; flex-shrink: 0; transition: transform 0.3s ease, width 0.3s ease;
+    }
+    .sidebar-collapsed .app-sidebar { width: 0; transform: translateX(-100%); border-right: none; }
+    
+    .app-main { flex: 1; overflow: auto; background-color: var(--card-bg); position: relative; }
+
+    /* Table Freeze Panes */
+    table { border-collapse: collapse; width: max-content; min-width: 100%; }
+    th, td { border: 1px solid var(--cell-border); padding: 0.5rem; white-space: nowrap; font-size: 13px; }
+    
+    /* Header row styled with Teal */
+    thead th {
+      background-color: #3A868C; /* Teal */
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      font-weight: 700;
+    }
+    
+    /* Freeze First 3 Columns */
+    th:nth-child(1), td:nth-child(1) { position: sticky; left: 0; z-index: 10; min-width: 50px; text-align: center;}
+    th:nth-child(2), td:nth-child(2) { position: sticky; left: 50px; z-index: 10; min-width: 150px;}
+    th:nth-child(3), td:nth-child(3) { position: sticky; left: 200px; z-index: 10; min-width: 150px; border-right: 2px solid var(--cell-border);}
+    
+    /* Fix header overlapping corners */
+    thead th:nth-child(1), thead th:nth-child(2), thead th:nth-child(3) { z-index: 30; }
+
+    td { background-color: var(--card-bg); }
+    td:hover { background-color: var(--hover-bg); }
+    
+    td input, td select {
+      width: 100%; min-height: 30px; border: none; background: transparent; color: inherit; font-family: inherit; font-size: inherit; outline: none;
+    }
+    td input:focus, td select:focus { box-shadow: inset 0 0 0 2px #3b82f6; border-radius: 4px; }
+
+    /* Status Colors */
+    .status-hijau { background-color: #dcfce7 !important; color: #166534 !important; font-weight: 600; }
+    .status-kuning { background-color: #fef08a !important; color: #854d0e !important; font-weight: 600; }
+    .status-oranye { background-color: #fed7aa !important; color: #9a3412 !important; font-weight: 600; }
+    .status-merah { background-color: #fee2e2 !important; color: #991b1b !important; font-weight: 600; }
+
+    /* Utils */
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-icon { padding: 0.375rem; }
+    .btn-ghost { background: transparent; color: var(--text-color); }
+    .btn-ghost:hover { background: var(--hover-bg); }
+    .btn-primary { background: #3A868C; color: white; }
+    .btn-primary:hover { background: #2f6f74; }
+    
+    .sidebar-item { padding: 0.75rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted); border-left: 3px solid transparent; }
+    .sidebar-item:hover { background-color: var(--hover-bg); }
+    .sidebar-item.active { background-color: var(--active-item); color: var(--active-text); border-left-color: #3A868C; font-weight: 600; }
+  </style>
+</head>
+<body class="app-layout" id="appLayout">
+
+  <!-- Header -->
+  <header class="app-header flex items-center justify-between p-3 px-4">
+    <div class="flex items-center gap-3">
+      <button onclick="toggleSidebar()" class="btn btn-ghost btn-icon" title="Toggle Sidebar">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <div class="w-8 h-8 rounded bg-teal-100 flex items-center justify-center text-teal-700">
+        <span class="material-symbols-outlined text-[20px]">assignment</span>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold leading-tight">Monitoring SPK Mandiri</h1>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="goBackToLogin()" class="btn btn-ghost text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30">
+        <span class="material-symbols-outlined text-[18px]">logout</span> Keluar
+      </button>
+    </div>
+  </header>
+
+  <!-- Toolbar -->
+  <div class="app-toolbar p-2 px-4 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+      <button onclick="dispatch('ADD_ROW')" class="btn btn-primary text-sm shadow-sm" id="btnTambah">
+        <span class="material-symbols-outlined text-[18px]">add</span> Tambah Vendor Baru
+      </button>
+      <button onclick="saveData()" class="btn btn-ghost text-sm border shadow-sm" id="btnSimpan">
+        <span class="material-symbols-outlined text-[18px]">save</span> Simpan Perubahan
+      </button>
+      <span id="saveStatus" class="text-xs text-emerald-600 hidden ml-2"><span class="material-symbols-outlined text-[14px] align-middle">check_circle</span> Tersimpan</span>
+    </div>
+    
+    <div class="flex items-center gap-2">
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-2 top-1.5 text-slate-400 text-[18px]">search</span>
+        <input type="text" id="toolSearch" onkeyup="handleSearch(this.value)" placeholder="Cari vendor, kebun..." 
+          class="pl-8 pr-3 py-1.5 border rounded-lg text-sm bg-white dark:bg-slate-800 focus:ring-1 focus:ring-teal-500 w-48 transition-all focus:w-64">
+      </div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="app-body">
+    <!-- Sidebar -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="p-3">
+        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">Worksheets</h3>
+        <ul id="sidebarSheetList" class="space-y-1 mb-6">
+          <!-- Rendered via JS -->
+        </ul>
+        
+        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">Filter Kategori (Status)</h3>
+        <ul id="sidebarFilterList" class="space-y-1">
+          <!-- Rendered via JS -->
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="app-main relative" id="appMain">
+      <div id="tableContainer" class="w-full h-full">
+        <!-- The Data Table -->
+        <table id="vendorTable">
+          <thead id="theadRow"></thead>
+          <tbody id="tbodyData"></tbody>
+        </table>
+        
+        <!-- The Summary View (Rekapan) -->
+        <div id="rekapanContainer" class="hidden p-8 max-w-4xl mx-auto">
+          <h2 class="text-2xl font-bold mb-6">Rekapan Status Vendor (Otomatis)</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4" id="rekapanGrid"></div>
+        </div>
+      </div>
+      
+      <!-- Loading Overlay -->
+      <div id="loadingOverlay" class="absolute inset-0 bg-white/70 dark:bg-slate-900/70 z-[100] flex items-center justify-center hidden">
+        <div class="flex flex-col items-center">
+          <span class="material-symbols-outlined animate-spin text-4xl text-teal-600">sync</span>
+          <p class="mt-2 text-sm font-semibold text-slate-600 dark:text-slate-300">Memproses Dokumen SPK...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // --- State Management ---
+    const sessionToken = JSON.parse(sessionStorage.getItem("agripam_session"))?.token || "";
+    const sessionRegion = JSON.parse(sessionStorage.getItem("agripam_session"))?.region || "";
+    const isAdmin = sessionRegion.toUpperCase() === "ADMIN";
+
+    const AppState = {
+      data: [],
+      activeSheet: isAdmin ? 'All Data Vendor' : 'Data Tim Saya',
+      activeFilter: 'Semua',
+      searchQuery: ''
+    };
+
+    const SHEETS = [
+      { id: 'All Data Vendor', label: 'All Data Vendor', icon: 'database', adminOnly: true },
+      { id: 'Data Tim Saya', label: 'Data Tim Saya', icon: 'folder_shared', adminOnly: false },
+      { id: 'REKAPITULASI', label: 'Rekapitulasi (SPK Terbit)', icon: 'workspace_premium', adminOnly: false, color: 'text-amber-500' },
+      { id: 'Rekapan', label: 'Dasbor Rekapan', icon: 'donut_large', adminOnly: false }
+    ];
+
+    const STATUS_OPTIONS = [
+      "Menunggu Jawaban Region", "Kurang Administrasi", "Sudah Presentasi", "Lengkap", "Penerbitan SPK", "Mengundurkan Diri"
+    ];
+
+    const STATUS_COLORS = {
+      "Lengkap": "status-hijau",
+      "Penerbitan SPK": "status-hijau",
+      "Sudah Presentasi": "status-kuning",
+      "Menunggu Jawaban Region": "status-oranye",
+      "Kurang Administrasi": "status-oranye",
+      "Mengundurkan Diri": "status-merah"
+    };
+
+    let searchTimeout = null;
+
+    function dispatch(action, payload) {
+      if (['ADD_ROW', 'SET_SHEET', 'SET_FILTER', 'SET_SEARCH'].includes(action)) {
+        syncDomToState();
+      }
+
+      switch(action) {
+        case 'SET_DATA': AppState.data = payload; break;
+        case 'SET_SHEET': AppState.activeSheet = payload; break;
+        case 'SET_FILTER': AppState.activeFilter = payload; break;
+        case 'SET_SEARCH': AppState.searchQuery = payload; break;
+        case 'ADD_ROW':
+          AppState.data.unshift({
+            id: 'temp_' + Date.now(),
+            cro: sessionRegion,
+            regional: sessionRegion,
+            nama_vendor: '',
+            kebun: '',
+            luas_ha: 0,
+            status: 'Menunggu Jawaban Region',
+            action_status: 'Pending',
+            isNew: true
+          });
+          break;
+        case 'UPDATE_ROW':
+          const idx = AppState.data.findIndex(r => r.id === payload.id);
+          if (idx !== -1) AppState.data[idx] = { ...AppState.data[idx], ...payload.updates };
+          break;
+      }
+      renderApp();
+    }
+
+    // --- Init & Fetch ---
+    async function initApp() {
+      renderSidebar();
+      try {
+        const res = await fetch(`/api/vendor?token=${sessionToken}&region=${sessionRegion}`);
+        const result = await res.json();
+        if (result.success && result.data) {
+          dispatch('SET_DATA', result.data);
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
+    }
+
+    // --- Sync & Save ---
+    function syncDomToState() {
+      if (AppState.activeSheet === 'Rekapan') return;
+      const tbody = document.getElementById('tbodyData');
+      const rows = tbody.querySelectorAll('tr');
+      rows.forEach(tr => {
+        const id = tr.dataset.id;
+        const record = AppState.data.find(r => r.id === id);
+        if (record) {
+          tr.querySelectorAll('input, select').forEach(input => {
+            record[input.name] = input.value;
+          });
+        }
+      });
+    }
+
+    async function saveData() {
+      syncDomToState();
+      const btn = document.getElementById('btnSimpan');
+      btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[18px]">sync</span> Menyimpan...`;
+      btn.disabled = true;
+
+      try {
+        const newRecords = AppState.data.filter(r => r.isNew);
+        const existingRecords = AppState.data.filter(r => !r.isNew);
+        
+        // Save New Records
+        for (const record of newRecords) {
+          const req = await fetch('/api/vendor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}`, 'x-region': sessionRegion },
+            body: JSON.stringify({ action: 'create', record: { ...record, id: undefined, isNew: undefined } })
+          });
+          const res = await req.json();
+          if (res.success) {
+            Object.assign(record, res.data);
+            delete record.isNew;
+          }
+        }
+
+        // Update Existing Records (Simplistic bulk update for demo, normally track dirty rows)
+        for (const record of existingRecords) {
+          await fetch('/api/vendor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}`, 'x-region': sessionRegion },
+            body: JSON.stringify({ action: 'update', id: record.id, updates: record })
+          });
+        }
+
+        document.getElementById('saveStatus').classList.remove('hidden');
+        setTimeout(() => document.getElementById('saveStatus').classList.add('hidden'), 3000);
+      } catch (err) {
+        alert("Gagal menyimpan data.");
+      } finally {
+        btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">save</span> Simpan Perubahan`;
+        btn.disabled = false;
+        renderApp();
+      }
+    }
+
+    // --- SPK Generation (Mail Merge) ---
+    async function handleActionChange(selectEl, rowId) {
+      if (selectEl.value === 'Approve') {
+        const confirmed = confirm("Generate Surat Penugasan (SPK) untuk vendor ini?");
+        if (!confirmed) { selectEl.value = 'Pending'; return; }
+        
+        syncDomToState(); // Ensure data is up to date in state
+        await saveData(); // Save first
+
+        document.getElementById('loadingOverlay').classList.remove('hidden');
+        try {
+          const res = await fetch('/api/vendor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}`, 'x-region': sessionRegion },
+            body: JSON.stringify({ action: 'generate-spk', vendorId: rowId })
+          });
+          const result = await res.json();
+          if (result.success) {
+            dispatch('UPDATE_ROW', { id: rowId, updates: result.data });
+            alert("SPK Terbit!\nLink: " + result.fileUrl);
+          } else {
+            alert("Gagal generate: " + result.message);
+          }
+        } catch (e) {
+          alert("Terjadi kesalahan.");
+        } finally {
+          document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+      }
+    }
+
+    // --- UI Render ---
+    function renderApp() {
+      renderSidebar();
+      const vendorTable = document.getElementById('vendorTable');
+      const rekapanContainer = document.getElementById('rekapanContainer');
+      const btnTambah = document.getElementById('btnTambah');
+
+      if (AppState.activeSheet === 'Rekapan') {
+        vendorTable.style.display = 'none';
+        rekapanContainer.style.display = 'block';
+        btnTambah.style.display = 'none';
+        renderRekapan();
+      } else {
+        vendorTable.style.display = 'table';
+        rekapanContainer.style.display = 'none';
+        btnTambah.style.display = 'inline-flex';
+        renderTable();
+      }
+    }
+
+    function renderSidebar() {
+      const sheetUl = document.getElementById('sidebarSheetList');
+      sheetUl.innerHTML = '';
+      SHEETS.forEach(s => {
+        if (s.adminOnly && !isAdmin) return;
+        const li = document.createElement('li');
+        li.className = `sidebar-item rounded-lg mx-2 ${AppState.activeSheet === s.id ? 'active' : ''}`;
+        li.onclick = () => dispatch('SET_SHEET', s.id);
+        li.innerHTML = `<span class="material-symbols-outlined text-[20px] ${s.color||''}">${s.icon}</span><span class="text-sm font-medium">${s.label}</span>`;
+        sheetUl.appendChild(li);
+      });
+
+      const filterUl = document.getElementById('sidebarFilterList');
+      filterUl.innerHTML = '';
+      const filters = ['Semua', ...STATUS_OPTIONS];
+      filters.forEach(f => {
+        const li = document.createElement('li');
+        li.className = `sidebar-item rounded-lg mx-2 ${AppState.activeFilter === f ? 'active' : ''}`;
+        li.onclick = () => dispatch('SET_FILTER', f);
+        li.innerHTML = `<span class="material-symbols-outlined text-[16px] text-slate-400">filter_alt</span><span class="text-sm">${f}</span>`;
+        filterUl.appendChild(li);
+      });
+    }
+
+    function renderTable() {
+      let filtered = AppState.data;
+
+      // 1. Sheet Filter
+      if (AppState.activeSheet === 'Data Tim Saya') {
+        filtered = filtered.filter(r => r.regional === sessionRegion);
+      } else if (AppState.activeSheet === 'REKAPITULASI') {
+        filtered = filtered.filter(r => r.status === 'Penerbitan SPK');
+      }
+      // All Data Vendor doesn't filter by role (assuming backend gave us all)
+
+      // 2. Category Filter
+      if (AppState.activeFilter !== 'Semua') {
+        filtered = filtered.filter(r => r.status === AppState.activeFilter);
+      }
+
+      // 3. Search Filter
+      if (AppState.searchQuery) {
+        const q = AppState.searchQuery.toLowerCase();
+        filtered = filtered.filter(r => 
+          (r.nama_vendor || '').toLowerCase().includes(q) || 
+          (r.kebun || '').toLowerCase().includes(q) ||
+          (r.cro || '').toLowerCase().includes(q)
+        );
+      }
+
+      // Columns Definition
+      const isRekap = AppState.activeSheet === 'REKAPITULASI';
+      const cols = isRekap ? [
+        { name: 'No', field: 'no', width: 50 },
+        { name: 'No Surat SPK', field: 'no_surat' },
+        { name: 'Nama Mitra', field: 'nama_vendor' },
+        { name: 'Nama PT Palm Ops', field: 'nama_pt_palm_ops' },
+        { name: 'Tahap', field: 'tahap' },
+        { name: 'CRO', field: 'cro' },
+        { name: 'Regional', field: 'regional' },
+        { name: 'Luas TM (Ha)', field: 'luas_tm_ha', type: 'number' },
+        { name: 'Target Prod (Ton)', field: 'target_produksi_ton', type: 'number' },
+        { name: 'Tanggal Penugasan', field: 'tanggal_penugasan', type: 'date' },
+        { name: 'Link Surat SPK', field: 'link_surat_spk', type: 'link' }
+      ] : [
+        { name: 'No', field: 'no', width: 50 },
+        { name: 'Nama Vendor', field: 'nama_vendor' },
+        { name: 'Kebun', field: 'kebun' },
+        { name: 'Status', field: 'status', type: 'status' },
+        { name: 'Action / Approval', field: 'action_status', type: 'action' },
+        { name: 'CRO', field: 'cro' },
+        { name: 'Regional', field: 'regional' },
+        { name: 'Luas (Ha)', field: 'luas_ha', type: 'number' },
+        { name: 'PIC Vendor', field: 'pic' },
+        { name: 'Kontak', field: 'kontak_vendor' },
+        { name: 'Tanggal Terima', field: 'tanggal_terima', type: 'date' },
+        { name: 'Link Dokumen', field: 'link_dokumen', type: 'link' },
+        { name: 'Ket Administrasi', field: 'ket_admin_kurang' },
+      ];
+
+      const thead = document.getElementById('theadRow');
+      thead.innerHTML = '';
+      cols.forEach(c => {
+        const th = document.createElement('th');
+        th.textContent = c.name;
+        thead.appendChild(th);
+      });
+
+      const tbody = document.getElementById('tbodyData');
+      tbody.innerHTML = '';
+      filtered.forEach((row, i) => {
+        const tr = document.createElement('tr');
+        tr.dataset.id = row.id;
+        
+        // Color row slightly if status is SPK
+        if (!isRekap && row.status === 'Penerbitan SPK') tr.classList.add('bg-emerald-50', 'dark:bg-emerald-900/10');
+
+        cols.forEach(c => {
+          const td = document.createElement('td');
+          const val = row[c.field] || '';
+          
+          if (c.field === 'no') {
+            td.textContent = i + 1;
+            td.className = "text-center font-bold text-slate-400";
+          } else if (c.type === 'status') {
+            const select = document.createElement('select');
+            select.name = c.field;
+            select.className = STATUS_COLORS[val] || '';
+            select.onchange = function() { this.className = STATUS_COLORS[this.value] || ''; };
+            STATUS_OPTIONS.forEach(opt => {
+              const o = document.createElement('option');
+              o.value = opt; o.textContent = opt; o.selected = (val === opt);
+              select.appendChild(o);
+            });
+            td.appendChild(select);
+          } else if (c.type === 'action') {
+            const select = document.createElement('select');
+            select.name = c.field;
+            select.className = "font-bold text-slate-700 bg-slate-100 rounded p-1";
+            ['Pending', 'Review', 'Approve'].forEach(opt => {
+              const o = document.createElement('option');
+              o.value = opt; o.textContent = opt; o.selected = (val === opt);
+              select.appendChild(o);
+            });
+            select.onchange = () => handleActionChange(select, row.id);
+            td.appendChild(select);
+          } else if (c.type === 'link') {
+             if (val) {
+               td.innerHTML = `<a href="${val}" target="_blank" class="text-blue-600 underline flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">open_in_new</span> Buka Dokumen</a>`;
+               // Also keep an invisible input so it syncs back
+               td.innerHTML += `<input type="hidden" name="${c.field}" value="${val}"/>`;
+             } else {
+               td.innerHTML = `<input type="url" name="${c.field}" value="${val}" placeholder="https://..."/>`;
+             }
+          } else if (c.type === 'date') {
+             td.innerHTML = `<input type="date" name="${c.field}" value="${val}"/>`;
+          } else if (c.type === 'number') {
+             td.innerHTML = `<input type="number" step="0.01" name="${c.field}" value="${val}"/>`;
+          } else {
+            // Admin only fields might be readonly for CRO
+            if (['cro', 'regional'].includes(c.field) && !isAdmin && !row.isNew) {
+               td.textContent = val;
+               td.innerHTML += `<input type="hidden" name="${c.field}" value="${val}"/>`;
+            } else {
+               td.innerHTML = `<input type="text" name="${c.field}" value="${val}"/>`;
+            }
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderRekapan() {
+      const grid = document.getElementById('rekapanGrid');
+      grid.innerHTML = '';
+      
+      const metrics = [
+        { label: 'Total Vendor (Semua)', filter: () => true, color: 'border-blue-500' },
+        { label: 'Selesai / SPK Terbit', filter: (r) => r.status === 'Penerbitan SPK', color: 'border-emerald-500' },
+        { label: 'Kurang Administrasi', filter: (r) => r.status === 'Kurang Administrasi', color: 'border-amber-500' },
+        { label: 'Mengundurkan Diri', filter: (r) => r.status === 'Mengundurkan Diri', color: 'border-red-500' },
+      ];
+
+      // Base data based on Admin/CRO
+      const baseData = isAdmin ? AppState.data : AppState.data.filter(r => r.regional === sessionRegion);
+
+      metrics.forEach(m => {
+        const count = baseData.filter(m.filter).length;
+        const card = document.createElement('div');
+        card.className = `bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border-b-4 ${m.color}`;
+        card.innerHTML = `
+          <h4 class="text-sm font-semibold text-slate-500 dark:text-slate-400">${m.label}</h4>
+          <p class="text-4xl font-black mt-2 text-slate-800 dark:text-white">${count}</p>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // --- Utils ---
+    function toggleSidebar() { document.getElementById('appLayout').classList.toggle('sidebar-collapsed'); }
+    function handleSearch(val) { if (searchTimeout) clearTimeout(searchTimeout); searchTimeout = setTimeout(() => dispatch('SET_SEARCH', val), 300); }
+    function goBackToLogin() {
+      sessionStorage.removeItem("agripam_session");
+      window.location.replace("login.html");
+    }
+
+    document.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>
