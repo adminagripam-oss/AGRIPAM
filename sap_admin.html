@@ -638,13 +638,18 @@
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teruskan ke Bagian</label>
                             <select id="tujuan_${id}" onchange="if(this.value==='lainnya'){document.getElementById('tujuan_lainnya_${id}').classList.remove('hidden');}else{document.getElementById('tujuan_lainnya_${id}').classList.add('hidden');} document.getElementById('td_tujuan_${id}').textContent = (this.value==='lainnya' ? document.getElementById('tujuan_lainnya_${id}').value || '-' : this.value || '-');" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 outline-none text-sm">
                                 <option value="">-- Pilih Tujuan --</option>
-                                <option value="UMUM" ${currentTujuan === 'UMUM' ? 'selected' : ''}>UMUM</option>
-                                <option value="KEUANGAN" ${currentTujuan === 'KEUANGAN' ? 'selected' : ''}>KEUANGAN</option>
-                                <option value="PENGADAAN" ${currentTujuan === 'PENGADAAN' ? 'selected' : ''}>PENGADAAN</option>
-                                <option value="REGIONAL" ${currentTujuan === 'REGIONAL' ? 'selected' : ''}>REGIONAL</option>
-                                <option value="lainnya" ${!['', 'UMUM', 'KEUANGAN', 'PENGADAAN', 'REGIONAL'].includes(currentTujuan) ? 'selected' : ''}>Lainnya...</option>
+                                ${[
+                                    'Direktorat SDM & UMUM',
+                                    'Direktorat Keuangan & Manajemen Risiko',
+                                    'Direktorat Bisnis',
+                                    'Direktorat Pemasaran',
+                                    'Direktorat Kepatuhan & Keberlanjutan',
+                                    'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V',
+                                    'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'
+                                ].map(opt => `<option value="${opt}" ${currentTujuan === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                                <option value="lainnya" ${!['', 'Direktorat SDM & UMUM', 'Direktorat Keuangan & Manajemen Risiko', 'Direktorat Bisnis', 'Direktorat Pemasaran', 'Direktorat Kepatuhan & Keberlanjutan', 'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V', 'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'].includes(currentTujuan) ? 'selected' : ''}>Lainnya...</option>
                             </select>
-                            <input type="text" id="tujuan_lainnya_${id}" value="${!['', 'UMUM', 'KEUANGAN', 'PENGADAAN', 'REGIONAL'].includes(currentTujuan) ? currentTujuan : ''}" oninput="if(document.getElementById('tujuan_${id}').value==='lainnya'){document.getElementById('td_tujuan_${id}').textContent = this.value || '-';}" placeholder="Ketik nama bagian..." class="${!['', 'UMUM', 'KEUANGAN', 'PENGADAAN', 'REGIONAL'].includes(currentTujuan) ? '' : 'hidden '}w-full mt-2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 outline-none text-sm">
+                            <input type="text" id="tujuan_lainnya_${id}" value="${!['', 'Direktorat SDM & UMUM', 'Direktorat Keuangan & Manajemen Risiko', 'Direktorat Bisnis', 'Direktorat Pemasaran', 'Direktorat Kepatuhan & Keberlanjutan', 'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V', 'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'].includes(currentTujuan) ? currentTujuan : ''}" oninput="if(document.getElementById('tujuan_${id}').value==='lainnya'){document.getElementById('td_tujuan_${id}').textContent = this.value || '-';}" placeholder="Ketik nama bagian..." class="${!['', 'Direktorat SDM & UMUM', 'Direktorat Keuangan & Manajemen Risiko', 'Direktorat Bisnis', 'Direktorat Pemasaran', 'Direktorat Kepatuhan & Keberlanjutan', 'CRO I', 'CRO II', 'CRO III', 'CRO IV', 'CRO V', 'CRO VI', 'CRO VII', 'CRO VIII', 'CRO IX', 'CRO X'].includes(currentTujuan) ? '' : 'hidden '}w-full mt-2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-500 outline-none text-sm">
                         </div>
                         <div class="flex-1">
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tanggal Surat</label>

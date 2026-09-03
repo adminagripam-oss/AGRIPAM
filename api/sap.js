@@ -155,7 +155,7 @@ module.exports = async (req, res) => {
                 tanggal_surat: new Date().toISOString().split('T')[0],
                 file_url: fileUrl,
                 regional_pengirim: region,
-                status: 'menunggu'
+                status: 'Sudah dikirim ke Regional'
             };
             const { error: insertError } = await supabase.from('surat').insert([newSurat]);
             if (insertError) throw new Error('Gagal membuat Surat Balasan: ' + insertError.message);
