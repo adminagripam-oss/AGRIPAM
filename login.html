@@ -1963,7 +1963,7 @@
             globalTKData = json.data || [];
             globalTKEdits = {};
             currentSummaryData = json.summary;
-            renderTKPanenTable(globalTKData, json.summary);
+            filterTKPanenTable();
           } else {
             if (tbody) tbody.innerHTML = '<tr><td colspan="14" class="py-12 text-center text-red-500 font-semibold">Gagal memuat data: ' + json.message + '</td></tr>';
             if (summaryEl) summaryEl.innerHTML = '';
@@ -2552,8 +2552,8 @@
 
       closeEditKebunModal();
 
-      // Instant Re-render Table on Screen
-      renderTKPanenTable(globalTKData, currentSummaryData);
+      // Instant Re-render Table on Screen (Preserve Search Filter)
+      filterTKPanenTable();
 
       // Save to Backend Database silently
       simpanTKPanenEdits();

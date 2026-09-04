@@ -84,10 +84,11 @@ module.exports = async (req, res) => {
       kebunList = supaData.map(k => {
         const fb = jsonLookup[k.id] || {};
         return {
-          tk_juli: fb.tk_juli || 0,
-          tk_agustus: fb.tk_agustus || 0,
-          target_september: fb.target_september || 0,
-          ...k
+          ...fb,
+          ...k,
+          tk_juli: k.tk_juli !== undefined && k.tk_juli !== null ? k.tk_juli : (fb.tk_juli || 0),
+          tk_agustus: k.tk_agustus !== undefined && k.tk_agustus !== null ? k.tk_agustus : (fb.tk_agustus || 0),
+          target_september: k.target_september !== undefined && k.target_september !== null ? k.target_september : (fb.target_september || 0)
         };
       });
     }
@@ -222,7 +223,7 @@ module.exports = async (req, res) => {
             };
             const { error: sbErr } = await supabase.from('data_kebun_tk').update(fullPayload).eq('id', targetId);
             if (sbErr) {
-              console.warn(`[kebunTK] Supabase full update failed for id=${targetId}: ${sbErr.message}. Trying safe fields...`);
+              console.error(`[kebunTK] Supabase update fullPayload failed for id=${targetId}:`, sbErr.message, sbErr.details);
               // Fallback: only update fields that are known to exist
               const safePayload = {
                 req_tk: item.req_tk,
@@ -235,7 +236,7 @@ module.exports = async (req, res) => {
               };
               const { error: sbErr2 } = await supabase.from('data_kebun_tk').update(safePayload).eq('id', targetId);
               if (sbErr2) {
-                console.error(`[kebunTK] Supabase safe update also failed for id=${targetId}: ${sbErr2.message}`);
+                console.error(`[kebunTK] Supabase update safePayload ALSO failed for id=${targetId}:`, sbErr2.message, sbErr2.details);
               }
             }
           } catch (sbCatchErr) {
