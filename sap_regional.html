@@ -24,7 +24,7 @@
     </style>
 </head>
 
-<body class="text-slate-800 font-sans min-h-screen flex flex-col">
+<body class="text-slate-800 font-sans min-h-screen flex flex-col" style="display: none;">
 
     <!-- Navbar -->
     <nav class="text-white shadow-md" style="background-color: #4bacc6;">
@@ -150,7 +150,7 @@
         let sessionRegion = null;
 
         async function init() {
-            var rawSession = sessionStorage.getItem('agripam_session');
+            var rawSession = sessionStorage.getItem('agripam_session') || localStorage.getItem('agripam_session');
             if (rawSession) {
                 try {
                     var s = JSON.parse(rawSession);
@@ -179,10 +179,11 @@
 
             if (!sessionToken || !sessionRegion || sessionRegion === 'ADMIN') {
                 alert("Akses ditolak! Silakan login melalui Portal Utama Agripam.");
-                window.location.href = 'login.html';
+                window.location.replace('login.html');
                 return;
             }
 
+            document.body.style.display = 'flex';
             document.getElementById('userName').textContent = "User Regional";
             document.getElementById('regionBadge').textContent = sessionRegion;
 

@@ -62,7 +62,7 @@
     </style>
 </head>
 
-<body class="text-slate-800 font-sans h-screen flex relative overflow-hidden bg-slate-50">
+<body class="text-slate-800 font-sans h-screen flex relative overflow-hidden bg-slate-50" style="display: none;">
 
     <!-- Sidebar -->
     <aside id="appSidebar"
@@ -332,7 +332,7 @@
         let sessionRegion = null;
 
         async function init() {
-            var rawSession = sessionStorage.getItem('agripam_session');
+            var rawSession = sessionStorage.getItem('agripam_session') || localStorage.getItem('agripam_session');
             if (rawSession) {
                 try {
                     var s = JSON.parse(rawSession);
@@ -359,11 +359,12 @@
             }
 
             if (!sessionToken || !sessionRegion || sessionRegion !== 'ADMIN') {
-                shadcnAlert("Akses Ditolak", "Anda bukan pengguna Admin HO.");
-                window.location.href = 'login.html';
+                alert("Akses Ditolak. Anda bukan pengguna Admin HO.");
+                window.location.replace('login.html');
                 return;
             }
 
+            document.body.style.display = 'flex';
             document.getElementById('userName').textContent = "Admin HO";
 
             fetchSurat();
