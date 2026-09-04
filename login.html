@@ -1935,7 +1935,7 @@
       });
     }
 
-    function loadTKPanenDataForSelectedRegion() {
+    function loadTKPanenDataForSelectedRegion(preservePage) {
       var s = loadSession();
       if (!s) return;
 
@@ -1963,7 +1963,7 @@
             globalTKData = json.data || [];
             globalTKEdits = {};
             currentSummaryData = json.summary;
-            filterTKPanenTable();
+            filterTKPanenTable(preservePage);
           } else {
             if (tbody) tbody.innerHTML = '<tr><td colspan="14" class="py-12 text-center text-red-500 font-semibold">Gagal memuat data: ' + json.message + '</td></tr>';
             if (summaryEl) summaryEl.innerHTML = '';
@@ -2238,7 +2238,7 @@
           if (json.success) {
             alert(json.message || "Data TK Panen berhasil disimpan!");
             globalTKEdits = {};
-            loadTKPanenDataForSelectedRegion();
+            loadTKPanenDataForSelectedRegion(true);
           } else {
             alert("Gagal menyimpan: " + json.message);
           }
@@ -2553,14 +2553,16 @@
       closeEditKebunModal();
 
       // Instant Re-render Table on Screen (Preserve Search Filter)
-      filterTKPanenTable();
+      filterTKPanenTable(true);
 
       // Save to Backend Database silently
       simpanTKPanenEdits();
     }
 
-    function filterTKPanenTable() {
-      tkCurrentPage = 1;
+    function filterTKPanenTable(preservePage) {
+      if (!preservePage) {
+        tkCurrentPage = 1;
+      }
       if (globalTKData && globalTKData.length > 0) {
         var search = document.getElementById("tkSearchInput") ? document.getElementById("tkSearchInput").value.toLowerCase() : "";
         var filtered = globalTKData.filter(function (item) {
