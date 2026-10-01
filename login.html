@@ -1999,11 +1999,11 @@
       simpanTKPanenEdits();
     }
 
-    var currentTableMonth = 'tk_juli';
+    var currentTableMonth = 'tk_september';
     var currentSummaryData = null;
 
     function onTKTableMonthChange(selectedMonth) {
-      currentTableMonth = selectedMonth || 'tk_juli';
+      currentTableMonth = selectedMonth || 'tk_september';
       renderTKPanenTable(globalTKData, currentSummaryData);
     }
 
@@ -2015,10 +2015,10 @@
       if (globalTKData && globalTKData.length > 0) {
         var filtered = globalTKData.filter(function (item) {
           var search = document.getElementById("tkSearchInput") ? document.getElementById("tkSearchInput").value.toLowerCase() : "";
-          var text = (item.nama_kebun || "").toLowerCase() + 
-                     (item.region || "").toLowerCase() + 
-                     (item.cro || "").toLowerCase() + 
-                     (item.name_tag || "").toLowerCase();
+          var text = (item.nama_kebun || "").toLowerCase() +
+            (item.region || "").toLowerCase() +
+            (item.cro || "").toLowerCase() +
+            (item.name_tag || "").toLowerCase();
           return text.indexOf(search) > -1;
         });
         renderTKPanenTable(filtered, currentSummaryData);
@@ -2071,8 +2071,10 @@
         var targetJuli = edit.target_juli !== undefined ? edit.target_juli : (item.target_juli || 0);
         var targetAgs = edit.target_agustus !== undefined ? edit.target_agustus : (item.target_agustus || 0);
         var targetSept = edit.target_september !== undefined ? edit.target_september : (item.target_september || 0);
+        var targetOkt = edit.target_oktober !== undefined ? edit.target_oktober : (item.target_oktober || 0);
         var valJuli = edit.tk_juli !== undefined ? edit.tk_juli : (item.tk_juli || 0);
         var valAgs = edit.tk_agustus !== undefined ? edit.tk_agustus : (item.tk_agustus || 0);
+        var valSept = edit.tk_september !== undefined ? edit.tk_september : (item.tk_september || 0);
 
         var reqTk = parseInt(item.req_tk, 10) || 0;
 
@@ -2114,6 +2116,11 @@
         // Trend Agustus (Agustus - Juli)
         html += '<td class="py-3 px-2 text-center whitespace-nowrap border-r border-black bg-slate-100/40 dark:bg-[#1E1E1E]/40">' + formatTrendBadge(valAgs, valJuli) + '</td>';
 
+        // Realisasi September
+        html += '<td class="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap border-r border-black">' + valSept.toLocaleString('id-ID') + '</td>';
+        // Trend September (September - Agustus)
+        html += '<td class="py-3 px-2 text-center whitespace-nowrap border-r border-black bg-slate-100/40 dark:bg-[#1E1E1E]/40">' + formatTrendBadge(valSept, valAgs) + '</td>';
+
         // Rencana Pemenuhan Juli
         html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">' + targetJuli.toLocaleString('id-ID') + '</td>';
 
@@ -2122,6 +2129,9 @@
 
         // Rencana Pemenuhan September
         html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">' + targetSept.toLocaleString('id-ID') + '</td>';
+
+        // Rencana Pemenuhan Oktober
+        html += '<td class="py-3 px-2 text-center font-black text-slate-900 dark:text-white whitespace-nowrap border-r border-black">' + targetOkt.toLocaleString('id-ID') + '</td>';
 
         // Action Cell: Edit & Delete Buttons (Frozen on the Right side)
         html += '<td class="py-3 px-2 text-center whitespace-nowrap sticky right-0 z-10 w-[110px] min-w-[110px] border-l-2 border-black shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.12)] ' + stickyCellBg + '">';
@@ -2167,8 +2177,8 @@
       // KPI Badges
       var summaryEl = document.getElementById("tkSummaryBadges");
       if (summaryEl) {
-        var cutOffField = summary && summary.cutOffField ? summary.cutOffField : 'tk_agustus';
-        var cutOffMonth = summary && summary.cutOffMonth ? summary.cutOffMonth : 'Agustus';
+        var cutOffField = summary && summary.cutOffField ? summary.cutOffField : 'tk_september';
+        var cutOffMonth = summary && summary.cutOffMonth ? summary.cutOffMonth : 'September';
 
         var totalLuas = (globalTKData || []).reduce(function (s, x) { return s + (parseFloat(x.luasan) || 0); }, 0);
         var reqTk = (globalTKData || []).reduce(function (s, x) { return s + (parseInt(x.req_tk) || 0); }, 0);
@@ -2252,22 +2262,22 @@
     function showReuiConfirm(title, desc, onConfirm) {
       document.getElementById("reuiConfirmTitle").textContent = title;
       document.getElementById("reuiConfirmDesc").textContent = desc;
-      
+
       var backdrop = document.getElementById("reuiConfirmBackdrop");
       var dialog = document.getElementById("reuiConfirmDialog");
-      
+
       backdrop.classList.remove("hidden");
       dialog.classList.remove("hidden");
-      
+
       var cancelBtn = document.getElementById("reuiConfirmCancelBtn");
       var okBtn = document.getElementById("reuiConfirmOkBtn");
-      
-      cancelBtn.onclick = function() {
+
+      cancelBtn.onclick = function () {
         backdrop.classList.add("hidden");
         dialog.classList.add("hidden");
       };
-      
-      okBtn.onclick = function() {
+
+      okBtn.onclick = function () {
         backdrop.classList.add("hidden");
         dialog.classList.add("hidden");
         if (onConfirm) onConfirm();
@@ -2277,27 +2287,27 @@
     function showReuiToast(message, type) {
       var container = document.getElementById("reuiToastContainer");
       if (!container) return;
-      
+
       var toast = document.createElement("div");
       toast.className = "flex items-center gap-3 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-lg pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 w-80 max-w-full";
-      
+
       var icon = "";
       if (type === 'success') {
         icon = '<div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>';
       } else {
         icon = '<div class="w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div>';
       }
-      
+
       toast.innerHTML = icon + '<div class="text-xs font-bold text-slate-800 dark:text-slate-200 flex-1">' + message + '</div>';
       container.appendChild(toast);
-      
-      setTimeout(function() {
+
+      setTimeout(function () {
         toast.classList.remove("translate-y-2", "opacity-0");
       }, 10);
-      
-      setTimeout(function() {
+
+      setTimeout(function () {
         toast.classList.add("translate-y-2", "opacity-0");
-        setTimeout(function() {
+        setTimeout(function () {
           toast.remove();
         }, 300);
       }, 3500);
@@ -2308,26 +2318,26 @@
       if (!item) return;
       var name = item.nama_kebun || '';
 
-      showReuiConfirm("Hapus Kebun", "Apakah Anda yakin ingin menghapus kebun '" + name + "' dari database? Tindakan ini tidak dapat dibatalkan.", function() {
+      showReuiConfirm("Hapus Kebun", "Apakah Anda yakin ingin menghapus kebun '" + name + "' dari database? Tindakan ini tidak dapat dibatalkan.", function () {
         var s = loadSession() || {};
         var regParam = s.region || 'ALL';
 
         fetch('/api/kebunTK?action=deleteKebun&region=' + encodeURIComponent(regParam) + '&id=' + id, {
           method: 'POST'
         })
-        .then(function (res) { return res.json(); })
-        .then(function (json) {
-          if (json.success) {
-            showReuiToast("Kebun '" + name + "' berhasil dihapus!", "success");
-            loadTKPanenDataForSelectedRegion();
-          } else {
-            showReuiToast("Gagal menghapus: " + json.message, "error");
-          }
-        })
-        .catch(function (err) {
-          console.error(err);
-          showReuiToast("Terjadi kesalahan koneksi saat menghapus.", "error");
-        });
+          .then(function (res) { return res.json(); })
+          .then(function (json) {
+            if (json.success) {
+              showReuiToast("Kebun '" + name + "' berhasil dihapus!", "success");
+              loadTKPanenDataForSelectedRegion();
+            } else {
+              showReuiToast("Gagal menghapus: " + json.message, "error");
+            }
+          })
+          .catch(function (err) {
+            console.error(err);
+            showReuiToast("Terjadi kesalahan koneksi saat menghapus.", "error");
+          });
       });
     }
 
@@ -2348,7 +2358,7 @@
 
       var defaultCro = "CRO 1";
       if (!isUserAdmin && s.region && globalTKData) {
-        var match = globalTKData.find(function(k) {
+        var match = globalTKData.find(function (k) {
           return k.region && k.region.toLowerCase() === s.region.toLowerCase();
         });
         if (match && match.cro) {
@@ -2372,9 +2382,11 @@
       document.getElementById("addTKJuniVal").value = "0";
       document.getElementById("addTKJuliVal").value = "0";
       document.getElementById("addTKAgustusVal").value = "0";
+      if (document.getElementById("addTKSeptVal")) document.getElementById("addTKSeptVal").value = "0";
       document.getElementById("addTargetJuliVal").value = "0";
       document.getElementById("addTargetAgsVal").value = "0";
       document.getElementById("addTargetSeptVal").value = "0";
+      if (document.getElementById("addTargetOktoberVal")) document.getElementById("addTargetOktoberVal").value = "0";
 
       var sheet = document.getElementById("addKebunSheet");
       var backdrop = document.getElementById("addKebunBackdrop");
@@ -2391,7 +2403,7 @@
 
     function saveAddKebunForm(e) {
       if (e && e.preventDefault) e.preventDefault();
-      
+
       var s = loadSession() || {};
       var regParam = s.region || 'ALL';
 
@@ -2404,9 +2416,11 @@
         tk_juni: parseInt(document.getElementById("addTKJuniVal").value, 10) || 0,
         tk_juli: parseInt(document.getElementById("addTKJuliVal").value, 10) || 0,
         tk_agustus: parseInt(document.getElementById("addTKAgustusVal").value, 10) || 0,
+        tk_september: document.getElementById("addTKSeptVal") ? parseInt(document.getElementById("addTKSeptVal").value, 10) || 0 : 0,
         target_juli: parseInt(document.getElementById("addTargetJuliVal").value, 10) || 0,
         target_agustus: parseInt(document.getElementById("addTargetAgsVal").value, 10) || 0,
-        target_september: parseInt(document.getElementById("addTargetSeptVal").value, 10) || 0
+        target_september: parseInt(document.getElementById("addTargetSeptVal").value, 10) || 0,
+        target_oktober: document.getElementById("addTargetOktoberVal") ? parseInt(document.getElementById("addTargetOktoberVal").value, 10) || 0 : 0
       };
 
       if (!payload.nama_kebun) {
@@ -2426,22 +2440,22 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-      .then(function (res) { return res.json(); })
-      .then(function (json) {
-        if (btn) btn.disabled = false;
-        if (json.success) {
-          closeAddKebunModal();
-          showReuiToast("Kebun berhasil ditambahkan!", "success");
-          loadTKPanenDataForSelectedRegion();
-        } else {
-          showReuiToast("Gagal menambahkan: " + json.message, "error");
-        }
-      })
-      .catch(function (err) {
-        if (btn) btn.disabled = false;
-        console.error(err);
-        showReuiToast("Terjadi kesalahan koneksi.", "error");
-      });
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (btn) btn.disabled = false;
+          if (json.success) {
+            closeAddKebunModal();
+            showReuiToast("Kebun berhasil ditambahkan!", "success");
+            loadTKPanenDataForSelectedRegion();
+          } else {
+            showReuiToast("Gagal menambahkan: " + json.message, "error");
+          }
+        })
+        .catch(function (err) {
+          if (btn) btn.disabled = false;
+          console.error(err);
+          showReuiToast("Terjadi kesalahan koneksi.", "error");
+        });
     }
 
     var activeEditingKebunData = null;
@@ -2463,16 +2477,20 @@
       var valJuni = editObj.tk_juni !== undefined ? editObj.tk_juni : (item.tk_juni || 0);
       var valJuli = editObj.tk_juli !== undefined ? editObj.tk_juli : (item.tk_juli || 0);
       var valAgsTK = editObj.tk_agustus !== undefined ? editObj.tk_agustus : (item.tk_agustus || 0);
+      var valSeptTK = editObj.tk_september !== undefined ? editObj.tk_september : (item.tk_september || 0);
       var targetJuli = editObj.target_juli !== undefined ? editObj.target_juli : (item.target_juli || 0);
       var targetAgs = editObj.target_agustus !== undefined ? editObj.target_agustus : (item.target_agustus || 0);
       var targetSept = editObj.target_september !== undefined ? editObj.target_september : (item.target_september || 0);
+      var targetOkt = editObj.target_oktober !== undefined ? editObj.target_oktober : (item.target_oktober || 0);
 
       document.getElementById("editTKJuniVal").value = valJuni;
       if (document.getElementById("editTKJuliVal")) document.getElementById("editTKJuliVal").value = valJuli;
       if (document.getElementById("editTKAgustusVal")) document.getElementById("editTKAgustusVal").value = valAgsTK;
+      if (document.getElementById("editTKSeptVal")) document.getElementById("editTKSeptVal").value = valSeptTK;
       document.getElementById("editTargetJuliVal").value = targetJuli;
       document.getElementById("editTargetAgsVal").value = targetAgs;
       if (document.getElementById("editTargetSeptVal")) document.getElementById("editTargetSeptVal").value = targetSept;
+      if (document.getElementById("editTargetOktoberVal")) document.getElementById("editTargetOktoberVal").value = targetOkt;
 
       var sheet = document.getElementById("editKebunSheet");
       var backdrop = document.getElementById("editKebunBackdrop");
@@ -2514,9 +2532,11 @@
       var vJuni = Math.max(0, parseFloat(document.getElementById("editTKJuniVal").value) || 0);
       var vJuli = document.getElementById("editTKJuliVal") ? Math.max(0, parseFloat(document.getElementById("editTKJuliVal").value) || 0) : 0;
       var vAgustus = document.getElementById("editTKAgustusVal") ? Math.max(0, parseFloat(document.getElementById("editTKAgustusVal").value) || 0) : 0;
+      var vSeptember = document.getElementById("editTKSeptVal") ? Math.max(0, parseFloat(document.getElementById("editTKSeptVal").value) || 0) : 0;
       var vTarJuli = Math.max(0, parseFloat(document.getElementById("editTargetJuliVal").value) || 0);
       var vTarAgs = Math.max(0, parseFloat(document.getElementById("editTargetAgsVal").value) || 0);
       var vTarSept = document.getElementById("editTargetSeptVal") ? Math.max(0, parseFloat(document.getElementById("editTargetSeptVal").value) || 0) : 0;
+      var vTarOkt = document.getElementById("editTargetOktoberVal") ? Math.max(0, parseFloat(document.getElementById("editTargetOktoberVal").value) || 0) : 0;
 
       if (!globalTKEdits[id]) globalTKEdits[id] = {};
       globalTKEdits[id].req_tk = vReqTK;
@@ -2524,9 +2544,11 @@
       globalTKEdits[id].tk_juni = vJuni;
       globalTKEdits[id].tk_juli = vJuli;
       globalTKEdits[id].tk_agustus = vAgustus;
+      globalTKEdits[id].tk_september = vSeptember;
       globalTKEdits[id].target_juli = vTarJuli;
       globalTKEdits[id].target_agustus = vTarAgs;
       globalTKEdits[id].target_september = vTarSept;
+      globalTKEdits[id].target_oktober = vTarOkt;
 
       // Update memory state so table re-renders instantly
       activeEditingKebunData.req_tk = vReqTK;
@@ -2534,9 +2556,11 @@
       activeEditingKebunData.tk_juni = vJuni;
       activeEditingKebunData.tk_juli = vJuli;
       activeEditingKebunData.tk_agustus = vAgustus;
+      activeEditingKebunData.tk_september = vSeptember;
       activeEditingKebunData.target_juli = vTarJuli;
       activeEditingKebunData.target_agustus = vTarAgs;
       activeEditingKebunData.target_september = vTarSept;
+      activeEditingKebunData.target_oktober = vTarOkt;
 
       var item = (globalTKData || []).find(function (k) { return k.id === id; });
       if (item) {
@@ -2545,9 +2569,11 @@
         item.tk_juni = vJuni;
         item.tk_juli = vJuli;
         item.tk_agustus = vAgustus;
+        item.tk_september = vSeptember;
         item.target_juli = vTarJuli;
         item.target_agustus = vTarAgs;
         item.target_september = vTarSept;
+        item.target_oktober = vTarOkt;
       }
 
       closeEditKebunModal();
@@ -2566,10 +2592,10 @@
       if (globalTKData && globalTKData.length > 0) {
         var search = document.getElementById("tkSearchInput") ? document.getElementById("tkSearchInput").value.toLowerCase() : "";
         var filtered = globalTKData.filter(function (item) {
-          var text = (item.nama_kebun || "").toLowerCase() + 
-                     (item.region || "").toLowerCase() + 
-                     (item.cro || "").toLowerCase() + 
-                     (item.name_tag || "").toLowerCase();
+          var text = (item.nama_kebun || "").toLowerCase() +
+            (item.region || "").toLowerCase() +
+            (item.cro || "").toLowerCase() +
+            (item.name_tag || "").toLowerCase();
           return text.indexOf(search) > -1;
         });
         renderTKPanenTable(filtered, currentSummaryData);
@@ -3302,10 +3328,17 @@
                 <input type="text" id="tkSearchInput" onkeyup="filterTKPanenTable()"
                   placeholder="Cari kebun, tag kebun, atau regional..."
                   class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-                <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none"
+                  stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
               </div>
-              <button onclick="openAddKebunModal()" class="px-4 py-2 bg-slate-900 dark:bg-slate-750 hover:bg-slate-800 dark:hover:bg-slate-650 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 whitespace-nowrap">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+              <button onclick="openAddKebunModal()"
+                class="px-4 py-2 bg-slate-900 dark:bg-slate-750 hover:bg-slate-800 dark:hover:bg-slate-650 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 whitespace-nowrap">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
                 <span>Tambah Kebun</span>
               </button>
             </div>
@@ -3345,11 +3378,11 @@
                         class="py-3.5 px-2 text-center font-black whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">
                         Kebutuhan<br>Tenaga Panen</th>
                       <!-- Grouped: Ketersedian TK PANEN -->
-                      <th colspan="7"
+                      <th colspan="9"
                         class="py-2.5 px-2 text-center font-black whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black">
                         Ketersedian TK PANEN</th>
                       <!-- Grouped: Rencana Pemenuhan TK Panen -->
-                      <th colspan="3"
+                      <th colspan="4"
                         class="py-2.5 px-2 text-center font-black whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black">
                         Rencana Pemenuhan TK Panen</th>
                       <th rowspan="2"
@@ -3381,6 +3414,12 @@
                         TREND</th>
                       <th
                         class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">
+                        SEPTEMBER</th>
+                      <th
+                        class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#162d4a] dark:bg-[#0f2440] border-r border-b border-black text-emerald-300 font-extrabold">
+                        TREND</th>
+                      <th
+                        class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">
                         JULI</th>
                       <th
                         class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">
@@ -3388,6 +3427,9 @@
                       <th
                         class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">
                         SEPTEMBER</th>
+                      <th
+                        class="py-2.5 px-2 text-center font-bold whitespace-nowrap bg-[#1e3a5f] dark:bg-[#15304f] border-r border-b border-black">
+                        OKTOBER</th>
                     </tr>
                   </thead>
                   <tbody id="tkPanenTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
@@ -4147,16 +4189,16 @@
       if (typeof myChart !== 'undefined' && myChart) {
         if (myChart.config && myChart.config.options && myChart.config.options.scales) {
           if (myChart.config.options.scales.y && myChart.config.options.scales.y.ticks) {
-             myChart.config.options.scales.y.ticks.color = textColor;
+            myChart.config.options.scales.y.ticks.color = textColor;
           }
           if (myChart.config.options.scales.y && myChart.config.options.scales.y.grid) {
-             myChart.config.options.scales.y.grid.color = gridColor;
+            myChart.config.options.scales.y.grid.color = gridColor;
           }
           if (myChart.config.options.scales.x && myChart.config.options.scales.x.ticks) {
-             myChart.config.options.scales.x.ticks.color = textColor;
+            myChart.config.options.scales.x.ticks.color = textColor;
           }
           if (myChart.config.options.scales.x && myChart.config.options.scales.x.grid) {
-             myChart.config.options.scales.x.grid.color = gridColor;
+            myChart.config.options.scales.x.grid.color = gridColor;
           }
         }
         myChart.update();
@@ -4169,19 +4211,19 @@
       if (typeof dailyNationalChart !== 'undefined' && dailyNationalChart) {
         var dailyTextColor = theme === "dark" ? "#ffffff" : "#000000";
         var dailyGridColor = theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)";
-        
+
         if (dailyNationalChart.config && dailyNationalChart.config.options && dailyNationalChart.config.options.scales) {
           if (dailyNationalChart.config.options.scales.x && dailyNationalChart.config.options.scales.x.ticks) {
-             dailyNationalChart.config.options.scales.x.ticks.color = dailyTextColor;
+            dailyNationalChart.config.options.scales.x.ticks.color = dailyTextColor;
           }
           if (dailyNationalChart.config.options.scales.y && dailyNationalChart.config.options.scales.y.grid) {
-             dailyNationalChart.config.options.scales.y.grid.color = dailyGridColor;
+            dailyNationalChart.config.options.scales.y.grid.color = dailyGridColor;
           }
           if (dailyNationalChart.config.options.scales.y && dailyNationalChart.config.options.scales.y.ticks) {
-             dailyNationalChart.config.options.scales.y.ticks.color = dailyTextColor;
+            dailyNationalChart.config.options.scales.y.ticks.color = dailyTextColor;
           }
         }
-        
+
         dailyNationalChart.update();
       }
     }
@@ -5225,19 +5267,19 @@
       document.getElementById("sapIframe").src = "";
       document.getElementById("loginSection").style.display = "flex";
       document.getElementById("loginPassword").value = "";
-       var statusEl = document.getElementById("status");
-       if (statusEl) statusEl.textContent = "";
-       var statusEstEl = document.getElementById("statusEstimasi");
-       if (statusEstEl) statusEstEl.textContent = "";
-       var dispRegionTextEl = document.getElementById("displayRegionText");
-       if (dispRegionTextEl) {
-         dispRegionTextEl.textContent = "";
-         dispRegionTextEl.style.display = "block";
-       }
-       var sessionInfoEl = document.getElementById("sessionInfo");
-       if (sessionInfoEl) sessionInfoEl.textContent = "";
-       var loginErrorEl = document.getElementById("loginError");
-       if (loginErrorEl) loginErrorEl.style.display = "none";
+      var statusEl = document.getElementById("status");
+      if (statusEl) statusEl.textContent = "";
+      var statusEstEl = document.getElementById("statusEstimasi");
+      if (statusEstEl) statusEstEl.textContent = "";
+      var dispRegionTextEl = document.getElementById("displayRegionText");
+      if (dispRegionTextEl) {
+        dispRegionTextEl.textContent = "";
+        dispRegionTextEl.style.display = "block";
+      }
+      var sessionInfoEl = document.getElementById("sessionInfo");
+      if (sessionInfoEl) sessionInfoEl.textContent = "";
+      var loginErrorEl = document.getElementById("loginError");
+      if (loginErrorEl) loginErrorEl.style.display = "none";
 
       var adminContainer = document.getElementById("adminRegionSelectContainer");
       if (adminContainer) adminContainer.style.display = "none";
@@ -7178,6 +7220,15 @@
               placeholder="Masukkan ketersediaan Agustus..." />
           </div>
 
+          <!-- Ketersediaan TK Panen September -->
+          <div>
+            <label class="block text-[11px] font-extrabold text-blue-900 dark:text-blue-300 mb-1">Ketersediaan TK Panen
+              September</label>
+            <input type="number" min="0" id="editTKSeptVal"
+              class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-xs"
+              placeholder="Masukkan ketersediaan September..." />
+          </div>
+
           <!-- Rencana Pemenuhan TK Panen Juli -->
           <div>
             <label class="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">Rencana
@@ -7203,6 +7254,15 @@
             <input type="number" min="0" id="editTargetSeptVal"
               class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 shadow-xs"
               placeholder="Masukkan rencana September..." />
+          </div>
+
+          <!-- Rencana Pemenuhan TK Panen Oktober -->
+          <div>
+            <label class="block text-[11px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-1">Rencana
+              Pemenuhan TK Panen Oktober</label>
+            <input type="number" min="0" id="editTargetOktoberVal"
+              class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 shadow-xs"
+              placeholder="Masukkan rencana Oktober..." />
           </div>
         </div>
       </form>
@@ -7249,7 +7309,8 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">CRO</label>
-            <select id="addCro" class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
+            <select id="addCro"
+              class="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
               <option value="CRO 1">CRO 1</option>
               <option value="CRO 2">CRO 2</option>
               <option value="CRO 3">CRO 3</option>
@@ -7283,44 +7344,60 @@
           </div>
         </div>
 
-        <div class="p-4 bg-slate-50 dark:bg-[#1E1E1E]/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3 shadow-xs">
+        <div
+          class="p-4 bg-slate-50 dark:bg-[#1E1E1E]/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3 shadow-xs">
           <div class="flex items-center justify-between pb-1 border-b border-slate-200 dark:border-slate-700">
-            <span class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">📊 Data TK Awal</span>
+            <span class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">📊 Data TK
+              Awal</span>
           </div>
 
-          <div class="grid grid-cols-3 gap-2">
+          <div class="grid grid-cols-4 gap-2">
             <div>
-              <label class="block text-[10px] font-extrabold text-blue-900 dark:text-blue-300 mb-0.5">TK Juni</label>
+              <label class="block text-[10px] font-extrabold text-blue-900 dark:text-blue-300 mb-0.5">TK Jun</label>
               <input type="number" min="0" id="addTKJuniVal" value="0"
-                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+                class="w-full px-2 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
             </div>
             <div>
-              <label class="block text-[10px] font-extrabold text-blue-900 dark:text-blue-300 mb-0.5">TK Juli</label>
+              <label class="block text-[10px] font-extrabold text-blue-900 dark:text-blue-300 mb-0.5">TK Jul</label>
               <input type="number" min="0" id="addTKJuliVal" value="0"
-                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+                class="w-full px-2 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
             </div>
             <div>
               <label class="block text-[10px] font-extrabold text-blue-900 dark:text-blue-300 mb-0.5">TK Ags</label>
               <input type="number" min="0" id="addTKAgustusVal" value="0"
-                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+                class="w-full px-2 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-extrabold text-blue-900 dark:text-blue-300 mb-0.5">TK Sep</label>
+              <input type="number" min="0" id="addTKSeptVal" value="0"
+                class="w-full px-2 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-2">
+          <div class="grid grid-cols-4 gap-2">
             <div>
-              <label class="block text-[10px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-0.5">Rencana Jul</label>
+              <label class="block text-[10px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-0.5">Rencana
+                Jul</label>
               <input type="number" min="0" id="addTargetJuliVal" value="0"
-                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+                class="w-full px-2 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
             </div>
             <div>
-              <label class="block text-[10px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-0.5">Rencana Ags</label>
+              <label class="block text-[10px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-0.5">Rencana
+                Ags</label>
               <input type="number" min="0" id="addTargetAgsVal" value="0"
-                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+                class="w-full px-2 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
             </div>
             <div>
-              <label class="block text-[10px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-0.5">Rencana Sep</label>
+              <label class="block text-[10px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-0.5">Rencana
+                Sep</label>
               <input type="number" min="0" id="addTargetSeptVal" value="0"
-                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+                class="w-full px-2 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-extrabold text-emerald-900 dark:text-emerald-300 mb-0.5">Rencana
+                Okt</label>
+              <input type="number" min="0" id="addTargetOktoberVal" value="0"
+                class="w-full px-2 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-black" />
             </div>
           </div>
         </div>
@@ -7420,20 +7497,30 @@
   </div>
 
   <!-- shadcn UI styled Confirm Dialog -->
-  <div id="reuiConfirmBackdrop" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-[100] hidden transition-opacity"></div>
-  <div id="reuiConfirmDialog" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-800 z-[101] hidden rounded-2xl shadow-2xl p-6 space-y-4">
+  <div id="reuiConfirmBackdrop"
+    class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-[100] hidden transition-opacity"></div>
+  <div id="reuiConfirmDialog"
+    class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-slate-800 z-[101] hidden rounded-2xl shadow-2xl p-6 space-y-4">
     <div class="flex items-start gap-3">
-      <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-450 flex items-center justify-center flex-shrink-0">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      <div
+        class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-450 flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+          </path>
+        </svg>
       </div>
       <div>
         <h4 class="text-sm font-bold text-slate-900 dark:text-white" id="reuiConfirmTitle">Hapus Kebun</h4>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="reuiConfirmDesc">Apakah Anda yakin ingin menghapus kebun ini?</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="reuiConfirmDesc">Apakah Anda yakin ingin
+          menghapus kebun ini?</p>
       </div>
     </div>
     <div class="flex items-center justify-end gap-2 pt-2">
-      <button id="reuiConfirmCancelBtn" class="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Batal</button>
-      <button id="reuiConfirmOkBtn" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-md">Hapus</button>
+      <button id="reuiConfirmCancelBtn"
+        class="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Batal</button>
+      <button id="reuiConfirmOkBtn"
+        class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-md">Hapus</button>
     </div>
   </div>
 
@@ -7441,4 +7528,5 @@
   <div id="reuiToastContainer" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
 
 </body>
+
 </html>
