@@ -96,7 +96,7 @@ module.exports = async (req, res) => {
         });
 
         // Save locally (for demo purposes)
-        const fileName = \`SPK_\${vendor.nama_vendor.replace(/\\s+/g, '_')}_\${Date.now()}.docx\`;
+        const fileName = `SPK_${vendor.nama_vendor.replace(/\s+/g, '_')}_${Date.now()}.docx`;
         const docsDir = path.join(__dirname, '..', 'public', 'docs');
         
         // Ensure directory exists
@@ -107,7 +107,7 @@ module.exports = async (req, res) => {
         const filePath = path.join(docsDir, fileName);
         fs.writeFileSync(filePath, fileBuffer);
 
-        const fileUrl = \`/docs/\${fileName}\`; // Local URL
+        const fileUrl = `/docs/${fileName}`; // Local URL
 
         // Update database with the link
         const { data: updateData, error: updateErr } = await supabase
