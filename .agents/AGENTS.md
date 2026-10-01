@@ -13,3 +13,10 @@
    - Rencana Jul, Rencana Ags, Rencana Sep, **Rencana Okt**.
 4. **Synchronized Persistence:** Ensure both `addKebun` and `updateTK` handlers in `api/kebunTK.js` and all modal forms (Edit Kebun & Tambah Kebun) read, validate, and save `tk_september` and `target_oktober`.
 
+### Region Naming & Aggregation Harmonization Rule
+**When displaying, grouping, or filtering regional data for TK Panen in `laporan_produksi.html`, `login.html`, and backend APIs:**
+1. **Standard Region Label:** Always use **`Sumut 2`** as the official region name for all 10 Sumut 2 gardens (including `Bukit Harapan I`).
+2. **Modal Aggregation Grouping:** Normalize any incoming region name containing `"Sumatera Utara 2"` or `"Torganda"` to **`Sumut 2`** so that all Sumut 2 gardens aggregate into a single unified row under **CRO I** in `MonitorTKModal`.
+3. **Authentication Mapping:** Maintain `'Sumut 2': 'ROSUMUT2'` in `LOCAL_REGIONS_MAP` (`api/auth.js`) for seamless login authentication.
+
+
