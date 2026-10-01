@@ -8,6 +8,7 @@ const RATE_LIMIT_WIN_MS = 10 * 60 * 1000; // 10 menit
 const LOCAL_REGIONS_MAP = {
   'Aceh': 'ROACEH',
   'Sumatera Utara 1': 'ROSUMUT1',
+  'Sumut 2': 'ROSUMUT2',
   'Sumatera Utara 2 Ex Torganda': 'ROSUMUT2',
   'Riau 1': 'RORiau1',
   'Riau 2': 'RORiau2',

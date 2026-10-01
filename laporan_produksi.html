@@ -521,7 +521,7 @@
     // CRO → Regional mapping (dari admin.html)
     const CRO_MAP = {
       'Semua CRO': null,
-      'CRO I   — Aceh, Sumut 1, Sumut 2': ['Aceh', 'Sumatera Utara 1', 'Sumatera Utara 2 Ex Torganda'],
+      'CRO I   — Aceh, Sumut 1, Sumut 2': ['Aceh', 'Sumatera Utara 1', 'Sumut 2'],
       'CRO II  — Riau 1': ['Riau 1'],
       'CRO III — Riau 2, Riau 3': ['Riau 2', 'Riau 3'],
       'CRO IV  — Riau 4': ['Riau 4'],
@@ -534,7 +534,7 @@
     };
 
     const ALL_REGIONS = [
-      'Aceh', 'Sumatera Utara 1', 'Sumatera Utara 2 Ex Torganda',
+      'Aceh', 'Sumatera Utara 1', 'Sumut 2',
       'Riau 1', 'Riau 2', 'Riau 3', 'Riau 4',
       'Bangka Belitung', 'Jambi', 'Sumatera Barat', 'Sumatera Selatan',
       'Kalimantan Barat 1A', 'Kalimantan Barat 1B', 'Kalimantan Barat 2',
@@ -547,7 +547,7 @@
     // Lengkap data per-regional (mock) — untuk filtering chart
     const REGIONAL_DETAIL = [
       { region: 'Kalimantan Tengah 1', shortLabel: 'Kalteng 1', estimasi: 900, realisasi: 848, restan: 1247.0, tonase: 847.5, color: '#16a34a' },
-      { region: 'Sumatera Utara 2 Ex Torganda', shortLabel: 'Sumut 2', estimasi: 900, realisasi: 721, restan: 312.0, tonase: 721.3, color: '#2563eb' },
+      { region: 'Sumut 2', shortLabel: 'Sumut 2', estimasi: 900, realisasi: 721, restan: 312.0, tonase: 721.3, color: '#2563eb' },
       { region: 'Kalimantan Barat 1A', shortLabel: 'Kalbar 1A', estimasi: 450, realisasi: 306, restan: 359.1, tonase: 306.4, color: '#d97706' },
       { region: 'Kalimantan Barat 1B', shortLabel: 'Kalbar 1B', estimasi: 450, realisasi: 307, restan: 359.2, tonase: 306.4, color: '#fbbf24' },
       { region: 'Riau 2', shortLabel: 'Riau 2', estimasi: 600, realisasi: 534, restan: 198.0, tonase: 534.0, color: '#7c3aed' },
@@ -2050,8 +2050,9 @@
 
     const REGION_ALIASES = {
       'sumut 1': 'Sumatera Utara 1',
-      'sumut 2': 'Sumatera Utara 2 Ex Torganda',
-      'sumut 2 ex torganda': 'Sumatera Utara 2 Ex Torganda',
+      'sumut 2': 'Sumut 2',
+      'sumut 2 ex torganda': 'Sumut 2',
+      'sumatera utara 2 ex torganda': 'Sumut 2',
       'kalbar 1a': 'Kalimantan Barat 1A', 'kalbar 1b': 'Kalimantan Barat 1B', 'kalbar 1': 'Kalimantan Barat 1A',
       'kalbar 1 ex duta palma': 'Kalimantan Barat 1A',
       'kalbar 2': 'Kalimantan Barat 2',
@@ -4189,9 +4190,13 @@
       // Grouping data
       const grouped = {};
       (kebunData || []).forEach(item => {
-        const region = item.region || '-';
+        let region = item.region || '-';
         if (region.toLowerCase() === 'papua selatan') return;
-        const cro = item.cro || '-';
+        if (region === 'Sumatera Utara 2 Ex Torganda' || region === 'Sumut 2 Ex Torganda') {
+          region = 'Sumut 2';
+        }
+        let cro = item.cro || '-';
+        if (cro === 'CRO 1') cro = 'CRO I';
         const key = `${cro}_${region}`;
         if (!grouped[key]) {
           grouped[key] = {

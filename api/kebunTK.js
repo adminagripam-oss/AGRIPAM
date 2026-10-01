@@ -83,9 +83,14 @@ module.exports = async (req, res) => {
 
       kebunList = supaData.map(k => {
         const fb = jsonLookup[k.id] || {};
+        let regName = k.region || fb.region || '';
+        if (regName === 'Sumatera Utara 2 Ex Torganda' || regName === 'Sumut 2 Ex Torganda') {
+          regName = 'Sumut 2';
+        }
         return {
           ...fb,
           ...k,
+          region: regName,
           tk_juli: k.tk_juli !== undefined && k.tk_juli !== null ? k.tk_juli : (fb.tk_juli || 0),
           tk_agustus: k.tk_agustus !== undefined && k.tk_agustus !== null ? k.tk_agustus : (fb.tk_agustus || 0),
           target_september: k.target_september !== undefined && k.target_september !== null ? k.target_september : (fb.target_september || 0)
