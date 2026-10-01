@@ -126,10 +126,10 @@ module.exports = async (req, res) => {
       return 0;
     });
 
-    // Hardcode to Agustus as requested
-    const targetMonthStr = "agustus";
-    const tkField = "tk_agustus";
-    const cutOffLabel = "Agustus";
+    // Default Cut-off month set to September
+    const targetMonthStr = "september";
+    const tkField = "tk_september";
+    const cutOffLabel = "September";
 
     // Calculate summary statistics
     const totalLuas = result.reduce((sum, item) => sum + (parseFloat(item.luasan) || 0), 0);
@@ -197,11 +197,17 @@ module.exports = async (req, res) => {
           if (edit.target_september !== undefined && edit.target_september !== null) {
             item.target_september = Math.max(0, parseFloat(edit.target_september) || 0);
           }
+          if (edit.target_oktober !== undefined && edit.target_oktober !== null) {
+            item.target_oktober = Math.max(0, parseFloat(edit.target_oktober) || 0);
+          }
           if (edit.tk_juli !== undefined && edit.tk_juli !== null) {
             item.tk_juli = Math.max(0, parseFloat(edit.tk_juli) || 0);
           }
           if (edit.tk_agustus !== undefined && edit.tk_agustus !== null) {
             item.tk_agustus = Math.max(0, parseFloat(edit.tk_agustus) || 0);
+          }
+          if (edit.tk_september !== undefined && edit.tk_september !== null) {
+            item.tk_september = Math.max(0, parseFloat(edit.tk_september) || 0);
           }
           item.updated_by = regionParam;
           item.updated_at = nowIso;
@@ -216,8 +222,10 @@ module.exports = async (req, res) => {
               target_juli: item.target_juli,
               target_agustus: item.target_agustus,
               target_september: item.target_september,
+              target_oktober: item.target_oktober,
               tk_juli: item.tk_juli,
               tk_agustus: item.tk_agustus,
+              tk_september: item.tk_september,
               updated_by: regionParam,
               updated_at: nowIso
             };
@@ -357,8 +365,10 @@ module.exports = async (req, res) => {
       target_juli: parseInt(p.target_juli, 10) || 0,
       target_agustus: parseInt(p.target_agustus, 10) || 0,
       target_september: parseInt(p.target_september, 10) || 0,
+      target_oktober: parseInt(p.target_oktober, 10) || 0,
       tk_juli: parseInt(p.tk_juli, 10) || 0,
       tk_agustus: parseInt(p.tk_agustus, 10) || 0,
+      tk_september: parseInt(p.tk_september, 10) || 0,
       updated_by: regionParam,
       updated_at: new Date().toISOString(),
       created_at: new Date().toISOString()

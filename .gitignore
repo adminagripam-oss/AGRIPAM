@@ -18,3 +18,11 @@ Thumbs.db
 
 # Nested/duplicate repo — jangan ikut ke-commit
 /AGRIPAM/
+
+# Scratch & temporary test scripts
+scratch/
+kebun_test.json
+check_supa.js
+test_edit.js
+test_update.js
+
