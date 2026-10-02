@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
     // GET: Fetch Data
     if (req.method === 'GET') {
       let query = supabase.from('vendor_monitoring').select('*').order('created_at', { ascending: false });
-      
+
       // Role-based access control: CROs only see their own regional data
       if (!isAdmin) {
         query = query.eq('regional', region);
@@ -45,14 +45,14 @@ module.exports = async (req, res) => {
       // 1. Mail Merge / Generate SPK
       if (action === 'generate-spk') {
         const { vendorId } = req.body;
-        
+
         // Fetch the row
         const { data: vendor, error: fetchErr } = await supabase
           .from('vendor_monitoring')
           .select('*')
           .eq('id', vendorId)
           .single();
-          
+
         if (fetchErr) throw fetchErr;
 
         // Create HTML Template for the document
@@ -98,10 +98,10 @@ module.exports = async (req, res) => {
         // Save locally (for demo purposes)
         const fileName = `SPK_${vendor.nama_vendor.replace(/\s+/g, '_')}_${Date.now()}.docx`;
         const docsDir = path.join(__dirname, '..', 'public', 'docs');
-        
+
         // Ensure directory exists
-        if (!fs.existsSync(docsDir)){
-            fs.mkdirSync(docsDir, { recursive: true });
+        if (!fs.existsSync(docsDir)) {
+          fs.mkdirSync(docsDir, { recursive: true });
         }
 
         const filePath = path.join(docsDir, fileName);
@@ -112,8 +112,8 @@ module.exports = async (req, res) => {
         // Update database with the link
         const { data: updateData, error: updateErr } = await supabase
           .from('vendor_monitoring')
-          .update({ 
-            link_surat_spk: fileUrl, 
+          .update({
+            link_surat_spk: fileUrl,
             status: 'Penerbitan SPK',
             tanggal_update_status: new Date().toISOString().split('T')[0],
             tanggal_penugasan: new Date().toISOString().split('T')[0],
@@ -125,9 +125,9 @@ module.exports = async (req, res) => {
 
         if (updateErr) throw updateErr;
 
-        return res.json({ 
-          success: true, 
-          message: 'Surat Penugasan berhasil dibuat', 
+        return res.json({
+          success: true,
+          message: 'Surat Penugasan berhasil dibuat',
           fileUrl: fileUrl,
           data: updateData
         });
@@ -138,9 +138,9 @@ module.exports = async (req, res) => {
         const { record } = req.body;
         // CRO can only create for their own region unless Admin
         if (!isAdmin && record.regional !== region) {
-           return res.status(403).json({ success: false, message: 'Cannot create record for another region' });
+          return res.status(403).json({ success: false, message: 'Cannot create record for another region' });
         }
-        
+
         const { data, error } = await supabase
           .from('vendor_monitoring')
           .insert(record)
@@ -155,7 +155,7 @@ module.exports = async (req, res) => {
       if (action === 'update') {
         const { id, updates } = req.body;
         updates.updated_at = new Date().toISOString();
-        
+
         const { data, error } = await supabase
           .from('vendor_monitoring')
           .update(updates)

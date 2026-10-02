@@ -93,7 +93,9 @@ module.exports = async (req, res) => {
           region: regName,
           tk_juli: k.tk_juli !== undefined && k.tk_juli !== null ? k.tk_juli : (fb.tk_juli || 0),
           tk_agustus: k.tk_agustus !== undefined && k.tk_agustus !== null ? k.tk_agustus : (fb.tk_agustus || 0),
-          target_september: k.target_september !== undefined && k.target_september !== null ? k.target_september : (fb.target_september || 0)
+          target_september: k.target_september !== undefined && k.target_september !== null ? k.target_september : (fb.target_september || 0),
+          tk_september: k.tk_september !== undefined && k.tk_september !== null ? k.tk_september : (fb.tk_september || 0),
+          target_oktober: k.target_oktober !== undefined && k.target_oktober !== null ? k.target_oktober : (fb.target_oktober || 0)
         };
       });
     }
@@ -237,13 +239,16 @@ module.exports = async (req, res) => {
             const { error: sbErr } = await supabase.from('data_kebun_tk').update(fullPayload).eq('id', targetId);
             if (sbErr) {
               console.error(`[kebunTK] Supabase update fullPayload failed for id=${targetId}:`, sbErr.message, sbErr.details);
-              // Fallback: only update fields that are known to exist
+              // Fallback: update all known fields (now including September/Oktober so they aren't lost)
               const safePayload = {
                 req_tk: item.req_tk,
                 luasan: item.luasan,
                 tk_juni: item.tk_juni,
                 target_juli: item.target_juli,
                 target_agustus: item.target_agustus,
+                target_september: item.target_september,
+                target_oktober: item.target_oktober,
+                tk_september: item.tk_september,
                 updated_by: regionParam,
                 updated_at: nowIso
               };

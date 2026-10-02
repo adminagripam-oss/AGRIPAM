@@ -693,12 +693,10 @@ window.renderReuiRevisionAlert = function (status, dateStr, onActionCallbackName
   return '';
 };
 
-// ==========================================
-// AGRIPAM System Update Announcement Pop-up (REUI Style Pattern)
-// ==========================================
+// System update announcement modal (REUI style pattern)
 window.showAgripamUpdateAnnouncement = function (force) {
   if (!force && sessionStorage.getItem('agripam_update_shown') === 'true') {
-    return; // Sudah pernah tampil di sesi ini, abaikan saat F5 / Refresh
+    return;
   }
 
   let container = document.getElementById('agripam-update-announcement');
@@ -706,41 +704,94 @@ window.showAgripamUpdateAnnouncement = function (force) {
 
   container = document.createElement('div');
   container.id = 'agripam-update-announcement';
-  container.className = 'fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 backdrop-blur-md p-4 transition-all duration-300';
+  container.className = 'fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 transition-all duration-300 animate-in fade-in duration-200';
   
   container.innerHTML = `
-    <div class="relative max-w-2xl w-full rounded-2xl border border-slate-200 bg-white p-7 text-left shadow-2xl dark:border-slate-800 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans overflow-hidden animate-in zoom-in-95 duration-200">
-      <div class="flex items-start gap-4">
-        <!-- ShieldCheckIcon (Enlarged) -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-9 w-9 text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+    <div class="relative max-w-[520px] w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 text-left shadow-2xl text-slate-900 dark:text-slate-50 font-sans overflow-hidden animate-in zoom-in-95 duration-200">
+      <!-- Close X Button -->
+      <button id="btn-x-agripam-update" type="button" aria-label="Tutup" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+
+      <div class="flex items-start gap-3.5 mb-4 pr-6">
+        <!-- 40x40 Warning Icon Badge -->
+        <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
         
-        <div class="flex-1 min-w-0">
-          <!-- AlertTitle -->
-          <h4 class="font-bold leading-none tracking-tight text-slate-900 dark:text-slate-100 text-xl mb-2.5">Agripam Update</h4>
-          
-          <!-- AlertDescription -->
-          <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
-            Pada tiap tiap Regional bisa mengisi TK Panen pada bulan masing masing.
-          </div>
+        <div class="flex-1 min-w-0 pt-0.5">
+          <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100/80 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 mb-1">
+            Pemberitahuan Sistem
+          </span>
+          <h4 class="font-bold tracking-tight text-slate-900 dark:text-slate-100 text-lg leading-snug">
+            Agripam Update: Pengisian Ulang Data
+          </h4>
         </div>
       </div>
 
-      <!-- 5s Progress Bar -->
-      <div class="shadcn-alert-progress" style="animation-duration: 5s;"></div>
+      <div class="border-t border-slate-100 dark:border-slate-800/60 pt-4 space-y-3.5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
+        <p>Yth. Bapak/Ibu Admin & Pengelola Data Regional,</p>
+        <p>
+          Tim pengembang Agripam menyampaikan <strong class="font-bold text-slate-900 dark:text-slate-100">permohonan maaf</strong> atas kendala teknis pada server database yang menyebabkan data <strong class="font-bold text-slate-900 dark:text-slate-100">Ketersediaan TK Panen (September)</strong> dan <strong class="font-bold text-slate-900 dark:text-slate-100">Rencana Pemenuhan TK Panen (Oktober)</strong> sebelumnya belum tersimpan secara permanen.
+        </p>
+
+        <div class="p-4 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 rounded-xl text-xs sm:text-sm text-slate-700 dark:text-slate-300">
+          <div class="font-semibold text-slate-900 dark:text-slate-100 mb-1 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+            <span>Tindakan yang perlu dilakukan</span>
+          </div>
+          <div>
+            Sistem dan struktur database telah diperbaiki. Mohon lakukan <strong class="font-semibold text-amber-950 dark:text-amber-200">pengisian ulang data TK Panen bulan September & Oktober</strong> pada tabel laporan produksi.
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-500 dark:text-slate-400 leading-normal">
+          Data yang diinput mulai saat ini dipastikan tersimpan secara aman dan permanen. Terima kasih atas pengertian dan kerja sama Bapak/Ibu.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800/60 mt-5">
+        <button id="btn-later-agripam-update" type="button" class="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-sm rounded-xl transition-colors cursor-pointer">
+          Ingatkan Nanti
+        </button>
+        <button id="btn-close-agripam-update" type="button" class="px-4 py-2 bg-[#C9821F] hover:bg-[#b57319] active:bg-[#a16413] text-white font-medium text-sm rounded-xl shadow-sm transition-colors flex items-center gap-2 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Saya Mengerti & Siap Mengisi</span>
+        </button>
+      </div>
     </div>
   `;
 
   document.body.appendChild(container);
-  sessionStorage.setItem('agripam_update_shown', 'true');
 
-  setTimeout(function () {
-    if (container && container.parentNode) {
-      container.classList.add('opacity-0', 'transition-all', 'duration-300');
-      setTimeout(function () {
-        if (container && container.parentNode) container.remove();
-      }, 300);
+  const dismissModal = (markAsRead = false) => {
+    if (markAsRead) {
+      sessionStorage.setItem('agripam_update_shown', 'true');
     }
-  }, 5000);
+    container.classList.add('opacity-0', 'transition-all', 'duration-300');
+    setTimeout(() => {
+      if (container && container.parentNode) container.remove();
+    }, 300);
+  };
+
+  const closeBtn = document.getElementById('btn-close-agripam-update');
+  if (closeBtn) closeBtn.addEventListener('click', () => dismissModal(true));
+
+  const xBtn = document.getElementById('btn-x-agripam-update');
+  if (xBtn) xBtn.addEventListener('click', () => dismissModal(false));
+
+  const laterBtn = document.getElementById('btn-later-agripam-update');
+  if (laterBtn) laterBtn.addEventListener('click', () => dismissModal(false));
 };
 
 document.addEventListener("DOMContentLoaded", function () {
