@@ -46,3 +46,10 @@
    - Update the `TK Panen Data Structure & KPI Cut-Off Rule` Sub-Columns lists to include the new column.
    - Update the `Synchronized Persistence` item with the new field name.
 
+### Backend-First Verification & Silent Fallback Prohibition Rule
+**To prevent catastrophic data loss caused by unmigrated database schemas, AI agents and developers MUST:**
+1. **Verify Database Schema First (Backend-First):** Never create UI input fields, table columns, or API endpoints that accept new data attributes without FIRST verifying that the underlying database table (Supabase/PostgreSQL) has the corresponding column.
+2. **No Silent Local JSON Fallback in Production:** Local JSON files (such as `data_kebun_tk.json`) MUST only be treated as read-only fallbacks when offline. New data writes MUST fail loud or alert the developer if the Supabase column is missing, rather than silently saving only to transient local storage.
+3. **Mandatory Migration Check Point:** Every pull request or feature deployment involving data schema changes MUST include a verified SQL migration script (`.sql`) and explicit confirmation that the SQL script has been executed against the production Supabase project before announcing feature completion.
+
+
