@@ -19,4 +19,30 @@
 2. **Modal Aggregation Grouping:** Normalize any incoming region name containing `"Sumatera Utara 2"` or `"Torganda"` to **`Sumut 2`** so that all Sumut 2 gardens aggregate into a single unified row under **CRO I** in `MonitorTKModal`.
 3. **Authentication Mapping:** Maintain `'Sumut 2': 'ROSUMUT2'` in `LOCAL_REGIONS_MAP` (`api/auth.js`) for seamless login authentication.
 
+### TK Panen New Month Column Expansion Rule
+**When adding a new monthly column to the TK Panen feature (e.g., Oktober, November, or any future month) for Ketersediaan TK Panen or Rencana Pemenuhan, AI agents MUST follow this checklist in order:**
+
+1. **Database First (Supabase ALTER TABLE):**
+   - Before touching any frontend or API code, create an `ALTER TABLE` SQL migration script.
+   - Column naming: `tk_<bulan>` for Ketersediaan (e.g., `tk_oktober`) and `target_<bulan>` for Rencana Pemenuhan (e.g., `target_november`).
+   - Use `ADD COLUMN IF NOT EXISTS <col_name> INT DEFAULT 0` to prevent errors on re-run.
+   - Present the script to the user and **do not proceed** until they confirm the columns exist in Supabase.
+
+2. **Backend API (`api/kebunTK.js`) — Three Required Touch Points:**
+   - **Supabase fetch mapping loop** (`supaData.map` block): add explicit mapping with JSON fallback — `new_col: k.new_col !== undefined && k.new_col !== null ? k.new_col : (fb.new_col || 0)`.
+   - **`fullPayload`** in the `updateTK` Supabase update block: add `new_col: item.new_col`.
+   - **`safePayload`** (fallback payload): add `new_col: item.new_col` — never silently drop it.
+
+3. **Frontend UI (`login.html` and `laporan_produksi.html`) — Three Required Touch Points:**
+   - **Table header**: add the new `<th>` in the correct column position.
+   - **Table row rendering**: add the `<td>` with value display and inline-edit input.
+   - **Edit/Add modal forms**: add input fields with correct `id` attributes (e.g., `id="editTKOktoberVal"` / `id="addTKOktoberVal"`).
+
+4. **Data Persistence Verification:**
+   - Enter a test value → restart the local dev server (`node dev-server.js`) → confirm the value still appears.
+   - If it disappears, the Supabase column is missing or the API payload is still incomplete.
+
+5. **Update AGENTS.md:**
+   - Update the `TK Panen Data Structure & KPI Cut-Off Rule` Sub-Columns lists to include the new column.
+   - Update the `Synchronized Persistence` item with the new field name.
 
