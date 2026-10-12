@@ -4828,6 +4828,10 @@
         const trendTotAgsText = diffTotAgs > 0 ? `▲ +${diffTotAgs.toLocaleString('id-ID')}` : diffTotAgs < 0 ? `▼ ${diffTotAgs.toLocaleString('id-ID')}` : `▲ 0`;
         const trendTotAgsColor = diffTotAgs >= 0 ? `#6ee7b7` : `#fca5a5`;
 
+        const diffTotSept = totSept - totAgs;
+        const trendTotSeptText = diffTotSept > 0 ? `▲ +${diffTotSept.toLocaleString('id-ID')}` : diffTotSept < 0 ? `▼ ${diffTotSept.toLocaleString('id-ID')}` : `▲ 0`;
+        const trendTotSeptColor = diffTotSept >= 0 ? `#6ee7b7` : `#fca5a5`;
+
         const totalRowHtml = `
           <tr style="font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;">
             <td colspan="5" style="background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;">TOTAL</td>
@@ -4841,8 +4845,11 @@
             <td x:fmla="=SUM(M${startRow}:M${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(M${startRow}:M${endRow})</td>
             <td style="background-color: #162d4a; color: ${trendTotAgsColor}; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;">${trendTotAgsText}</td>
             <td x:fmla="=SUM(O${startRow}:O${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(O${startRow}:O${endRow})</td>
-            <td x:fmla="=SUM(P${startRow}:P${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(P${startRow}:P${endRow})</td>
+            <td style="background-color: #162d4a; color: ${trendTotSeptColor}; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;">${trendTotSeptText}</td>
             <td x:fmla="=SUM(Q${startRow}:Q${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(Q${startRow}:Q${endRow})</td>
+            <td x:fmla="=SUM(R${startRow}:R${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(R${startRow}:R${endRow})</td>
+            <td x:fmla="=SUM(S${startRow}:S${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(S${startRow}:S${endRow})</td>
+            <td x:fmla="=SUM(T${startRow}:T${endRow})" style="mso-number-format:'#\,##0\.00'; width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; border: 0.5pt solid black; text-align: center; vertical-align: middle; font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;" width="100">=SUM(T${startRow}:T${endRow})</td>
           </tr>
         `;
 
@@ -4855,8 +4862,8 @@
             <th rowspan="2" style="background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 50px;">Name Tag Kebun</th>
             <th rowspan="2" style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 50px;" width="100">Luasan</th>
             <th rowspan="2" style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 50px;" width="100">Kebutuhan Tenaga Panen</th>
-            <th colspan="7" style="background-color: #162d4a; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;">Ketersedian TK PANEN</th>
-            <th colspan="3" style="background-color: #162d4a; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;">Rencana Pemenuhan TK Panen</th>
+            <th colspan="9" style="background-color: #162d4a; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;">Ketersedian TK PANEN</th>
+            <th colspan="4" style="background-color: #162d4a; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;">Rencana Pemenuhan TK Panen</th>
           </tr>
         `;
 
@@ -4869,9 +4876,12 @@
             <th style="background-color: #162d4a; color: #6ee7b7; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;">TREND</th>
             <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">AGUSTUS</th>
             <th style="background-color: #162d4a; color: #6ee7b7; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;">TREND</th>
+            <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">SEPTEMBER</th>
+            <th style="background-color: #162d4a; color: #6ee7b7; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;">TREND</th>
             <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">JULI</th>
             <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">AGUSTUS</th>
-            <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">SEPTEMBER</th>
+            <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">SEPTEMBER</th>
+            <th style="width: 100px; min-width: 100px; max-width: 100px; background-color: #1e3a5f; color: #ffffff; font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold; border: 0.5pt solid black; text-align: center; vertical-align: middle; height: 25px;" width="100">OKTOBER</th>
           </tr>
         `;
 
@@ -4923,6 +4933,9 @@
                   <col />
                   <col style="width: 100px;" width="100" />
                   <col />
+                  <col style="width: 100px;" width="100" />
+                  <col />
+                  <col style="width: 100px;" width="100" />
                   <col style="width: 100px;" width="100" />
                   <col style="width: 100px;" width="100" />
                   <col style="width: 100px;" width="100" />

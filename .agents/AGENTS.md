@@ -38,11 +38,18 @@
    - **Table row rendering**: add the `<td>` with value display and inline-edit input.
    - **Edit/Add modal forms**: add input fields with correct `id` attributes (e.g., `id="editTKOktoberVal"` / `id="addTKOktoberVal"`).
 
-4. **Data Persistence Verification:**
+4. **Excel Export Synchronization (`laporan_produksi.html`) — Four Required Touch Points:**
+   - **`headerRow1` colspans**: Perbarui `colspan` pada grup Ketersediaan dan Rencana Pemenuhan sesuai jumlah sub-kolom baru.
+   - **`headerRow2` sub-column headers**: Tambahkan `<th>` bulan baru dan kolom trend terkait pada posisi indeks yang tepat.
+   - **`totalRowHtml` formulas & text**: Sesuaikan penamaan huruf kolom Excel (`=SUM(ColX:ColX)`) agar tetap selaras dengan kolom data numerik dan tidak menimpa kolom trend teks. Tambahkan formula untuk bulan baru.
+   - **`<colgroup>`**: Pastikan jumlah elemen `<col>` sama persis dengan total kolom tabel (20 kolom).
+
+5. **Data Persistence & Export Verification:**
    - Enter a test value → restart the local dev server (`node dev-server.js`) → confirm the value still appears.
    - If it disappears, the Supabase column is missing or the API payload is still incomplete.
+   - Jalankan Ekspor Excel dan verifikasi bahwa setiap header berada tepat di atas data kolom yang bersangkutan tanpa pergeseran.
 
-5. **Update AGENTS.md:**
+6. **Update AGENTS.md:**
    - Update the `TK Panen Data Structure & KPI Cut-Off Rule` Sub-Columns lists to include the new column.
    - Update the `Synchronized Persistence` item with the new field name.
 

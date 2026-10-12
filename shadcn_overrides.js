@@ -10,7 +10,7 @@ window.showAlert = function (variant, title, message, durationMs) {
   }
   const alertEl = document.createElement('div');
   alertEl.className = 'shadcn-alert shadcn-alert-' + (variant || 'invert');
-  
+
   let iconSvg = '';
   if (variant === 'success' || variant === 'invert') {
     iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
@@ -24,10 +24,10 @@ window.showAlert = function (variant, title, message, durationMs) {
 
   const displayTitle = title || 'AGRIPAM Update';
 
-  alertEl.innerHTML = iconSvg + 
+  alertEl.innerHTML = iconSvg +
     '<div class="flex-1 pr-4">' +
-      '<h5 class="shadcn-alert-title">' + displayTitle + '</h5>' +
-      '<div class="shadcn-alert-desc">' + message + '</div>' +
+    '<h5 class="shadcn-alert-title">' + displayTitle + '</h5>' +
+    '<div class="shadcn-alert-desc">' + message + '</div>' +
     '</div>' +
     '<button type="button" class="shadcn-alert-close" onclick="this.parentElement.remove()" title="Tutup">&times;</button>' +
     '<div class="shadcn-alert-progress"></div>';
@@ -705,7 +705,7 @@ window.showAgripamUpdateAnnouncement = function (force) {
   container = document.createElement('div');
   container.id = 'agripam-update-announcement';
   container.className = 'fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 transition-all duration-300 animate-in fade-in duration-200';
-  
+
   container.innerHTML = `
     <div class="relative max-w-[520px] w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 text-left shadow-2xl text-slate-900 dark:text-slate-50 font-sans overflow-hidden animate-in zoom-in-95 duration-200">
       <!-- Close X Button -->
